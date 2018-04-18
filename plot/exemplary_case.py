@@ -1,18 +1,10 @@
-import matplotlib.pyplot as plt
 
 """
 Produce the the certainty-risk trade-off figure
 """
 
 
-def plot(results, color_gain, color_loss, fig_name=None, subplot_spec=None, fig=None):
-
-    if None in (subplot_spec, fig):
-        fig = plt.figure()
-        ax = fig.add_subplot()
-
-    else:
-        ax = fig.add_subplot(subplot_spec)
+def plot(results, color_gain, color_loss, ax):
 
     axis_label_font_size = 14
     ticks_font_size = 14
@@ -33,9 +25,3 @@ def plot(results, color_gain, color_loss, fig_name=None, subplot_spec=None, fig=
         fontsize=axis_label_font_size)
 
     ax.set_aspect(2)
-
-    if fig_name:
-
-        plt.tight_layout()
-        plt.savefig(fname=fig_name)
-        plt.close()

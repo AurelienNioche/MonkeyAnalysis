@@ -1,5 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 
 from utils.utils import log
@@ -15,15 +14,7 @@ def sigmoid(x, x0, k):
     return y
 
 
-def plot(expected_values_differences, risky_choice_means, color,
-         fig_name=None, subplot_spec=None, fig=None):
-
-    if None in (subplot_spec, fig):
-        fig = plt.figure()
-        ax = fig.add_subplot()
-
-    else:
-        ax = fig.add_subplot(subplot_spec)
+def plot(expected_values_differences, risky_choice_means, color, ax):
 
     line_width = 3
     axis_label_font_size = 20
@@ -40,12 +31,16 @@ def plot(expected_values_differences, risky_choice_means, color,
         n_points = 50  # Arbitrary neither too small, or too large
         x = np.linspace(min(x_data), max(x_data), n_points)
         y = sigmoid(x, *p_opt)
-        ax.plot(x, y, color=color, label='fit', linewidth=line_width)
+
+        ax.plot(x, y, color=color, linewidth=line_width)
 
     except RuntimeError as e:
         log(e)
 
-    ax.scatter(x_data, y_data, color=color, label='data', s=point_size)
+    ax.scatter(x_data, y_data, color=color, alpha=0.5, s=point_size)
+
+    ax.axhline(0.5, alpha=0.5, linewidth=1, color='black', linestyle='--', zorder=-10)
+    ax.axvline(0, alpha=0.5, linewidth=1, color='black', linestyle='--', zorder=-10)
 
     ax.set_ylim(-0.01, 1.01)
 
@@ -66,8 +61,3 @@ def plot(expected_values_differences, risky_choice_means, color,
 
     ax.tick_params(axis='both', which='major', labelsize=ticks_label_font_size)
     ax.tick_params(axis='both', which='minor', labelsize=ticks_label_font_size)
-
-    if fig_name:
-        plt.tight_layout()
-        plt.savefig(fname=fig_name)
-        plt.close()

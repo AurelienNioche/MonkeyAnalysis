@@ -1,16 +1,7 @@
-import matplotlib.pyplot as plt
 import numpy as np
 
 
-def plot(results, color_gain, color_loss,
-         fig_name=None, subplot_spec=None, fig=None):
-
-    if None in (subplot_spec, fig):
-        fig = plt.figure()
-        ax = fig.add_subplot()
-
-    else:
-        ax = fig.add_subplot(subplot_spec)
+def plot(results, color_gain, color_loss, ax):
 
     n = len(results.keys())
 
@@ -46,8 +37,6 @@ def plot(results, color_gain, color_loss,
 
     ax.axhline(0.5, linestyle='--', color='0.3', zorder=-10, linewidth=0.5)
 
-    # ax.set_xticks(positions)
-
     ax.set_yticks(np.arange(0.4, 1.1, 0.2))
 
     ax.tick_params(axis='both', labelsize=fontsize)
@@ -61,19 +50,9 @@ def plot(results, color_gain, color_loss,
     # Boxplot
     bp = ax.boxplot(values_box_plot, positions=positions, labels=tick_labels, showfliers=False, zorder=2)
 
-    # for median, c in zip(bp['medians'], colors):
-    #     median.set(color=c)
-    #     median.set_alpha(1)
-
     for e in ['boxes', 'caps', 'whiskers', 'medians']:  # Warning: only one box, but several whiskers by plot
         for b, c in zip(bp[e], colors):
             b.set(color='black')
             # b.set_alpha(1)
 
     ax.set_aspect(3)
-    # plt.legend()
-
-    if fig_name is not None:
-        plt.tight_layout()
-        plt.savefig(fname=fig_name)
-        plt.close()

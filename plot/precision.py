@@ -1,21 +1,11 @@
-import matplotlib.pyplot as plt
 import numpy as np
 
 from model import model
 
 
 def plot(neg_precision, pos_precision, neg_risk_aversion, pos_risk_aversion, neg_distortion, pos_distortion,
-         color_gain, color_loss,
-         fig_name=None, subplot_spec=None, fig=None):
+         color_gain, color_loss, ax, alpha=1, linewidth=3):
 
-    if None in (subplot_spec, fig):
-        fig = plt.figure()
-        ax = fig.add_subplot()
-
-    else:
-        ax = fig.add_subplot(subplot_spec)
-
-    linewidth = 3
     axis_label_font_size = 20
     ticks_label_size = 14
 
@@ -60,16 +50,10 @@ def plot(neg_precision, pos_precision, neg_risk_aversion, pos_risk_aversion, neg
     ax.set_xlim(-0.01, 2.01)
     ax.set_ylim(-0.01, 1.01)
 
-    ax.plot(x, y_gain, color=color_gain, linewidth=linewidth)
-    ax.plot(x, y_loss, color=color_loss, linewidth=linewidth)
+    ax.plot(x, y_gain, color=color_gain, linewidth=linewidth, alpha=alpha)
+    ax.plot(x, y_loss, color=color_loss, linewidth=linewidth, alpha=alpha)
 
     ax.tick_params(axis='both', labelsize=ticks_label_size)
 
     ax.set_xlabel("$|x_{Risky} - x_{Safe}|$", fontsize=axis_label_font_size)
     ax.set_ylabel("P(Choose risky option)", fontsize=axis_label_font_size)
-
-    if fig_name:
-
-        plt.tight_layout()
-        plt.savefig(fname=fig_name)
-        plt.close()

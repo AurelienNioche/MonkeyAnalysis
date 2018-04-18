@@ -6,13 +6,18 @@ from utils.utils import log
 
 name = 'DataFilter'
 
+control_conditions = [
+        'identical p, positive vs negative x0',
+        'identical p, positive x0',
+        'identical p, negative x0',
+        'identical x, positive x0',
+        'identical x, negative x0'
+    ]
+
 
 def _equal_expected_value(d, t):
-    return \
-        d.p.left[t] * \
-        d.x.left[t] == \
-        d.p.right[t] * \
-        d.x.right[t]
+    return d.p.left[t] * d.x.left[t] == \
+           d.p.right[t] * d.x.right[t]
 
 
 def _certain_option(d, t):
@@ -30,9 +35,7 @@ def _gains_only(d, t):
 def _riskiest_option_on_left(d, t):
 
     if _gains_only(d, t) or _losses_only(d, t):
-
-        return d.p.left[t] < d.p.right[t] and \
-               np.absolute(d.x.left[t]) > np.absolute(d.x.right[t])
+        return d.p.left[t] < d.p.right[t] and np.abs(d.x.left[t]) > np.abs(d.x.right[t])
 
     else:
         return False
@@ -41,40 +44,36 @@ def _riskiest_option_on_left(d, t):
 def _riskiest_option_on_right(d, t):
 
     if _gains_only(d, t) or _losses_only(d, t):
-
-        return d.p.left[t] > d.p.right[t] and \
-               np.absolute(d.x.left[t]) < np.absolute(d.x.right[t])
+        return d.p.left[t] > d.p.right[t] and np.abs(d.x.left[t]) < np.abs(d.x.right[t])
 
     else:
         return False
 
 
 def _fixed_p(d, t):
-
     return d.p.left[t] == d.p.right[t]
 
 
 def _fixed_x(d, t):
-
     return d.x.left[t] == d.x.right[t]
 
 
 def _best_option_on_left(d, t, condition):
 
     if condition in \
-            ("identical p, positive vs negative x0",
-             "identical p, negative x0",
-             "identical p, positive x0"):
+            ('identical p, positive vs negative x0',
+             'identical p, negative x0',
+             'identical p, positive x0'):
         return d.x.left[t] > d.x.right[t]
 
-    elif condition == "identical x, negative x0":
+    elif condition == 'identical x, negative x0':
         return d.p.left[t] < d.p.right[t]
 
-    elif condition == "identical x, positive x0":
+    elif condition == 'identical x, positive x0':
         return d.p.left[t] > d.p.right[t]
 
     else:
-        raise Exception("Condition not understood.")
+        raise Exception('Condition not understood.')
 
 
 def _hit(d, t, best_option):
@@ -82,13 +81,13 @@ def _hit(d, t, best_option):
 
 
 def _choose_risky(d, t, risky):
-    return int(d.choice[t] == (risky == "right"))
+    return int(d.choice[t] == (risky == 'right'))
 
 
 def _best_option(d, t, condition):
 
     best_is_left = _best_option_on_left(d, t, condition)
-    return "left" if best_is_left else "right"
+    return 'left' if best_is_left else 'right'
 
 
 def _control_alternative(d, t, best_option):
@@ -115,24 +114,24 @@ def _type_of_control(d, t):
     if _fixed_p(d, t):
 
         if _gains_only(d, t):
-            type_of_control = "identical p, positive x0"
+            type_of_control = 'identical p, positive x0'
 
         elif _losses_only(d, t):
-            type_of_control = "identical p, negative x0"
+            type_of_control = 'identical p, negative x0'
 
         else:
-            type_of_control = "identical p, positive vs negative x0"
+            type_of_control = 'identical p, positive vs negative x0'
 
     elif _fixed_x(d, t):
 
         if _gains_only(d, t):
-            type_of_control = "identical x, positive x0"
+            type_of_control = 'identical x, positive x0'
 
         elif _losses_only(d, t):
-            type_of_control = "identical x, negative x0"
+            type_of_control = 'identical x, negative x0'
 
         else:
-            raise Exception("Revise your logic!")
+            raise Exception('Revise your logic!')
 
     return type_of_control
 
@@ -143,38 +142,45 @@ def _expected_value(lottery):
 
 def get_control(d):
 
-    control_conditions = [
-        "identical p, positive vs negative x0",
-        "identical p, positive x0",
-        "identical p, negative x0",
-        "identical x, positive x0",
-        "identical x, negative x0"
-    ]
-
-    sorted_data = {i: {} for i in control_conditions}
+    alternatives = []
+    control_types = []
+    hits = []
 
     n_trials = len(d.p.left)
 
     for t in range(n_trials):
-        control_type = _type_of_control(d, t)
+        ct = _type_of_control(d, t)
 
-        if control_type is None:
+        if ct is None:
             continue
 
-        best_option = _best_option(d, t, control_type)
-        is_a_hit = _hit(d, t, best_option)
-        alternative = _control_alternative(d, t, best_option)
+        best_option = _best_option(d, t, ct)
+        hit = _hit(d, t, best_option)
+        alt = _control_alternative(d, t, best_option)
 
-        if alternative not in sorted_data[control_type].keys():
-            sorted_data[control_type][alternative] = []
+        alternatives.append(alt)
+        control_types.append(ct)
+        hits.append(hit)
 
-        sorted_data[control_type][alternative].append(is_a_hit)
+    return alternatives, control_types, hits
+
+
+def cluster_hit_by_control_cond(alternatives, control_types, hits):
+
+    sorted_data = {i: {} for i in control_conditions}
+
+    for alt, ct, hit in zip(alternatives, control_types, hits):
+
+        if alt not in sorted_data[ct].keys():
+            sorted_data[ct][alt] = []
+
+        sorted_data[ct][alt].append(hit)
 
     results = {i: {} for i in control_conditions}
 
     for cond in sorted_data.keys():
 
-        log("Condition '{}'.".format(cond), name)
+        log(f'Condition "{cond}"', name)
 
         data = sorted_data[cond]
 
@@ -192,41 +198,100 @@ def get_control(d):
 
             means.append(mean)
 
-            log("{} {}: mean {}, n {}".format(i, alt, mean, n), name)
+            log(f'{i} {alt}: mean {mean:.2f}, n {n}', name)
 
         # noinspection PyTypeChecker
         perc_75, perc_25 = np.percentile(means, [75, 25])
 
-        log("Number of pairs of lotteries: {}".format(len(n_trials)), name)
+        log(f'Number of pairs of lotteries: {len(n_trials)}', name)
 
-        log("The median of frequencies for {}: {:.02f} (IQR = {:.02f} -- {:.02f})"
-            .format(cond, np.median(means), perc_25, perc_75), name)
+        log(f'The median of frequencies for {cond}: {np.median(means):.02f} '
+            f'(IQR = {perc_25:.02f} -- {perc_75:.02f})', name)
 
-        log("A few other stats about the number of trials for a specific pair", name)
+        log('A few other stats about the number of trials for a specific pair', name)
 
-        log("Min: {}".format(np.min(n_trials)), name)
-        log("Max: {}".format(np.max(n_trials)), name)
-        log("Median: {}".format(np.median(n_trials)), name)
-        log("Mean: {}".format(np.mean(n_trials)), name)
-        log("Std: {}".format(np.std(n_trials)), name)
-        log("Sum: {}".format(np.sum(n_trials)), name)
+        log(f'Min: {np.min(n_trials)}', name)
+        log(f'Max: {np.max(n_trials)}', name)
+        log(f'Median: {np.median(n_trials):.2f}', name)
+        log(f'Mean: {np.mean(n_trials):.2f}', name)
+        log(f'Std: {np.std(n_trials):.2f}', name)
+        log(f'Sum: {np.sum(n_trials)}', name)
 
     return results
 
 
 def get_choose_risky(d):
 
-    results = {}
+    alternatives = []
+    choose_risky = []
 
     n_trials = len(d.p.left)
 
     for t in range(n_trials):
 
         if _riskiest_option_on_left(d, t):
-            risky, safe = "left", "right"
+            risky, safe = 'left', 'right'
 
         elif _riskiest_option_on_right(d, t):
-            risky, safe = "right", "left"
+            risky, safe = 'right', 'left'
+
+        else:
+            continue
+
+        alt = (
+            (getattr(d.p, risky)[t], getattr(d.x, risky)[t]),
+            (getattr(d.p, safe)[t], getattr(d.x, safe)[t]),
+        )
+
+        cr = _choose_risky(d, t, risky)
+
+        alternatives.append(alt)
+        choose_risky.append(cr)
+
+    return np.asarray(alternatives), np.asarray(choose_risky)
+
+
+def cluster_risky_choice_by_alternative(alternatives, choose_risky):
+
+    unique_alt = [(tuple(i[0]), tuple(i[1])) for i in np.unique(alternatives, axis=0)]
+    results = {i: [] for i in unique_alt}
+
+    alternatives = [(tuple(i[0]), tuple(i[1])) for i in alternatives]
+
+    for alt, cr in zip(alternatives, choose_risky):
+        results[alt].append(cr)
+
+    n = np.zeros(len(unique_alt), dtype=int)
+    k = np.zeros(len(unique_alt), dtype=int)
+
+    for i, alt in enumerate(unique_alt):
+        n[i] = len(results[alt])
+        k[i] = sum(results[alt])
+
+    return unique_alt, n, k
+
+
+def get_exemplary_case(d):
+
+    log('Getting data for exemplary case...', name)
+
+    sorted_data = {'losses': {}, 'gains': {}, 'n_trials': 0}
+
+    n_trials = len(d.p.left)
+
+    for t in range(n_trials):
+
+        if not _certain_option(d, t):
+            continue
+
+        if not _equal_expected_value(d, t):
+            continue
+
+        if _riskiest_option_on_left(d, t):
+            risky, safe = 'left', 'right'
+
+        elif _riskiest_option_on_right(d, t):
+            risky, safe = 'right', 'left'
 
         else:
             continue
@@ -238,129 +303,82 @@ def get_choose_risky(d):
 
         choose_risky = _choose_risky(d, t, risky)
 
-        if alternative not in results.keys():
-            results[alternative] = []
+        if _gains_only(d, t):
+            cond = 'gains'
 
-        results[alternative].append(choose_risky)
+        elif _losses_only(d, t):
+            cond = 'losses'
 
-    alternatives = sorted(results.keys())
+        else:
+            continue
 
-    n = np.zeros(len(alternatives), dtype=int)
-    k = np.zeros(len(alternatives), dtype=int)
+        if alternative not in sorted_data[cond].keys():
+            sorted_data[cond][alternative] = []
 
-    for i, alt in enumerate(alternatives):
-        n[i] = len(results[alt])
-        k[i] = sum(results[alt])
+        sorted_data[cond][alternative].append(choose_risky)
 
-    return alternatives, n, k
+        sorted_data['n_trials'] += 1
 
+    # ---------------- #
 
-def get_exemplary_case(d):
+    conditions = ('gains', 'losses')
 
-        sorted_data = {"losses": {}, "gains": {}, "n_trials": 0}
+    # For plot
+    results = {}
 
-        n_trials = len(d.p.left)
+    # For Chi2
+    data_frames = dict()
 
-        for t in range(n_trials):
+    for c in conditions:
 
-            if not _certain_option(d, t):
-                continue
+        pairs = list(sorted_data[c].keys())
+        log(f'For condition "{c}", I got {len(pairs)} pair(s) of lotteries ({pairs}).', name)
 
-            if not _equal_expected_value(d, t):
-                continue
+        assert len(pairs) == 1, 'I expected only one pair of lotteries to meet the conditions.'
 
-            if _riskiest_option_on_left(d, t):
-                risky, safe = "left", "right"
+        chosen = sorted_data[c][pairs[0]]
 
-            elif _riskiest_option_on_right(d, t):
-                risky, safe = "right", "left"
+        mean = np.mean(chosen)
+        n = len(chosen)
+        results[c] = mean
 
-            else:
-                continue
-
-            alternative = (
-                (getattr(d.p, risky)[t], getattr(d.x, risky)[t]),
-                (getattr(d.p, safe)[t], getattr(d.x, safe)[t]),
-            )
-
-            choose_risky = _choose_risky(d, t, risky)
-
-            if _gains_only(d, t):
-                cond = "gains"
-
-            elif _losses_only(d, t):
-                cond = "losses"
-
-            else:
-                continue
-
-            if alternative not in sorted_data[cond].keys():
-                sorted_data[cond][alternative] = []
-
-            sorted_data[cond][alternative].append(choose_risky)
-
-            sorted_data["n_trials"] += 1
-
-        # ---------------- #
-
-        conditions = ("gains", "losses")
-
-        # For plot
-        results = {}
+        log(f'Observed freq is {mean:.2f} ({n} trials)', name)
 
         # For Chi2
-        data_frames = dict()
+        n_hit = np.sum(chosen)
 
-        for c in conditions:
+        data_frames[c] = pd.DataFrame(['yes'] * n_hit + ['no'] * (n - n_hit))
+        data_frames[c] = pd.crosstab(index=data_frames[c][0], columns='count')
 
-            pairs = list(sorted_data[c].keys())
-            log("For condition {}, I got {} pair(s) of lotteries ({}).".format(c, len(pairs), pairs), name)
+    first_sample = data_frames['gains']
+    second_sample = data_frames['losses']
 
-            assert len(pairs) == 1, 'I expected only one pair of lotteries to meet the conditions.'
+    observed = first_sample
+    expected = second_sample/len(second_sample) * len(first_sample)
 
-            chosen = sorted_data[c][pairs[0]]
+    chi_squared_stat = (((observed - expected) ** 2) / expected).sum()
 
-            mean = np.mean(chosen)
-            n = len(chosen)
-            results[c] = mean
+    log(f'Chi squared stat: {chi_squared_stat["count"]}', name)
 
-            log("Observed freq is {:.2f} ({} trials)".format(mean, n), name)
+    crt = scipy.stats.chi2.ppf(
+        q=0.95,  # Find the critical value for 95% confidence*
+        df=1)  # Df = number of variable categories - 1
 
-            # For Chi2
-            n_hit = np.sum(chosen)
+    log(f'Critical value: {crt}', name)
 
-            data_frames[c] = pd.DataFrame(["yes"] * n_hit + ["no"] * (n - n_hit))
-            data_frames[c] = pd.crosstab(index=data_frames[c][0], columns="count")
+    # Find the p-value
+    p_value = 1 - scipy.stats.chi2.cdf(
+        x=chi_squared_stat,
+        df=1)
 
-        # log(data_frames)
+    log(f'P value: {p_value[0]}', name)
 
-        first_sample = data_frames["gains"]
-        second_sample = data_frames["losses"]
-
-        observed = first_sample
-        expected = second_sample/len(second_sample) * len(first_sample)
-
-        chi_squared_stat = (((observed - expected) ** 2) / expected).sum()
-
-        log("Chi squared stat: {}".format(chi_squared_stat["count"]), name)
-
-        crt = scipy.stats.chi2.ppf(
-            q=0.95,  # Find the critical value for 95% confidence*
-            df=1)  # Df = number of variable categories - 1
-
-        log("Critical value: {}".format(crt), name)
-
-        # Find the p-value
-        p_value = 1 - scipy.stats.chi2.cdf(
-            x=chi_squared_stat,
-            df=1)
-
-        log("P value: {}".format(p_value[0]), name)
-
-        return results
+    return results
 
 
 def get_choose_risky_loss_or_gain_only(d, gain_only):
+
+
 
     results = {}
 
@@ -374,10 +392,10 @@ def get_choose_risky_loss_or_gain_only(d, gain_only):
             continue
 
         if _riskiest_option_on_left(d, t):
-            risky, safe = "left", "right"
+            risky, safe = 'left', 'right'
 
         elif _riskiest_option_on_right(d, t):
-            risky, safe = "right", "left"
+            risky, safe = 'right', 'left'
 
         else:
             continue
@@ -400,7 +418,7 @@ def get_choose_risky_loss_or_gain_only(d, gain_only):
     risky_choice_means = []
     n_trials = []
 
-    log("Pairs of lotteries used:", name)
+    log('Pairs of lotteries used:', name)
 
     for i, alt in enumerate(alternatives):
         delta = _expected_value(alt[0]) - _expected_value(alt[1])
@@ -412,19 +430,14 @@ def get_choose_risky_loss_or_gain_only(d, gain_only):
         n = len(results[alt])
 
         n_trials.append(n)
+        log(f'({i}) {alt} delta: {delta}, mean: {mean:.2f}, n: {n}', name)
 
-        log("({}) {} delta: {}, mean: {}, n: {}".format(i, alt, delta, ", mean: ", mean, ", n:", n),
-            name)
-
-    log("Number of pairs of lotteries: {}".format(len(n_trials)), name)
-
-    log("A few stats about the number of trials for a specific pair", name)
-
-    log("Min: {}".format(np.min(n_trials)), name)
-    log("Max: {}".format(np.max(n_trials)), name)
-    log("Median {}:".format(np.median(n_trials)), name)
-    log("Mean: {}".format(np.mean(n_trials)), name)
-    log("Std: {}".format(np.std(n_trials)), name)
-    log("Sum: {}".format(np.sum(n_trials)), name)
+    log(f'Number of pairs of lotteries for risky choices (gains only = {gain_only}): {len(n_trials)}', name)
+    log(f'Min: {np.min(n_trials)}', name)
+    log(f'Max: {np.max(n_trials)}', name)
+    log(f'Median: {np.median(n_trials):.2f}', name)
+    log(f'Mean: {np.mean(n_trials):.2f}', name)
+    log(f'Std: {np.std(n_trials):.2f}', name)
+    log(f'Sum: {np.sum(n_trials)}', name)
 
     return expected_values_differences, risky_choice_means

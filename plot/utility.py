@@ -1,5 +1,4 @@
-from pylab import np, plt
-
+import numpy as np
 
 """
 Produce the utility function figure
@@ -21,27 +20,18 @@ def u(m, pos_risk_aversion, neg_risk_aversion):
         return 0
 
 
-def plot(pos_risk_aversion, neg_risk_aversion,
-         fig_name=None, subplot_spec=None, fig=None):
-
-    if None in (subplot_spec, fig):
-        fig = plt.figure()
-        ax = fig.add_subplot()
-
-    else:
-        ax = fig.add_subplot(subplot_spec)
+def plot(pos_risk_aversion, neg_risk_aversion, ax, alpha=1, linewidth=3):
 
     reward_max = 1
     reward_min = - 1
     n_points = 1000
     axis_label_font_size = 20
-    ticks_label_font_size = 14
-    line_width = 3
+    ticks_label_font_size = 12
 
     x = np.linspace(reward_min, reward_max, n_points)
     y = [u(i, pos_risk_aversion, neg_risk_aversion) for i in x]
 
-    ax.plot(x, y, color="black", linewidth=line_width)
+    ax.plot(x, y, color="black", linewidth=linewidth, alpha=alpha)
 
     ax.spines['left'].set_position(('data', 0))
     ax.spines['right'].set_color('none')
@@ -59,13 +49,7 @@ def plot(pos_risk_aversion, neg_risk_aversion,
     ax.tick_params(axis='both', which='major', labelsize=ticks_label_font_size)
     ax.tick_params(axis='both', which='minor', labelsize=ticks_label_font_size)
 
-    ax.set_xticks([-1, -0.5, 0.5, 1])
-    ax.set_yticks([-1, -0.5, 0.5, 1])
+    ax.set_xticks([-1, 1])
+    ax.set_yticks([-1, 1])
 
     ax.set_aspect(1)
-
-    if fig_name:
-
-        plt.tight_layout()
-        plt.savefig(fname=fig_name)
-        plt.close()

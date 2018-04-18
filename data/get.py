@@ -184,7 +184,7 @@ class DataManager:
                     choice=choice, session=session, date=date)
 
 
-def import_data(monkey, database_path, starting_point="2016-12-01", end_point=today(), force=False):
+def run(monkey, database_path, starting_point="2016-12-01", end_point=today(), force=False):
 
     data_path = "data/pickle/data_{}.p".format(monkey)
 
