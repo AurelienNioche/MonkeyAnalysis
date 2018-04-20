@@ -200,6 +200,19 @@ def cluster_hit_by_control_cond(alternatives, control_types, hits):
 
             log(f'{i} {alt}: mean {mean:.2f}, n {n}', name)
 
+            # --------------------- #
+
+            p = scipy.stats.binom.pmf(k=np.sum(data[alt]), n=len(data[alt]), p=0.5)
+            log(f'P sample if random DM (binomial law): {p:.03f}', "Stats")
+
+            # --------------------- #
+
+        fake_means = [np.mean(np.random.randint(2, size=i)) for i in n_trials]
+        u, p = scipy.stats.mannwhitneyu(means, fake_means)
+        log(f'Different from random: u= {u:.02f}, p={p:.03f}', "Stats")
+
+        # ----------------------------------------- #
+
         # noinspection PyTypeChecker
         perc_75, perc_25 = np.percentile(means, [75, 25])
 
@@ -378,8 +391,6 @@ def get_exemplary_case(d):
 
 def get_choose_risky_loss_or_gain_only(d, gain_only):
 
-
-
     results = {}
 
     n_trials = len(d.p.left)
@@ -415,7 +426,7 @@ def get_choose_risky_loss_or_gain_only(d, gain_only):
     alternatives = sorted(results.keys())
 
     expected_values_differences = []
-    risky_choice_means = []
+    means = []
     n_trials = []
 
     log('Pairs of lotteries used:', name)
@@ -425,12 +436,23 @@ def get_choose_risky_loss_or_gain_only(d, gain_only):
         expected_values_differences.append(delta)
 
         mean = np.mean(results[alt])
-        risky_choice_means.append(mean)
+        means.append(mean)
 
         n = len(results[alt])
 
         n_trials.append(n)
         log(f'({i}) {alt} delta: {delta}, mean: {mean:.2f}, n: {n}', name)
+
+        # -------------------- #
+
+        p = scipy.stats.binom.pmf(k=np.sum(results[alt]), n=len(results[alt]), p=0.5)
+        log(f'P sample if random DM (binomial law): {p:.03f}', "Stats")
+
+        # -------------------- #
+
+    fake_means = [np.mean(np.random.randint(2, size=i)) for i in n_trials]
+    u, p = scipy.stats.mannwhitneyu(means, fake_means)
+    log(f'Different from random: u= {u:.02f}, p={p:.03f}', "Stats")
 
     log(f'Number of pairs of lotteries for risky choices (gains only = {gain_only}): {len(n_trials)}', name)
     log(f'Min: {np.min(n_trials)}', name)
@@ -440,4 +462,4 @@ def get_choose_risky_loss_or_gain_only(d, gain_only):
     log(f'Std: {np.std(n_trials):.2f}', name)
     log(f'Sum: {np.sum(n_trials)}', name)
 
-    return expected_values_differences, risky_choice_means
+    return expected_values_differences, means
