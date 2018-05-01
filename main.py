@@ -84,10 +84,10 @@ def control(d):
 
     ax.text(
         s='A', x=-0.1, y=0.5, horizontalalignment='center', verticalalignment='center', transform=ax.transAxes,
-        fontsize=30)
+        fontsize=15)
     ax.text(
         s='B', x=-0.1, y=-0.02, horizontalalignment='center', verticalalignment='center', transform=ax.transAxes,
-        fontsize=30)
+        fontsize=15)
 
     fig.savefig(fname=f'{fig_folder}/control.pdf')
 

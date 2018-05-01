@@ -121,4 +121,13 @@ def run_cross_validation(d, force=False):
 
     fit = _pickle_load(d=d, force=force, func=_get_cross_validation,
                        fit_path='model/pickle/fit_cross_validation.p')
+
+    for monkey in d.keys():
+        log(f'{monkey}', name)
+        for label in [
+            'pos_risk_aversion', 'neg_risk_aversion', 'pos_distortion', 'neg_distortion',
+            'pos_precision', 'neg_precision', 'log_likelihood_sum']:
+            log(f'{label} = {np.mean(fit[monkey][label]):.2f} '
+                f'(+/-{np.std(fit[monkey][label]):.2f} SD)', name)
+
     return fit
