@@ -6,8 +6,8 @@ def plot(results, color_gain, color_loss, ax):
     n = len(results.keys())
 
     tick_labels = [
-        "Loss\nvs\ngains", "Diff. $x_0 +$\nSame p", "Diff. $x_0 -$\nSame p",
-        "Diff. p\nSame $x_0 +$", "Diff. p\nSame $x_0 -$"]
+        "Loss\nvs\ngains", "Diff. $x +$\nSame $p$", "Diff. $x -$\nSame $p$",
+        "Diff. $p$\nSame $x +$", "Diff. $p$\nSame $x -$"]
 
     colors = ["black", color_gain, color_loss, color_gain, color_loss]
     positions = list(range(n))
