@@ -318,4 +318,4 @@ def main(force_data_import=False, force_fit=False):
 
 
 if __name__ == '__main__':
-    main(False, False)
+    main(True, True)

@@ -1,5 +1,5 @@
 from datetime import datetime
-import git
+# import git
 
 
 def now():
