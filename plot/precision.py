@@ -55,5 +55,10 @@ def plot(neg_precision, pos_precision, neg_risk_aversion, pos_risk_aversion, neg
 
     ax.tick_params(axis='both', labelsize=ticks_label_size)
 
+    ax.spines['right'].set_color('none')
+    ax.xaxis.set_ticks_position('bottom')
+    ax.yaxis.set_ticks_position('left')
+    ax.spines['top'].set_color('none')
+
     ax.set_xlabel("$|x_{Risky} - x_{Safe}|$", fontsize=axis_label_font_size)
     ax.set_ylabel("P(Choose risky option)", fontsize=axis_label_font_size)

@@ -20,7 +20,7 @@ def u(m, pos_risk_aversion, neg_risk_aversion):
         return 0
 
 
-def plot(pos_risk_aversion, neg_risk_aversion, ax, alpha=1, linewidth=3):
+def plot(pos_risk_aversion, neg_risk_aversion, ax, alpha=1, linewidth=3, color="black", linestyle="-"):
 
     reward_max = 1
     reward_min = - 1
@@ -31,7 +31,7 @@ def plot(pos_risk_aversion, neg_risk_aversion, ax, alpha=1, linewidth=3):
     x = np.linspace(reward_min, reward_max, n_points)
     y = [u(i, pos_risk_aversion, neg_risk_aversion) for i in x]
 
-    ax.plot(x, y, color="black", linewidth=linewidth, alpha=alpha)
+    ax.plot(x, y, color=color, linewidth=linewidth, alpha=alpha, linestyle=linestyle)
 
     ax.spines['left'].set_position(('data', 0))
     ax.spines['right'].set_color('none')

@@ -42,7 +42,7 @@ def _objective_multi(parameters, alternatives, n, k):
     return lls * -1
 
 
-def _get_cross_validation(d, n_chunk=10):
+def _get_cross_validation(d, randomize, n_chunk=10):
 
     monkeys = d.keys()
 
@@ -58,12 +58,16 @@ def _get_cross_validation(d, n_chunk=10):
 
         reminder = n_trials % n_chunk
 
-        idx = np.random.permutation(np.arange(n_trials))
+        idx = np.arange(n_trials)
+        if randomize:
+            np.random.shuffle(idx)
+
         if reminder > 0:
             idx = idx[:-reminder]
 
         parts = np.split(idx, n_chunk)
 
+        log(f'Order of trials for composing is {"not " if not randomize else ""}randomized', name)
         log(f'N trials = {n_trials}', name)
         log(f'N parts = {len(parts)} (n trials per part = {int(n_trials / n_chunk)}, '
             f'reminder = {reminder})', name)
@@ -101,11 +105,11 @@ def _get_cross_validation(d, n_chunk=10):
     return fit
 
 
-def _pickle_load(d, func, fit_path, force, *args):
+def _pickle_load(d, func, fit_path, force, *args, **kwargs):
 
     if not os.path.exists(fit_path) or force:
 
-        fit = func(d, *args)
+        fit = func(d, *args, **kwargs)
         os.makedirs(os.path.dirname(fit_path), exist_ok=True)
         with open(fit_path, 'wb') as f:
             pickle.dump(fit, f)
@@ -117,16 +121,21 @@ def _pickle_load(d, func, fit_path, force, *args):
     return fit
 
 
-def run_cross_validation(d, force=False):
+def run_cross_validation(d, force=False, randomize=True):
+
+    fit_path = f'model/pickle/fit_cross_validation.p' if randomize else \
+        f'model/pickle/fit_not_random_order.p'
 
     fit = _pickle_load(d=d, force=force, func=_get_cross_validation,
-                       fit_path='model/pickle/fit_cross_validation.p')
+                       fit_path=fit_path,
+                       randomize=randomize)
 
     for monkey in d.keys():
         log(f'{monkey}', name)
         for label in [
-            'pos_risk_aversion', 'neg_risk_aversion', 'pos_distortion', 'neg_distortion',
-            'pos_precision', 'neg_precision', 'log_likelihood_sum']:
+                'pos_risk_aversion', 'neg_risk_aversion', 'pos_distortion', 'neg_distortion',
+                'pos_precision', 'neg_precision', 'log_likelihood_sum'
+        ]:
             log(f'{label} = {np.mean(fit[monkey][label]):.2f} '
                 f'(+/-{np.std(fit[monkey][label]):.2f} SD)', name)
 
