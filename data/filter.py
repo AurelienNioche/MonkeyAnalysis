@@ -202,14 +202,14 @@ def cluster_hit_by_control_cond(alternatives, control_types, hits):
 
             # --------------------- #
 
-            p = scipy.stats.binom.pmf(k=np.sum(data[alt]), n=len(data[alt]), p=0.5)
-            log(f'P sample if random DM (binomial law): {p:.03f}', "Stats")
+            # p = scipy.stats.binom.pmf(k=np.sum(data[alt]), n=len(data[alt]), p=0.5)
+            # log(f'P sample if random DM (binomial law): {p:.03f}', "Stats")
 
             # --------------------- #
 
-        fake_means = [np.mean(np.random.randint(2, size=i)) for i in n_trials]
-        u, p = scipy.stats.mannwhitneyu(means, fake_means)
-        log(f'Different from random: u= {u:.02f}, p={p:.03f}', "Stats")
+        # fake_means = [np.mean(np.random.randint(2, size=i)) for i in n_trials]
+        # u, p = scipy.stats.mannwhitneyu(means, fake_means)
+        # log(f'Different from random: u= {u:.02f}, p={p:.03f}', "Stats")
 
         # ----------------------------------------- #
 

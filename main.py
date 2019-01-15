@@ -15,7 +15,7 @@ import plot.freq_risk_against_exp_value
 import data.get
 import data.filter
 
-from utils.utils import today, log, generate_colors
+from utils.utils import today, log
 
 name = "Main"
 
@@ -97,7 +97,7 @@ def freq_risk_against_exp_value(d):
     n_rows, n_cols = 2, 2
     gs = matplotlib.gridspec.GridSpec(nrows=n_rows, ncols=n_cols)
     fig = plt.figure(figsize=(12, 10), dpi=200)
-    axes = [[] for i in range(n_cols)]
+    axes = [[] for _ in range(n_cols)]
     for i in range(len(monkeys)):
         for j in range(2):
             axes[i].append(fig.add_subplot(gs[i, j]))
@@ -132,20 +132,26 @@ def freq_risk_against_exp_value(d):
     fig.savefig(fname=f'{fig_folder}/freq_risk_against_exp_value.pdf')
 
 
-def utility_multi(fit, fig_name='utility', ordered_chunks=False, show_average=True):
+def utility_multi(fit, fig_name='utility', show_average=True):  # ordered_chunks=False,
 
-    n = len(fit[monkeys[0]]['pos_risk_aversion'])
+    # n = len(fit[monkeys[0]]['pos_risk_aversion'])
+
+    # def generate_colors(n, colormap='winter_r'):
+    #
+    #     # To generate colors
+    #     cmap = plt.get_cmap(colormap)
+    #     return [cmap(i) for i in np.linspace(0, 0.9, n)]
 
     # if colormap:
     #     color = generate_colors(n, colormap)
     #
     # else:
     #     color = ["black", ] * n
-
-    if ordered_chunks:
-        linestyles = [(0, (3, i + 1)) for i in list(range(n))[::-1]]
-    else:
-        linestyles = ["-", ] * 10
+    #
+    # if ordered_chunks:
+    #     linestyles = [(0, (3, i + 1)) for i in list(range(n))[::-1]]
+    # else:
+    #     linestyles = ["-", ] * 10
 
     alpha_chunk = 0.5 if show_average else 0.5
 
@@ -163,8 +169,9 @@ def utility_multi(fit, fig_name='utility', ordered_chunks=False, show_average=Tr
             plot.utility.plot(
                 pos_risk_aversion=pra[j],
                 neg_risk_aversion=nra[j],
-                ax=axes[i], linewidth=1, alpha=alpha_chunk, color="black",
-                linestyle=linestyles[j]
+                ax=axes[i], linewidth=1, alpha=alpha_chunk,
+                # color="black",
+                # linestyle=linestyles[j]
             )  # color[j])
 
         if show_average:
@@ -345,8 +352,8 @@ def main(force_data_import=False, force_fit=False):
     # Freq risky choice against expected value
     freq_risk_against_exp_value(d)
 
-    # Get fit
-    fit = model.parameter_estimate.run_cross_validation(d, force_fit)
+    # Get fit (before review, randomized order was used)
+    fit = model.parameter_estimate.run_cross_validation(d, force_fit, randomize=False)
 
     # Utility function
     utility_multi(fit)
