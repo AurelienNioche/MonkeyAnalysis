@@ -23,7 +23,7 @@ def sigmoid_one_param(x, theta):
     return 1 / (1 + np.exp(-theta * x))
 
 
-def stats(y, p_opt, p_cov, alpha=0.05):  # 95% confidence interval = 100*(1-alpha)
+def stats(y, p_opt, p_cov, alpha=0.01):  # 95% confidence interval = 100*(1-alpha)
 
     n = len(y)  # number of data points
     p = len(p_opt)  # number of parameters
