@@ -92,7 +92,7 @@ def control(d):
     fig.savefig(fname=f'{fig_folder}/control.pdf')
 
 
-def freq_risk_against_exp_value(d):
+def freq_risk_against_exp_value(d, f=plot.freq_risk_against_exp_value.sigmoid):
 
     n_rows, n_cols = 2, 2
     gs = matplotlib.gridspec.GridSpec(nrows=n_rows, ncols=n_cols)
@@ -117,7 +117,9 @@ def freq_risk_against_exp_value(d):
                 expected_values_differences=expected_values_differences,
                 risky_choice_means=risky_choice_means,
                 color=color,
-                ax=axes[i][j])
+                ax=axes[i][j],
+                f=f
+            )
 
     ax = fig.add_subplot(gs[:, :])
     ax.set_axis_off()

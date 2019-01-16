@@ -20,7 +20,7 @@ import scipy.stats
 
 from utils.utils import today, log
 
-from main import get_data, freq_risk_against_exp_value
+import main
 
 name = "Supp"
 
@@ -166,13 +166,13 @@ def stats(fit):
         log(f'Comparision for {param} parameter values: u = {u}, p = {p:.3f}, p_c = {p_c:.3f}', name=name)
 
 
-def main(force_data_import=False, force_fit=False):
+def main_for_review(force_data_import=False, force_fit=False):
 
     # Create fig folder
     os.makedirs(fig_folder, exist_ok=True)
 
     # Get data
-    d = get_data(force_data_import)
+    d = main.get_data(force_data_import)
 
     # Get fit
     fit = model.parameter_estimate.run_cross_validation(d, force_fit, randomize=False)
@@ -184,11 +184,11 @@ def main(force_data_import=False, force_fit=False):
     stats(fit)
 
     # Freq risky choice against expected value
-    freq_risk_against_exp_value(d)
+    main.freq_risk_against_exp_value(d)  # , f=plot.freq_risk_against_exp_value.sigmoid_one_param)
 
     # Utility
     # utility_multi(fit=fit, fig_name='utility_not_random_order', ordered_chunks=True, show_average=False)
 
 
 if __name__ == '__main__':
-    main(False, False)
+    main_for_review(False, False)
