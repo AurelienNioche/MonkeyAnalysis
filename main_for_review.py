@@ -3,22 +3,15 @@ import matplotlib.gridspec
 import matplotlib.pyplot as plt
 import numpy as np
 
-import model.parameter_estimate
+import statsmodels.stats.multitest
+import scipy.stats
 
-import plot.utility
-import plot.precision
-import plot.probability_distortion
-import plot.control
-import plot.exemplary_case
-import plot.freq_risk_against_exp_value
+import model.parameter_estimate
 
 import data.get
 import data.filter
 
-import statsmodels.stats.multitest
-import scipy.stats
-
-from utils.utils import today, log
+from utils.utils import log
 
 import main
 
@@ -166,7 +159,7 @@ def stats_comparison_best_values(fit):
         log(f'Comparision for {param} parameter values: u = {u}, p = {p:.3f}, p_c = {p_c:.3f}', name=name)
 
 
-def control_history_sort_data(alternatives, control_types, hits, n_chuncks):
+def control_history_sort_data(alternatives, control_types, hits, n_chunk):
 
     control_conditions = data.filter.control_conditions
 
@@ -180,8 +173,10 @@ def control_history_sort_data(alternatives, control_types, hits, n_chuncks):
 
         sorted_data[ct][alt].append(hit)
 
+    # print(sorted_data)
+
     # Prepare container for output
-    results = {i: [{} for _ in range(n_chuncks)] for i in control_conditions}
+    results = {i: [{} for _ in range(n_chunk)] for i in control_conditions}
 
     for cond in sorted_data.keys():
 
@@ -191,29 +186,40 @@ def control_history_sort_data(alternatives, control_types, hits, n_chuncks):
 
         alternatives = sorted(list(d.keys()))
 
-        n_trials = []
-        means = []
+        # n_trials = []
+        # means = []
 
         for i, alt in enumerate(alternatives):
 
-            split = np.split(np.asarray(d[alt]), n_chuncks)
+            n_trials = len(d[alt])
 
-            n = len(d[alt])
-            mean = np.mean(d[alt])
-            n_trials.append(n)
+            reminder = n_trials % n_chunk
 
-            for j in split:
+            idx = np.arange(n_trials)
+            if reminder > 0:
+                idx = idx[:-reminder]
 
-                results[cond][j][alt] = mean
+            split = np.split(np.asarray(d[alt])[idx], n_chunk)
+            # raise Exception
+            # split = np.split(d[alt], n_chuncks)
 
-            means.append(mean)
+            # n = len(d[alt])
+            # print(n)
+            # mean = np.mean(d[alt])
+            # n_trials.append(n)
 
-            log(f'{i} {alt}: mean {mean:.2f}, n {n}', name)
+            for j, sp in enumerate(split):
+
+                results[cond][j][alt] = np.mean(sp)
+
+            # means.append(mean)
+
+            # log(f'{i} {alt}: mean {mean:.2f}, n {n}', name)
 
     return results
 
 
-def control_history_plot(results, color, ax):
+def control_history_plot(results, color, ax, last=False, ylabel="Success rate", title="Title"):
 
     n = len(results)  # results is a list (n=number of boxplot) of list (n=number of datapoints)
 
@@ -227,10 +233,11 @@ def control_history_plot(results, color, ax):
 
     values_box_plot = []
 
-    for i, cond in enumerate(results):
+    for i, res in enumerate(results):
+        print(res)
         values_box_plot.append([])
 
-        for v in results[i]:
+        for v in results[i].values():
 
             # For box plot
             values_box_plot[-1].append(v)
@@ -241,17 +248,21 @@ def control_history_plot(results, color, ax):
 
     fontsize = 10
 
-    ax.scatter(x_scatter, y_scatter, c=color, s=30, alpha=0.5, linewidth=0.0, zorder=1)
+    # print(x_scatter), len(y_scatter))
+
+    assert len(x_scatter) == len(y_scatter)
+    ax.scatter(x_scatter, y_scatter, c=color, s=10, alpha=0.5, linewidth=0.0, zorder=1)
 
     ax.axhline(0.5, linestyle='--', color='0.3', zorder=-10, linewidth=0.5)
 
-    ax.set_yticks(np.arange(0.4, 1.1, 0.2))
+    ax.set_yticks(np.arange(0.5, 1.1, 0.5))
 
-    ax.tick_params(axis='both', labelsize=fontsize)
+    ax.tick_params(axis='both', labelsize=fontsize /2 )
 
     # ax.set_xlabel("Type of control\nMonkey {}.".format(monkey), fontsize=fontsize)
     # ax.set_xlabel("Control type", fontsize=fontsize)
-    ax.set_ylabel("Success rate", fontsize=fontsize)
+
+    ax.set_ylabel(ylabel, fontsize=fontsize /2 )
 
     ax.set_ylim(0.35, 1.02)
 
@@ -263,16 +274,26 @@ def control_history_plot(results, color, ax):
             b.set(color='black')
             # b.set_alpha(1)
 
-    ax.set_aspect(3)
+    if not last:
+        ax.tick_params(
+            axis='x',  # changes apply to the x-axis
+            which='both',  # both major and minor ticks are affected
+            bottom=False,  # ticks along the bottom edge are off
+            top=False,  # ticks along the top edge are off
+            labelbottom=False)  # labels along the bottom edge are off
+    ax.set_title(title, fontsize=6)
+    # ax.set_aspect(3)
 
 
-def control_history(d):
+def control_history(d, n_chunk):
 
     n_rows, n_cols = 10, 1
     gs = matplotlib.gridspec.GridSpec(nrows=n_rows, ncols=n_cols)
 
-    fig = plt.figure(figsize=(4.7, 5.4), dpi=200)
+    fig = plt.figure(figsize=(5, 8), dpi=200)
     axes = [fig.add_subplot(gs[i, 0]) for i in range(len(monkeys) * len(data.filter.control_conditions))]
+
+    n = len(monkeys) * len(data.filter.control_conditions)
 
     i = 0
     for monkey in monkeys:
@@ -280,28 +301,46 @@ def control_history(d):
         log(f'Getting data for {monkey}', name)
         alternatives, control_types, hits = data.filter.get_control(d[monkey])
 
-        control_d = control_history_sort_data(alternatives, control_types, hits)
+        control_d = control_history_sort_data(alternatives, control_types, hits, n_chunk=n_chunk)
 
-        for cond, color in zip(data.filter.control_conditions,
-                               ("black", color_gain, color_loss, color_gain, color_loss)):
+        for cond, color, title in zip(data.filter.control_conditions,
+                                      ("black", color_gain, color_loss, color_gain, color_loss),
+                                      (
+                                          "Loss vs gains", "Diff. $x +$, same $p$", "Diff. $x -$, same $p$",
+                                          "Diff. $p$, same $x +$", "Diff. $p$, same $x -$"
+                                      )):
+
+            last = i == n-1
 
             control_history_plot(
                 results=control_d[cond],
-                color_gain=color,
-                ax=axes[i])
+                color=color,
+                ax=axes[i],
+                last=last,
+                title=title
+                # ylabel=ylabel
+            )
 
             i += 1
+
+    # plt.tight_layout()
 
     gs.tight_layout(fig)
 
     ax = fig.add_subplot(gs[:, :])
     ax.set_axis_off()
 
+    # for l in labels:
+    #
+    # ax.text(
+    #     s='  A', x=-0.1, y=0.5, horizontalalignment='center', verticalalignment='center', transform=ax.transAxes,
+    #     fontsize=15)
+
     ax.text(
-        s='A', x=-0.1, y=0.5, horizontalalignment='center', verticalalignment='center', transform=ax.transAxes,
+        s='  A', x=-0.1, y=0.5, horizontalalignment='center', verticalalignment='center', transform=ax.transAxes,
         fontsize=15)
     ax.text(
-        s='B', x=-0.1, y=-0.02, horizontalalignment='center', verticalalignment='center', transform=ax.transAxes,
+        s='  B', x=-0.1, y=-0.02, horizontalalignment='center', verticalalignment='center', transform=ax.transAxes,
         fontsize=15)
 
     fig.savefig(fname=f'{fig_folder}/control_history.pdf')
@@ -316,7 +355,7 @@ def main_for_review(force_data_import=False, force_fit=False):
     d = main.get_data(force_data_import)
 
     # Control history
-    control_history(d)
+    control_history(d, n_chunk=10)
 
     # Get fit
     fit = model.parameter_estimate.run_cross_validation(d, force_fit, randomize=False)
