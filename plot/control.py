@@ -51,7 +51,7 @@ def plot(results, color_gain, color_loss, ax):
     bp = ax.boxplot(values_box_plot, positions=positions, labels=tick_labels, showfliers=False, zorder=2)
 
     for e in ['boxes', 'caps', 'whiskers', 'medians']:  # Warning: only one box, but several whiskers by plot
-        for b, c in zip(bp[e], colors):
+        for b in bp[e]:
             b.set(color='black')
             # b.set_alpha(1)
 

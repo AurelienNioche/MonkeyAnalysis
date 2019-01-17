@@ -133,7 +133,7 @@ def fig_history(fit):
     fig.savefig(fname=f'{fig_folder}/supplementary_history.pdf')
 
 
-def stats(fit):
+def stats_comparison_best_values(fit):
 
     us = []
     ps = []
@@ -166,6 +166,147 @@ def stats(fit):
         log(f'Comparision for {param} parameter values: u = {u}, p = {p:.3f}, p_c = {p_c:.3f}', name=name)
 
 
+def control_history_sort_data(alternatives, control_types, hits, n_chuncks):
+
+    control_conditions = data.filter.control_conditions
+
+    # Pre-sort data
+    sorted_data = {i: {} for i in control_conditions}
+
+    for alt, ct, hit in zip(alternatives, control_types, hits):
+
+        if alt not in sorted_data[ct].keys():
+            sorted_data[ct][alt] = []
+
+        sorted_data[ct][alt].append(hit)
+
+    # Prepare container for output
+    results = {i: [{} for _ in range(n_chuncks)] for i in control_conditions}
+
+    for cond in sorted_data.keys():
+
+        log(f'Condition "{cond}"', name)
+
+        d = sorted_data[cond]
+
+        alternatives = sorted(list(d.keys()))
+
+        n_trials = []
+        means = []
+
+        for i, alt in enumerate(alternatives):
+
+            split = np.split(np.asarray(d[alt]), n_chuncks)
+
+            n = len(d[alt])
+            mean = np.mean(d[alt])
+            n_trials.append(n)
+
+            for j in split:
+
+                results[cond][j][alt] = mean
+
+            means.append(mean)
+
+            log(f'{i} {alt}: mean {mean:.2f}, n {n}', name)
+
+    return results
+
+
+def control_history_plot(results, color, ax):
+
+    n = len(results)  # results is a list (n=number of boxplot) of list (n=number of datapoints)
+
+    tick_labels = [f"{i + 1}" for i in range(n)]
+
+    # colors = ["black", color_gain, color_loss, color_gain, color_loss]
+    positions = list(range(n))
+
+    x_scatter = []
+    y_scatter = []
+
+    values_box_plot = []
+
+    for i, cond in enumerate(results):
+        values_box_plot.append([])
+
+        for v in results[i]:
+
+            # For box plot
+            values_box_plot[-1].append(v)
+
+            # For scatter
+            y_scatter.append(v)
+            x_scatter.append(i)
+
+    fontsize = 10
+
+    ax.scatter(x_scatter, y_scatter, c=color, s=30, alpha=0.5, linewidth=0.0, zorder=1)
+
+    ax.axhline(0.5, linestyle='--', color='0.3', zorder=-10, linewidth=0.5)
+
+    ax.set_yticks(np.arange(0.4, 1.1, 0.2))
+
+    ax.tick_params(axis='both', labelsize=fontsize)
+
+    # ax.set_xlabel("Type of control\nMonkey {}.".format(monkey), fontsize=fontsize)
+    # ax.set_xlabel("Control type", fontsize=fontsize)
+    ax.set_ylabel("Success rate", fontsize=fontsize)
+
+    ax.set_ylim(0.35, 1.02)
+
+    # Boxplot
+    bp = ax.boxplot(values_box_plot, positions=positions, labels=tick_labels, showfliers=False, zorder=2)
+
+    for e in ['boxes', 'caps', 'whiskers', 'medians']:  # Warning: only one box, but several whiskers by plot
+        for b in bp[e]:
+            b.set(color='black')
+            # b.set_alpha(1)
+
+    ax.set_aspect(3)
+
+
+def control_history(d):
+
+    n_rows, n_cols = 10, 1
+    gs = matplotlib.gridspec.GridSpec(nrows=n_rows, ncols=n_cols)
+
+    fig = plt.figure(figsize=(4.7, 5.4), dpi=200)
+    axes = [fig.add_subplot(gs[i, 0]) for i in range(len(monkeys) * len(data.filter.control_conditions))]
+
+    i = 0
+    for monkey in monkeys:
+
+        log(f'Getting data for {monkey}', name)
+        alternatives, control_types, hits = data.filter.get_control(d[monkey])
+
+        control_d = control_history_sort_data(alternatives, control_types, hits)
+
+        for cond, color in zip(data.filter.control_conditions,
+                               ("black", color_gain, color_loss, color_gain, color_loss)):
+
+            control_history_plot(
+                results=control_d[cond],
+                color_gain=color,
+                ax=axes[i])
+
+            i += 1
+
+    gs.tight_layout(fig)
+
+    ax = fig.add_subplot(gs[:, :])
+    ax.set_axis_off()
+
+    ax.text(
+        s='A', x=-0.1, y=0.5, horizontalalignment='center', verticalalignment='center', transform=ax.transAxes,
+        fontsize=15)
+    ax.text(
+        s='B', x=-0.1, y=-0.02, horizontalalignment='center', verticalalignment='center', transform=ax.transAxes,
+        fontsize=15)
+
+    fig.savefig(fname=f'{fig_folder}/control_history.pdf')
+
+
 def main_for_review(force_data_import=False, force_fit=False):
 
     # Create fig folder
@@ -174,6 +315,9 @@ def main_for_review(force_data_import=False, force_fit=False):
     # Get data
     d = main.get_data(force_data_import)
 
+    # Control history
+    control_history(d)
+
     # Get fit
     fit = model.parameter_estimate.run_cross_validation(d, force_fit, randomize=False)
 
@@ -181,7 +325,7 @@ def main_for_review(force_data_import=False, force_fit=False):
     fig_history(fit)
 
     # Stats for comparison of best parameter values
-    stats(fit)
+    stats_comparison_best_values(fit)
 
     # Freq risky choice against expected value
     main.freq_risk_against_exp_value(d)  # , f=plot.freq_risk_against_exp_value.sigmoid_one_param)
