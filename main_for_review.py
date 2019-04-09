@@ -41,7 +41,7 @@ def plot_history(
 
     ax.set_xlim((0.5, 10.5))
     ax.set_ylim(y_lim)
-    ax.set_xticks((1, 5, 10))
+    ax.set_xticks((1, len(x_data)//2, len(x_data)))
 
     # Axis labels
     ax.set_xlabel(

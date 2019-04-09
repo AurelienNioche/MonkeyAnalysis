@@ -17,11 +17,11 @@ import data.filter
 
 from utils.utils import today, log
 
-name = "Main"
+NAME = "Main"
 
-monkeys = 'Havane', 'Gladys'
-color_loss, color_gain = 'C1', 'C0'
-fig_folder = 'fig'
+MONKEYS = 'Havane', 'Gladys'
+COLOR_LOSS, COLOR_GAIN = 'C1', 'C0'
+FIG_FOLDER = 'fig'
 
 
 def exemplary_case(d):
@@ -29,18 +29,18 @@ def exemplary_case(d):
     n_rows, n_cols = 1, 2
     gs = matplotlib.gridspec.GridSpec(nrows=n_rows, ncols=n_cols)
     fig = plt.figure(figsize=(12, 5), dpi=200)
-    axes = [fig.add_subplot(gs[0, i]) for i in range(len(monkeys))]
+    axes = [fig.add_subplot(gs[0, i]) for i in range(len(MONKEYS))]
 
-    for i, monkey in enumerate(monkeys):
+    for i, monkey in enumerate(MONKEYS):
 
-        log(f'Getting data for {monkey}...', name)
+        log(f"Creating figure 'exemplary_case' for {monkey}...", NAME)
 
         ex_d = data.filter.get_exemplary_case(d[monkey])
 
         plot.exemplary_case.plot(
             results=ex_d,
-            color_gain=color_gain,
-            color_loss=color_loss,
+            color_gain=COLOR_GAIN,
+            color_loss=COLOR_LOSS,
             ax=axes[i])
 
     ax = fig.add_subplot(gs[:, :])
@@ -53,7 +53,7 @@ def exemplary_case(d):
         fontsize=30)
 
     gs.tight_layout(fig)
-    fig.savefig(fname=f'{fig_folder}/exemplary.pdf')
+    fig.savefig(fname=f'{FIG_FOLDER}/exemplary.pdf')
 
 
 def control(d):
@@ -62,19 +62,19 @@ def control(d):
     gs = matplotlib.gridspec.GridSpec(nrows=n_rows, ncols=n_cols)
 
     fig = plt.figure(figsize=(4.7, 5.4), dpi=200)
-    axes = [fig.add_subplot(gs[i, 0]) for i in range(len(monkeys))]
+    axes = [fig.add_subplot(gs[i, 0]) for i in range(len(MONKEYS))]
 
-    for i, monkey in enumerate(monkeys):
+    for i, monkey in enumerate(MONKEYS):
 
-        log(f'Getting data for {monkey}', name)
+        log(f"Creating figure 'control' for {monkey}...", NAME)
 
         alternatives, control_types, hits = data.filter.get_control(d[monkey])
         control_d = data.filter.cluster_hit_by_control_cond(alternatives, control_types, hits)
 
         plot.control.plot(
             results=control_d,
-            color_gain=color_gain,
-            color_loss=color_loss,
+            color_gain=COLOR_GAIN,
+            color_loss=COLOR_LOSS,
             ax=axes[i])
 
     gs.tight_layout(fig)
@@ -89,7 +89,7 @@ def control(d):
         s='B', x=-0.1, y=-0.02, horizontalalignment='center', verticalalignment='center', transform=ax.transAxes,
         fontsize=15)
 
-    fig.savefig(fname=f'{fig_folder}/control.pdf')
+    fig.savefig(fname=f'{FIG_FOLDER}/control.pdf')
 
 
 def freq_risk_against_exp_value(d, f=plot.freq_risk_against_exp_value.sigmoid):
@@ -98,20 +98,20 @@ def freq_risk_against_exp_value(d, f=plot.freq_risk_against_exp_value.sigmoid):
     gs = matplotlib.gridspec.GridSpec(nrows=n_rows, ncols=n_cols)
     fig = plt.figure(figsize=(12, 10), dpi=200)
     axes = [[] for _ in range(n_cols)]
-    for i in range(len(monkeys)):
+    for i in range(len(MONKEYS)):
         for j in range(2):
             axes[i].append(fig.add_subplot(gs[i, j]))
 
-    for i, monkey in enumerate(monkeys):
+    for i, monkey in enumerate(MONKEYS):
 
-        log(f'Getting data for {monkey}...', name)
+        log(f"Creating figure 'freq_risk_against_exp_value' for {monkey}...", NAME)
 
         for j, gain_only in enumerate((1, 0)):
 
             expected_values_differences, risky_choice_means = \
                 data.filter.get_choose_risky_loss_or_gain_only(d[monkey], gain_only=gain_only)
 
-            color = (color_loss, color_gain)[gain_only]
+            color = (COLOR_LOSS, COLOR_GAIN)[gain_only]
 
             plot.freq_risk_against_exp_value.plot(
                 expected_values_differences=expected_values_differences,
@@ -131,38 +131,21 @@ def freq_risk_against_exp_value(d, f=plot.freq_risk_against_exp_value.sigmoid):
         fontsize=30)
 
     gs.tight_layout(fig)
-    fig.savefig(fname=f'{fig_folder}/freq_risk_against_exp_value.pdf')
+    fig.savefig(fname=f'{FIG_FOLDER}/freq_risk_against_exp_value.pdf')
 
 
-def utility_multi(fit, fig_name='utility', show_average=True):  # ordered_chunks=False,
-
-    # n = len(fit[monkeys[0]]['pos_risk_aversion'])
-
-    # def generate_colors(n, colormap='winter_r'):
-    #
-    #     # To generate colors
-    #     cmap = plt.get_cmap(colormap)
-    #     return [cmap(i) for i in np.linspace(0, 0.9, n)]
-
-    # if colormap:
-    #     color = generate_colors(n, colormap)
-    #
-    # else:
-    #     color = ["black", ] * n
-    #
-    # if ordered_chunks:
-    #     linestyles = [(0, (3, i + 1)) for i in list(range(n))[::-1]]
-    # else:
-    #     linestyles = ["-", ] * 10
+def utility(fit, fig_name='utility', show_average=True):
 
     alpha_chunk = 0.5 if show_average else 0.5
 
     n_rows, n_cols = 1, 2
     gs = matplotlib.gridspec.GridSpec(nrows=n_rows, ncols=n_cols)
     fig = plt.figure(figsize=(12, 5), dpi=200)
-    axes = [fig.add_subplot(gs[0, i]) for i in range(len(monkeys))]
+    axes = [fig.add_subplot(gs[0, i]) for i in range(len(MONKEYS))]
 
-    for i, monkey in enumerate(monkeys):
+    for i, monkey in enumerate(MONKEYS):
+
+        log(f"Creating figure 'utility' for {monkey}...", NAME)
 
         pra = fit[monkey]['pos_risk_aversion']
         nra = fit[monkey]['neg_risk_aversion']
@@ -172,9 +155,7 @@ def utility_multi(fit, fig_name='utility', show_average=True):  # ordered_chunks
                 pos_risk_aversion=pra[j],
                 neg_risk_aversion=nra[j],
                 ax=axes[i], linewidth=1, alpha=alpha_chunk,
-                # color="black",
-                # linestyle=linestyles[j]
-            )  # color[j])
+            )
 
         if show_average:
             plot.utility.plot(
@@ -183,7 +164,7 @@ def utility_multi(fit, fig_name='utility', show_average=True):  # ordered_chunks
                 ax=axes[i])
 
     ax = fig.add_subplot(gs[:, :])
-    ax.set_axis_off()  # plt.axis('off')
+    ax.set_axis_off()
     ax.text(
         s='A', x=0, y=0, horizontalalignment='center', verticalalignment='center', transform=ax.transAxes,
         fontsize=30)
@@ -192,18 +173,10 @@ def utility_multi(fit, fig_name='utility', show_average=True):  # ordered_chunks
         fontsize=30)
 
     gs.tight_layout(fig)
-    fig.savefig(fname=f'{fig_folder}/{fig_name}.pdf')
+    fig.savefig(fname=f'{FIG_FOLDER}/{fig_name}.pdf')
 
 
-def distortion_multi(fit, show_average=True):
-
-    # n = len(fit[monkeys[0]]['pos_risk_aversion'])
-    #
-    # if colormap:
-    #     color = generate_colors(n, colormap)
-    #
-    # else:
-    #     color = ["black", ] * n
+def distortion(fit, show_average=True):
 
     alpha_chunk = 0.5 if show_average else 1
 
@@ -212,9 +185,11 @@ def distortion_multi(fit, show_average=True):
 
     fig = plt.figure(figsize=(12, 5), dpi=200)
 
-    axes = [fig.add_subplot(gs[0, i]) for i in range(len(monkeys))]
+    axes = [fig.add_subplot(gs[0, i]) for i in range(len(MONKEYS))]
 
-    for i, monkey in enumerate(monkeys):
+    for i, monkey in enumerate(MONKEYS):
+
+        log(f"Creating figure 'distortion' for {monkey}...", NAME)
 
         pdi = fit[monkey]['pos_distortion']
         ndi = fit[monkey]['neg_distortion']
@@ -224,8 +199,8 @@ def distortion_multi(fit, show_average=True):
             plot.probability_distortion.plot(
                 neg_distortion=ndi[j],
                 pos_distortion=pdi[j],
-                color_loss=color_loss,
-                color_gain=color_gain,
+                color_loss=COLOR_LOSS,
+                color_gain=COLOR_GAIN,
                 alpha=alpha_chunk,
                 linewidth=1,
                 ax=axes[i])
@@ -234,8 +209,8 @@ def distortion_multi(fit, show_average=True):
             plot.probability_distortion.plot(
                 neg_distortion=np.mean(ndi),
                 pos_distortion=np.mean(pdi),
-                color_loss=color_loss,
-                color_gain=color_gain,
+                color_loss=COLOR_LOSS,
+                color_gain=COLOR_GAIN,
                 ax=axes[i])
 
     ax = fig.add_subplot(gs[:, :])
@@ -249,12 +224,10 @@ def distortion_multi(fit, show_average=True):
         fontsize=30)
 
     gs.tight_layout(fig)
-    fig.savefig(fname=f'{fig_folder}/probability_distortion.pdf')
+    fig.savefig(fname=f'{FIG_FOLDER}/probability_distortion.pdf')
 
 
-def precision_multi(fit, show_average=True):
-
-    # n = len(fit[monkeys[0]]['pos_risk_aversion'])
+def precision(fit, show_average=True):
 
     alpha_chunk = 0.5 if show_average else 1
 
@@ -263,9 +236,11 @@ def precision_multi(fit, show_average=True):
 
     fig = plt.figure(figsize=(12, 5), dpi=200)
 
-    axes = [fig.add_subplot(gs[0, i]) for i in range(len(monkeys))]
+    axes = [fig.add_subplot(gs[0, i]) for i in range(len(MONKEYS))]
 
-    for i, monkey in enumerate(monkeys):
+    for i, monkey in enumerate(MONKEYS):
+
+        log(f"Creating figure 'precision' for {monkey}...", NAME)
 
         pra = fit[monkey]['pos_risk_aversion']
         nra = fit[monkey]['neg_risk_aversion']
@@ -283,8 +258,8 @@ def precision_multi(fit, show_average=True):
                 pos_distortion=pdi[j],
                 neg_precision=npr[j],
                 pos_precision=ppr[j],
-                color_gain=color_gain,
-                color_loss=color_loss,
+                color_gain=COLOR_GAIN,
+                color_loss=COLOR_LOSS,
                 ax=axes[i],
                 linewidth=1,
                 alpha=alpha_chunk
@@ -298,8 +273,8 @@ def precision_multi(fit, show_average=True):
                 pos_distortion=np.mean(pdi),
                 neg_precision=np.mean(npr),
                 pos_precision=np.mean(ppr),
-                color_gain=color_gain,
-                color_loss=color_loss,
+                color_gain=COLOR_GAIN,
+                color_loss=COLOR_LOSS,
                 ax=axes[i])
 
     ax = fig.add_subplot(gs[:, :])
@@ -313,16 +288,16 @@ def precision_multi(fit, show_average=True):
         fontsize=30)
 
     gs.tight_layout(fig)
-    fig.savefig(fname=f'{fig_folder}/precision.pdf')
+    fig.savefig(fname=f'{FIG_FOLDER}/precision.pdf')
 
 
 def get_data(force):
 
     # Get data
     d = dict()
-    for monkey in monkeys:
+    for monkey in MONKEYS:
 
-        log(f'Getting data for {monkey}...', name)
+        log(f'Getting data for {monkey}...', NAME)
 
         d[monkey] = data.get.run(
             monkey=monkey, starting_point='2017-03-01', end_point=today(),
@@ -332,8 +307,8 @@ def get_data(force):
         n_trials_per_days = np.zeros(len(days))
         for i, day in enumerate(days):
             n_trials_per_days[i] = np.sum(d[monkey].session == day)
-        log(f'N days: {len(days)}', name)
-        log(f'N trials per day: {np.mean(n_trials_per_days)} +/- {np.std(n_trials_per_days)} SD', name)
+        log(f'N days: {len(days)}', NAME)
+        log(f'N trials per day: {np.mean(n_trials_per_days)} +/- {np.std(n_trials_per_days)} SD', NAME)
 
     return d
 
@@ -341,7 +316,7 @@ def get_data(force):
 def main(force_data_import=False, force_fit=False):
 
     # Create fig folder
-    os.makedirs(fig_folder, exist_ok=True)
+    os.makedirs(FIG_FOLDER, exist_ok=True)
 
     d = get_data(force_data_import)
 
@@ -358,13 +333,13 @@ def main(force_data_import=False, force_fit=False):
     fit = model.parameter_estimate.run_cross_validation(d, force_fit, randomize=False)
 
     # Utility function
-    utility_multi(fit)
+    utility(fit)
 
     # Distortion
-    distortion_multi(fit)
+    distortion(fit)
 
     # Precision
-    precision_multi(fit)
+    precision(fit)
 
 
 if __name__ == '__main__':
