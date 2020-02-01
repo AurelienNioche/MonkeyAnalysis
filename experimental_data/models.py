@@ -26,7 +26,7 @@ class ExperimentalData(models.Model):
     result_display_time = models.IntegerField(blank=True, null=True)
     reward_time = models.IntegerField(blank=True, null=True)
     valve_opening_time = models.IntegerField(blank=True, null=True)
-    control_trials_proportion = models.IntegerField(blank=True, null=True)
+    control_proportion = models.IntegerField(blank=True, null=True)
     incongruent_proportion = models.IntegerField(blank=True, null=True)
     with_losses_proportion = models.IntegerField(blank=True, null=True)
 
@@ -34,7 +34,6 @@ class ExperimentalData(models.Model):
     dice_output = models.IntegerField(blank=True, null=True)
     error = models.TextField(blank=True, null=True)
     fixation_time = models.IntegerField(blank=True, null=True)
-    gauge_level = models.IntegerField(blank=True, null=True)
     inter_trial_time = models.IntegerField(blank=True, null=True)
     left_beginning_angle = models.IntegerField(blank=True, null=True)
     left_p = models.IntegerField(blank=True, null=True)
@@ -44,6 +43,10 @@ class ExperimentalData(models.Model):
     right_x0 = models.IntegerField(blank=True, null=True)
     time_to_come_back_to_the_grip = models.IntegerField(blank=True, null=True)
     time_to_decide = models.IntegerField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'experimental_data'
 
 
 class Session20161201Gladys(models.Model):

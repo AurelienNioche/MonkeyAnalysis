@@ -24,6 +24,7 @@ def convert_choice(choice):
     else:
         raise ValueError
 
+
 def main():
 
     summary_entries = Summary.objects.all()
@@ -36,7 +37,7 @@ def main():
                 fixation_time = eval(sm.fixation_time)
                 inter_trial_time = eval(sm.inter_trial_time)
                 choice = convert_choice(trial.choice)
-                new_trial = ExperimentalData.objects.create(
+                ExperimentalData.objects.create(
                     monkey=sm.monkey,
                     date=datetime.strptime(trial.date, '%Y-%m-%d'),
                     fixation_time_min=fixation_time[0],
@@ -50,14 +51,13 @@ def main():
                     result_display_time=sm.result_display_time,
                     reward_time=sm.reward_time,
                     valve_opening_time=sm.valve_opening_time,
-                    control_trials_proportion=sm.control_trial_proportion,
+                    control_proportion=sm.control_trial_proportion,
                     incongruent_proportion=sm.incongruent_proportion,
-                    with_losses_proportion = sm.with_losses_proportion,
+                    with_losses_proportion=sm.with_losses_proportion,
                     choice=choice,
                     dice_output=trial.dice_output,
                     error=trial.error,
                     fixation_time=trial.fixation_time,
-                    gauge_level=trial.gauge_level,
                     inter_trial_time=trial.inter_trial_time,
                     left_beginning_angle=trial.left_beginning_angle,
                     left_p=int(trial.left_p),
