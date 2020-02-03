@@ -463,3 +463,51 @@ def get_choose_risky_loss_or_gain_only(d, gain_only):
     log(f'Sum: {np.sum(n_trials)}', name)
 
     return expected_values_differences, means
+
+
+def control_history_sort_data(alternatives, control_types, hits, n_chunk):
+    """
+    Called by 'control history'
+    :param alternatives:
+    :param control_types:
+    :param hits:
+    :param n_chunk:
+    :return:
+    """
+
+    # Pre-sort data
+    sorted_data = {i: {} for i in control_conditions}
+
+    for alt, ct, hit in zip(alternatives, control_types, hits):
+
+        if alt not in sorted_data[ct].keys():
+            sorted_data[ct][alt] = []
+
+        sorted_data[ct][alt].append(hit)
+
+    # Prepare container for output
+    results = {i: [{} for _ in range(n_chunk)] for i in control_conditions}
+
+    for cond in sorted_data.keys():
+
+        log(f'Condition "{cond}"', name=name)
+
+        d = sorted_data[cond]
+        alternatives = sorted(list(d.keys()))
+
+        for i, alt in enumerate(alternatives):
+
+            n_trials = len(d[alt])
+
+            reminder = n_trials % n_chunk
+
+            idx = np.arange(n_trials)
+            if reminder > 0:
+                idx = idx[:-reminder]
+
+            split = np.split(np.asarray(d[alt])[idx], n_chunk)
+
+            for j, sp in enumerate(split):
+                results[cond][j][alt] = np.mean(sp)
+
+    return results

@@ -2,3 +2,8 @@
 fig*/
 model/pickle/
 */__pycache__/
+.DS_Store
+__pycache__/
+data/data.xlsx
+data/~$data.xlsx
+experimental_data/migrations/__pycache__/

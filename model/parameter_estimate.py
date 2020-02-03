@@ -10,7 +10,7 @@ from utils.utils import log
 from model import model
 
 NAME = 'ParameterEstimate'
-BACKUP_FOLDER = "model/pickle"
+BACKUP_FOLDER = os.path.join("data", "pickle", "model")
 
 os.makedirs(BACKUP_FOLDER, exist_ok=True)
 
@@ -30,7 +30,8 @@ def _objective(parameters, alternatives, n, k):
         (p0, m0), (p1, m1) = alt
 
         ki, ni, pi = k[i], n[i], model.get_p_multi(
-            p0, m0, p1, m1, neg_risk_aversion, pos_risk_aversion, neg_distortion, pos_distortion,
+            p0, m0, p1, m1, neg_risk_aversion, pos_risk_aversion,
+            neg_distortion, pos_distortion,
             neg_precision, pos_precision)
 
         log_likelihood = scipy.stats.binom.logpmf(k=ki, n=ni, p=pi)
@@ -46,7 +47,8 @@ def _objective(parameters, alternatives, n, k):
 
 
 def _get_cross_validation(d, randomize, n_chunk,
-                          bounds=((-0.99, 0.99), (-0.99, 0.99), (0.01, 1), (0.01, 1), (0, 5), (0, 5)),
+                          bounds=((-0.99, 0.99), (-0.99, 0.99), (0.01, 1),
+                                  (0.01, 1), (0, 5), (0, 5)),
                           init_guess=None,
                           method='evolutionary'):
 
@@ -72,13 +74,16 @@ def _get_cross_validation(d, randomize, n_chunk,
 
         parts = np.split(idx, n_chunk)
 
-        log(f'Order of trials for composing is {"chronological" if not randomize else "randomized"}', NAME)
+        log(f'Order of trials for composing is '
+            f'{"chronological" if not randomize else "randomized"}', NAME)
         log(f'N trials = {n_trials}', NAME)
-        log(f'N parts = {len(parts)} (n trials per part = {int(n_trials / n_chunk)}, '
+        log(f'N parts = {len(parts)} '
+            f'(n trials per part = {int(n_trials / n_chunk)}, '
             f'reminder = {reminder})', NAME)
 
         for label in [
-                'pos_risk_aversion', 'neg_risk_aversion', 'pos_distortion', 'neg_distortion',
+                'pos_risk_aversion', 'neg_risk_aversion', 'pos_distortion',
+                'neg_distortion',
                 'pos_precision', 'neg_precision', 'log_likelihood_sum']:
             fit[monkey][label] = []
 
@@ -99,12 +104,14 @@ def _get_cross_validation(d, randomize, n_chunk,
 
             elif method == "evolutionary":
                 if init_guess is not None:
-                    raise AttributeError("Method '{}' can not handle an initial guess")
+                    raise AttributeError(
+                        "Method '{}' can not handle an initial guess")
                 res = scipy.optimize.differential_evolution(
                     func=_objective, args=args, bounds=bounds)
 
             else:
-                raise NotImplementedError(f"Method '{method}' is not implemented")
+                raise NotImplementedError(
+                    f"Method '{method}' is not implemented")
 
             nra, pra, ndi, pdi, npr, ppr = res.x
             lls = res.fun * -1
@@ -118,7 +125,8 @@ def _get_cross_validation(d, randomize, n_chunk,
             fit[monkey]['log_likelihood_sum'].append(lls)
 
         for label in [
-                'pos_risk_aversion', 'neg_risk_aversion', 'pos_distortion', 'neg_distortion',
+                'pos_risk_aversion', 'neg_risk_aversion', 'pos_distortion',
+                'neg_distortion',
                 'pos_precision', 'neg_precision', 'log_likelihood_sum']:
             log(f'{label} = {np.mean(fit[monkey][label]):.2f} '
                 f'(+/-{np.std(fit[monkey][label]):.2f} SD)', NAME)
@@ -133,7 +141,8 @@ def _pickle_load(d, force, randomize, n_chunk, method):
 
     if not os.path.exists(fit_path) or force:
 
-        fit = _get_cross_validation(d, randomize=randomize, n_chunk=n_chunk, method=method)
+        fit = _get_cross_validation(d, randomize=randomize, n_chunk=n_chunk,
+                                    method=method)
 
         os.makedirs(os.path.dirname(fit_path), exist_ok=True)
         with open(fit_path, 'wb') as f:
@@ -146,14 +155,17 @@ def _pickle_load(d, force, randomize, n_chunk, method):
     return fit
 
 
-def run_cross_validation(d, n_chunk=20, force=False, randomize=False, method='SLSQP'):
+def run_cross_validation(d, n_chunk=20, force=False, randomize=False,
+                         method='SLSQP'):
 
-    fit = _pickle_load(d=d, force=force, randomize=randomize, n_chunk=n_chunk, method=method)
+    fit = _pickle_load(d=d, force=force, randomize=randomize, n_chunk=n_chunk,
+                       method=method)
 
     for monkey in d.keys():
         log(f'{monkey}', NAME)
         for label in [
-                'pos_risk_aversion', 'neg_risk_aversion', 'pos_distortion', 'neg_distortion',
+                'pos_risk_aversion', 'neg_risk_aversion', 'pos_distortion',
+                'neg_distortion',
                 'pos_precision', 'neg_precision', 'log_likelihood_sum'
         ]:
             log(f'{label} = {np.mean(fit[monkey][label]):.2f} '
