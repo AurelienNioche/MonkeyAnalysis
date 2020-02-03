@@ -36,16 +36,15 @@ class ExperimentalData(models.Model):
     fixation_time = models.IntegerField(blank=True, null=True)
     inter_trial_time = models.IntegerField(blank=True, null=True)
     left_beginning_angle = models.IntegerField(blank=True, null=True)
-    left_p = models.IntegerField(blank=True, null=True)
+    left_p = models.FloatField(blank=True, null=True)
     left_x0 = models.IntegerField(blank=True, null=True)
     right_beginning_angle = models.IntegerField(blank=True, null=True)
-    right_p = models.IntegerField(blank=True, null=True)
+    right_p = models.FloatField(blank=True, null=True)
     right_x0 = models.IntegerField(blank=True, null=True)
     time_to_come_back_to_the_grip = models.IntegerField(blank=True, null=True)
     time_to_decide = models.IntegerField(blank=True, null=True)
 
     class Meta:
-        managed = False
         db_table = 'experimental_data'
 
 
