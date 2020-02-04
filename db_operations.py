@@ -5,10 +5,10 @@ from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
 
 from datetime import datetime
-from experimental_data.models import *
+from experimental_data.models import ExperimentalData
 
-from django.conf import settings
-from sqlalchemy import create_engine
+# from django.conf import settings
+# from sqlalchemy import create_engine
 
 import pytz
 from tqdm import tqdm
@@ -38,6 +38,71 @@ def convert_choice(choice):
         return 1
     else:
         raise ValueError
+
+
+def export_as_xls():
+
+    col = [f.name for f in ExperimentalData._meta.get_fields()]
+    os.makedirs(XLS_FOLDER, exist_ok=True)
+
+    workbook = xlsxwriter.Workbook(os.path.join(XLS_FOLDER,
+                                                XLS_NAME),
+                                   {'remove_timezone': True})
+    worksheet = workbook.add_worksheet()
+
+    # Write title
+    for j, c in enumerate(col):
+        worksheet.write(0, j, c)
+
+    data = ExperimentalData.objects.values_list(*col)
+
+    for i, d in enumerate(data):
+        for j in range(len(col)):
+
+            if j == col.index('date'):
+                entry = d[j].strftime(DATE_FORMAT)
+
+            else:
+                entry = d[j]
+
+            worksheet.write(i + 1, j, entry)
+
+    workbook.close()
+
+
+def import_xls():
+
+    ExperimentalData.objects.all().delete()
+
+    print("Reading from csv...")
+    df = pd.read_excel(os.path.join('data', 'data.xlsx'), )
+
+    entries = df.to_dict('records')
+
+    for entry_dic in entries:
+        entry_dic['date'] = \
+            datetime.strptime(entry_dic['date'], DATE_FORMAT)\
+            .astimezone(pytz.UTC)
+
+    #     if k == 'date':
+    #         v = v.strftime(DATE_FORMAT)
+    #     entries.append(ExperimentalData()
+    ExperimentalData.objects.bulk_create(
+        ExperimentalData(**val) for val in entries)
+
+    # database_name = settings.DATABASES['default']['NAME']
+    #
+    # database_url = f'sqlite:///{database_name}'
+    #
+    # engine = create_engine(database_url, echo=False)
+    # df.to_sql(ExperimentalData._meta.db_table, con=engine)
+
+    # col = [f.name for f in ExperimentalData._meta.get_fields()]
+
+
+if __name__ == "__main__":
+
+    import_xls()
 
 
 # def import_from_old_db():
@@ -121,57 +186,3 @@ def convert_choice(choice):
 #     print("Creating new entries... It can take a while...")
 #     ExperimentalData.objects.bulk_create(new_entries)
 #     print("Done!")
-
-
-def export_as_xls():
-
-    col = [f.name for f in ExperimentalData._meta.get_fields()]
-    os.makedirs(XLS_FOLDER, exist_ok=True)
-
-    workbook = xlsxwriter.Workbook(os.path.join(XLS_FOLDER,
-                                                XLS_NAME),
-                                   {'remove_timezone': True})
-    worksheet = workbook.add_worksheet()
-
-    # Write title
-    for j, c in enumerate(col):
-        worksheet.write(0, j, c)
-
-    data = ExperimentalData.objects.values_list(*col)
-
-    for i, d in enumerate(data):
-        for j in range(len(col)):
-
-            if j == col.index('date'):
-                entry = d[j].strftime(DATE_FORMAT)
-
-            else:
-                entry = d[j]
-
-            worksheet.write(i + 1, j, entry)
-
-    workbook.close()
-
-
-def import_xls():
-    ExperimentalData.objects.all().delete()
-
-    df = pd.read_excel(os.path.join('data', 'data.xlsx'), )
-
-    ExperimentalData.objects.bulk_create(
-        ExperimentalData(**vals) for vals in df.to_dict('records')
-    )
-
-    # database_name = settings.DATABASES['default']['NAME']
-    #
-    # database_url = f'sqlite:///{database_name}'
-    #
-    # engine = create_engine(database_url, echo=False)
-    # df.to_sql(ExperimentalData._meta.db_table, con=engine)
-
-    # col = [f.name for f in ExperimentalData._meta.get_fields()]
-
-
-if __name__ == "__main__":
-
-    import_xls()

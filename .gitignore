@@ -17,3 +17,6 @@ data/pickle/
 # Fig
 fig*/
 
+# Virtual env
+venv
+

@@ -5,7 +5,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE",
 from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
 
-from parameters.parameters import FIG_FOLDER, N_CHUNK
+from parameters.parameters import N_CHUNK
 
 from experimental_data.get import get_data
 
