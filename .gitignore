@@ -1,9 +1,19 @@
+# Pychamr
 .idea/
-fig*/
-model/pickle/
+
+# Python cache
 */__pycache__/
-.DS_Store
 __pycache__/
-data/data.xlsx
-data/~$data.xlsx
-experimental_data/migrations/__pycache__/
+
+# Mac
+.DS_Store
+
+# xlsx
+data/*.xlsx
+
+# Pickle files
+data/pickle/
+
+# Fig
+fig*/
+

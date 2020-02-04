@@ -1,6 +1,15 @@
 import os
 
+DATE_FORMAT = '%Y-%m-%d'
+
 FIG_FOLDER = 'fig'
+BACKUP_FOLDER = os.path.join('data', 'pickle')
+
+# Create folders
+for folder in FIG_FOLDER, BACKUP_FOLDER:
+    os.makedirs(folder, exist_ok=True)
+
+
 N_CHUNK = 20
 
 FIG_PRECISION = \
@@ -28,7 +37,7 @@ FIG_HISTORY_BEST_PARAM = \
     os.path.join(FIG_FOLDER, f"supplementary_history_best_param.pdf")
 
 
-PARAMETERS = [
+MODEL_PARAMETERS = [
     'pos_risk_aversion',
     'neg_risk_aversion',
     'pos_distortion',

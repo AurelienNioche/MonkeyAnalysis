@@ -2,9 +2,9 @@ import matplotlib.gridspec
 import numpy as np
 from matplotlib import pyplot as plt
 
-import data.filter
+import experimental_data.filter
 
-from data.filter import control_history_sort_data
+from experimental_data.filter import control_history_sort_data
 from utils.utils import log
 
 from parameters.parameters import FIG_HISTORY_CONTROL,\
@@ -127,7 +127,7 @@ def history_control(d, n_chunk,
 
     monkeys = sorted(d.keys())
 
-    n = len(monkeys) * len(data.filter.control_conditions)
+    n = len(monkeys) * len(experimental_data.filter.control_conditions)
 
     n_rows, n_cols = n, 1
     gs = matplotlib.gridspec.GridSpec(nrows=n_rows, ncols=n_cols)
@@ -139,12 +139,12 @@ def history_control(d, n_chunk,
     for monkey in monkeys:
 
         log(f"Creating fig 'control_history' for {monkey}", name=NAME)
-        alternatives, control_types, hits = data.filter.get_control(d[monkey])
+        alternatives, control_types, hits = experimental_data.filter.get_control(d[monkey])
 
         control_d = control_history_sort_data(alternatives, control_types,
                                               hits, n_chunk=n_chunk)
 
-        for cond, color, title in zip(data.filter.control_conditions, colors,
+        for cond, color, title in zip(experimental_data.filter.control_conditions, colors,
                                       labels):
 
             last = i == n-1

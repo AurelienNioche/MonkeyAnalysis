@@ -6,7 +6,7 @@ import matplotlib.gridspec
 import numpy as np
 from matplotlib import pyplot as plt
 
-import data.filter
+import experimental_data.filter
 
 from utils.utils import log
 
@@ -87,8 +87,8 @@ def control(d):
 
         log(f"Creating figure 'control' for {monkey}...", NAME)
 
-        alternatives, control_types, hits = data.filter.get_control(d[monkey])
-        control_d = data.filter.cluster_hit_by_control_cond(
+        alternatives, control_types, hits = experimental_data.filter.get_control(d[monkey])
+        control_d = experimental_data.filter.cluster_hit_by_control_cond(
             alternatives, control_types, hits)
 
         _plot(results=control_d, ax=axes[i])

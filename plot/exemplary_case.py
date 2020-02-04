@@ -4,7 +4,7 @@ Produce the the certainty-risk trade-off figure
 import matplotlib.gridspec
 from matplotlib import pyplot as plt
 
-import data.filter
+import experimental_data.filter
 from parameters.parameters import COLOR_GAIN, COLOR_LOSS, FIG_EXEMPLARY_CASE
 from utils.utils import log
 
@@ -51,7 +51,7 @@ def exemplary_case(d):
         log(f"Creating figure 'exemplary_case' for {monkey}...",
             name=NAME)
 
-        ex_d = data.filter.get_exemplary_case(d[monkey])
+        ex_d = experimental_data.filter.get_exemplary_case(d[monkey])
 
         _plot(
             results=ex_d,

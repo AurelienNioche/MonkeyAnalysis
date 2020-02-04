@@ -10,7 +10,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 from scipy.optimize import curve_fit
 
-import data.filter
+import experimental_data.filter
 
 from utils.utils import log
 
@@ -54,6 +54,7 @@ def stats(y, p_opt, p_cov, alpha=0.01):
 
         me = std * tval
         log(f'p{i}: {p:.2f} [{p - me:.2f}  {p + me:.2f}]', name=NAME)
+    print()
 
 
 def _plot(expected_values_differences, risky_choice_means, color, ax,
@@ -66,13 +67,6 @@ def _plot(expected_values_differences, risky_choice_means, color, ax,
 
     x_data = expected_values_differences
     y_data = risky_choice_means
-
-    # ####### TO REMOVE AFTERWARDS ######## #
-    # import scipy.stats
-    # slope, intercept, r_value, p_value, std_err =
-    # scipy.stats.linregress(x_data, y_data)
-    # print(r_value, p_value)
-    # ##################################### #
 
     try:
 
@@ -141,7 +135,7 @@ def freq_risk_against_exp_value(d, f=sigmoid):
         for j, gain_only in enumerate((1, 0)):
 
             expected_values_differences, risky_choice_means = \
-                data.filter.get_choose_risky_loss_or_gain_only(
+                experimental_data.filter.get_choose_risky_loss_or_gain_only(
                     d[monkey], gain_only=gain_only)
 
             color = (COLOR_LOSS, COLOR_GAIN)[gain_only]

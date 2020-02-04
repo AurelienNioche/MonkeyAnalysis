@@ -4,15 +4,12 @@ import os
 import scipy.stats
 import scipy.optimize
 
-import data.filter
-
+import experimental_data.filter
+from parameters.parameters import MODEL_PARAMETERS, BACKUP_FOLDER
 from utils.utils import log
 from model import model
 
-NAME = 'ParameterEstimate'
-BACKUP_FOLDER = os.path.join("data", "pickle", "model")
-
-os.makedirs(BACKUP_FOLDER, exist_ok=True)
+NAME = 'model.parameter_estimate'
 
 
 def _objective(parameters, alternatives, n, k):
@@ -60,7 +57,7 @@ def _get_cross_validation(d, randomize, n_chunk,
 
         log(f'Getting fit for {monkey}...', NAME)
 
-        alternatives, choose_risky = data.filter.get_choose_risky(d[monkey])
+        alternatives, choose_risky = experimental_data.filter.get_choose_risky(d[monkey])
 
         n_trials = len(alternatives)
         reminder = n_trials % n_chunk
@@ -74,8 +71,9 @@ def _get_cross_validation(d, randomize, n_chunk,
 
         parts = np.split(idx, n_chunk)
 
-        log(f'Order of trials for composing is '
-            f'{"chronological" if not randomize else "randomized"}', NAME)
+        log(f'Chunk using '
+            f'{"chronological" if not randomize else "randomized"} '
+            f'order', NAME)
         log(f'N trials = {n_trials}', NAME)
         log(f'N parts = {len(parts)} '
             f'(n trials per part = {int(n_trials / n_chunk)}, '
@@ -89,7 +87,7 @@ def _get_cross_validation(d, randomize, n_chunk,
 
         for p in parts:
 
-            alt, n, k = data.filter.cluster_risky_choice_by_alternative(
+            alt, n, k = experimental_data.filter.cluster_risky_choice_by_alternative(
                 alternatives[p], choose_risky[p])
 
             args = (alt, n, k,)
@@ -124,12 +122,7 @@ def _get_cross_validation(d, randomize, n_chunk,
             fit[monkey]['pos_precision'].append(ppr)
             fit[monkey]['log_likelihood_sum'].append(lls)
 
-        for label in [
-                'pos_risk_aversion', 'neg_risk_aversion', 'pos_distortion',
-                'neg_distortion',
-                'pos_precision', 'neg_precision', 'log_likelihood_sum']:
-            log(f'{label} = {np.mean(fit[monkey][label]):.2f} '
-                f'(+/-{np.std(fit[monkey][label]):.2f} SD)', NAME)
+        print()
 
     return fit
 
@@ -137,7 +130,8 @@ def _get_cross_validation(d, randomize, n_chunk,
 def _pickle_load(d, force, randomize, n_chunk, method):
 
     randomize_str = "random_order" if randomize else "chronological_order"
-    fit_path = f'{BACKUP_FOLDER}/fit_{randomize_str}_{n_chunk}chunk_{method}.p'
+    fit_path = os.path.join(BACKUP_FOLDER,
+                            f'fit_{randomize_str}_{n_chunk}chunk_{method}.p')
 
     if not os.path.exists(fit_path) or force:
 
@@ -155,20 +149,19 @@ def _pickle_load(d, force, randomize, n_chunk, method):
     return fit
 
 
-def run_cross_validation(d, n_chunk=20, force=False, randomize=False,
-                         method='SLSQP'):
+def run(d, n_chunk=20,
+        force=False, randomize=False,
+        method='SLSQP'):
 
     fit = _pickle_load(d=d, force=force, randomize=randomize, n_chunk=n_chunk,
                        method=method)
 
-    for monkey in d.keys():
-        log(f'{monkey}', NAME)
-        for label in [
-                'pos_risk_aversion', 'neg_risk_aversion', 'pos_distortion',
-                'neg_distortion',
-                'pos_precision', 'neg_precision', 'log_likelihood_sum'
-        ]:
+    monkeys = sorted(d.keys())
+    for monkey in monkeys:
+        log(f'Results fit: {monkey}', NAME)
+        for label in MODEL_PARAMETERS + ['log_likelihood_sum', ]:
             log(f'{label} = {np.mean(fit[monkey][label]):.2f} '
                 f'(+/-{np.std(fit[monkey][label]):.2f} SD)', NAME)
+        print()
 
     return fit

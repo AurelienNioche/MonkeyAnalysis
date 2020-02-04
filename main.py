@@ -7,7 +7,7 @@ application = get_wsgi_application()
 
 from parameters.parameters import FIG_FOLDER, N_CHUNK
 
-from data.get import get_data
+from experimental_data.get import get_data
 
 from plot.history import history_best_param, history_control
 from plot.precision import precision
@@ -22,18 +22,13 @@ from model.stats import stats_comparison_best_values, \
     stats_regression_best_values, display_table_content
 
 
-def main(force_data_import=False, force_fit=False):
-
-    # Create fig folder
-    os.makedirs(FIG_FOLDER, exist_ok=True)
+def main(force_fit=False):
 
     # Get data
-    d = get_data(force_data_import)
+    d = get_data()
 
     # Get fit
-    fit = model.parameter_estimate.run_cross_validation(d, force=force_fit,
-                                                        n_chunk=N_CHUNK,
-                                                        randomize=False)
+    fit = model.parameter_estimate.run(d, force=force_fit, n_chunk=N_CHUNK)
 
     # Print line for latex table
     display_table_content(fit)
@@ -70,4 +65,4 @@ def main(force_data_import=False, force_fit=False):
 
 
 if __name__ == '__main__':
-    main(True, True)
+    main(force_fit=True)

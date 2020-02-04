@@ -5,7 +5,7 @@ import statsmodels.stats.multitest
 from sklearn.linear_model import LinearRegression
 from statsmodels import api as sm
 
-from parameters.parameters import PARAMETERS
+from parameters.parameters import MODEL_PARAMETERS
 from utils.utils import log
 
 
@@ -43,13 +43,17 @@ def stats_comparison_best_values(fit):
         statsmodels.stats.multitest.multipletests(pvals=ps, alpha=0.01,
                                                   method="b")
 
-    for param, u, p, p_c in zip(("H: risk aversion",
-                                 "H: distortion", "H: precision",
-                                 "G: risk aversion",
-                                 "G: distortion", "G: precision"),
+    labels = []
+    for monkey in monkeys:
+        for param in ("risk aversion", "distortion", "precision"):
+            labels.append(f"{monkey} - {param}")
+
+    log("Comparison parameter values (Mann–Whitney U test)", name=NAME)
+    for label, u, p, p_c in zip(labels,
                                 us, ps, p_corr):
-        log(f'Comparision for {param} parameter values: '
+        log(f'{label}: '
             f'u = {u}, p = {p:.3f}, p_c = {p_c:.3f}', name=NAME)
+    print()
 
 
 def regression(x, y):
@@ -78,11 +82,10 @@ def stats_regression_best_values(fit):
 
     for i, monkey in enumerate(monkeys):
 
-        for param in PARAMETERS:
+        for param in MODEL_PARAMETERS:
 
             y = fit[monkey][param]
 
-            # print(monkey, param)
             f, p, n, alpha, beta = regression(np.arange(len(y)), y)
             fs.append(f)
             ps.append(p)
@@ -97,28 +100,25 @@ def stats_regression_best_values(fit):
     rgr_line_param = {m: {} for m in monkeys}
     i = 0
     for monkey in monkeys:
-        for param in PARAMETERS:
+        for param in MODEL_PARAMETERS:
             rgr_line_param[monkey][param] = \
                 alphas[i], betas[i], p_corr[i] < 0.01
             i += 1
 
-    for param, f, p, p_c, n, alpha, beta in zip((
-            "H: risk aversion + ",
-            "H: risk aversion - ",
-            "H: distortion +",
-            "H: distortion -",
-            "H: precision +",
-            "H: precision -",
-            "G: risk aversion + ",
-            "G: risk aversion - ",
-            "G: distortion +",
-            "G: distortion -",
-            "G: precision +",
-            "G: precision -",), fs, ps, p_corr, ns, alphas, betas):
-        log(f'Linear regression stats for {param} parameter values: '
+    labels = []
+    for monkey in monkeys:
+        for param in MODEL_PARAMETERS:
+            labels.append(f"{monkey} - {param}")
+
+    log(f'Linear regression for parameter values over time: ', NAME)
+
+    for label, f, p, p_c, n, alpha, beta \
+            in zip(labels, fs, ps, p_corr, ns, alphas, betas):
+        log(f'{label}: '
             f'F = {f:.3f}, p = {p:.3f}, p_c = {p_c:.3f}, n={n}'
             f', alpha = {alpha:.2f}, beta = {beta:.2f}',
             name=NAME)
+    print()
 
     print("[LATEX TABLE CONTENT]")
     for monkey, param, fstat, p, p_c, n, alpha, beta in zip(
@@ -139,7 +139,7 @@ def stats_regression_best_values(fit):
         print(f"{monkey} & ${param}$ &" + r'$2\times'
               + f"{n}$ & ${alpha:.2f}$ & ${beta:.2f}$ & "
               + f"{fstat:.2f} & ${p_str}$ & ${p_c_str}$" + r"\\")
-    print("[LATEX TABLE CONTENT]")
+    print("[LATEX TABLE CONTENT]\n")
 
     return rgr_line_param
 
@@ -172,4 +172,4 @@ def display_table_content(fit):
         log(f"Line for {monkey} for table displaying best parameter values",
             name=NAME)
         print(dsp)
-    print("[LATEX TABLE CONTENT]")
+    print("[LATEX TABLE CONTENT]\n")

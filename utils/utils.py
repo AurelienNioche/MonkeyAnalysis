@@ -1,14 +1,14 @@
 from datetime import datetime
-import matplotlib.pyplot as plt
-import numpy as np
+
+from parameters.parameters import DATE_FORMAT
 
 
 def now():
-    return datetime.utcnow().strftime("%Y/%m/%d %H:%M:%S")
+    return datetime.utcnow().strftime(DATE_FORMAT + " %H:%M:%S")
 
 
 def today():
-    return datetime.utcnow().strftime("%Y-%m-%d")
+    return datetime.utcnow().strftime(DATE_FORMAT)
 
 
 def log(msg="", name=""):
