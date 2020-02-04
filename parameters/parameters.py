@@ -1,12 +1,23 @@
 import os
 
+from utils.utils import log
+
+NAME = "parameters.parameters"
+
 DATE_FORMAT = '%Y-%m-%d'
 
+DATA_FOLDER = 'data'
+log(f"The data folder is: {os.path.abspath(DATA_FOLDER)}\n",
+    NAME)
+
 FIG_FOLDER = 'fig'
-BACKUP_FOLDER = os.path.join('data', 'pickle')
+log(f"The figure folder is: {os.path.abspath(FIG_FOLDER)}\n",
+    NAME)
+
+BACKUP_FOLDER = os.path.join(DATA_FOLDER, 'pickle')
 
 # Create folders
-for folder in FIG_FOLDER, BACKUP_FOLDER:
+for folder in FIG_FOLDER, DATA_FOLDER, BACKUP_FOLDER:
     os.makedirs(folder, exist_ok=True)
 
 
@@ -36,6 +47,7 @@ FIG_HISTORY_CONTROL = \
 FIG_HISTORY_BEST_PARAM = \
     os.path.join(FIG_FOLDER, f"supplementary_history_best_param.pdf")
 
+XLS_NAME = "data.xlsx"
 
 MODEL_PARAMETERS = [
     'pos_risk_aversion',

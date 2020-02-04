@@ -52,6 +52,8 @@ def _plot(neg_distortion, pos_distortion, ax, linewidth=3, alpha=1):
 
 def probability_distortion(fit, show_average=True):
 
+    log(f"Creating figure '{FIG_PROBABILITY_DISTORTION}'...", NAME)
+
     monkeys = sorted(fit.keys())
 
     alpha_chunk = 0.5 if show_average else 1
@@ -64,8 +66,6 @@ def probability_distortion(fit, show_average=True):
     axes = [fig.add_subplot(gs[0, i]) for i in range(len(monkeys))]
 
     for i, monkey in enumerate(monkeys):
-
-        log(f"Creating figure 'distortion' for {monkey}...", NAME)
 
         pdi = fit[monkey]['pos_distortion']
         ndi = fit[monkey]['neg_distortion']
@@ -99,3 +99,5 @@ def probability_distortion(fit, show_average=True):
 
     gs.tight_layout(fig)
     fig.savefig(fname=FIG_PROBABILITY_DISTORTION)
+
+    log(f"Done!\n", NAME)

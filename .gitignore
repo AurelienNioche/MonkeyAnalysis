@@ -18,5 +18,11 @@ data/pickle/
 fig*/
 
 # Virtual env
-venv
+venv/
 
+# Db
+data/results.db
+
+# Django migrations
+experimental_data/migrations/*
+!*/*/__init__.py

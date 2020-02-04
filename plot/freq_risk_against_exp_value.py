@@ -46,6 +46,8 @@ def stats(y, p_opt, p_cov, alpha=0.01):
     # student-t value for the dof and confidence level
     tval = t.ppf(1.0 - alpha / 2., dof)
 
+    log(f"Stats for the sigmoid fit (fig: {FIG_FREQ_RISK_AGAINST_EXP_VALUE})",
+        name=NAME)
     log(f"student-t value: {tval:.2f}", name=NAME)
 
     p_err = np.sqrt(np.diag(p_cov))
@@ -117,6 +119,8 @@ def _plot(expected_values_differences, risky_choice_means, color, ax,
 
 def freq_risk_against_exp_value(d, f=sigmoid):
 
+    log(f"Analysing data for the risk attitude...\n", NAME)
+
     monkeys = sorted(d.keys())
 
     n_rows, n_cols = 2, 2
@@ -129,10 +133,9 @@ def freq_risk_against_exp_value(d, f=sigmoid):
 
     for i, monkey in enumerate(monkeys):
 
-        log(f"Creating figure 'freq_risk_against_exp_value' for {monkey}...",
-            name=NAME)
-
         for j, gain_only in enumerate((1, 0)):
+
+            log(f"Stats for risk against exp value - {monkey}:", name=NAME)
 
             expected_values_differences, risky_choice_means = \
                 experimental_data.filter.get_choose_risky_loss_or_gain_only(
@@ -148,6 +151,9 @@ def freq_risk_against_exp_value(d, f=sigmoid):
                 f=f
             )
 
+    log(f"Creating figure '{FIG_FREQ_RISK_AGAINST_EXP_VALUE}'...",
+        name=NAME)
+
     ax = fig.add_subplot(gs[:, :])
     ax.set_axis_off()
     ax.text(
@@ -161,3 +167,5 @@ def freq_risk_against_exp_value(d, f=sigmoid):
 
     gs.tight_layout(fig)
     fig.savefig(fname=FIG_FREQ_RISK_AGAINST_EXP_VALUE)
+
+    log(f"Done!\n", NAME)

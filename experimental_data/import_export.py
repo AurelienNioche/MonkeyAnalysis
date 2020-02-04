@@ -1,51 +1,20 @@
 import os
-os.environ.setdefault("DJANGO_SETTINGS_MODULE",
-                      "MonkeyAnalysis.settings")
-from django.core.wsgi import get_wsgi_application
-application = get_wsgi_application()
-
 from datetime import datetime
-from experimental_data.models import ExperimentalData
 
-# from django.conf import settings
-# from sqlalchemy import create_engine
-
-import pytz
-from tqdm import tqdm
-
-import xlsxwriter
 import pandas as pd
+import pytz
+import xlsxwriter
 
-
-DATE_FORMAT = '%Y-%m-%d'
-
-XLS_FOLDER = "data"
-XLS_NAME = "data.xlsx"
-
-
-def get_table_class(table_name):
-    a = "".join([i.capitalize() for i in table_name.split("_")])
-    return eval(a)
-
-
-def convert_choice(choice):
-
-    if choice == 'None':
-        return -1
-    elif choice == "left":
-        return 0
-    elif choice == "right":
-        return 1
-    else:
-        raise ValueError
+from experimental_data.models import ExperimentalData
+from parameters.parameters import DATA_FOLDER, XLS_NAME, DATE_FORMAT
 
 
 def export_as_xls():
 
     col = [f.name for f in ExperimentalData._meta.get_fields()]
-    os.makedirs(XLS_FOLDER, exist_ok=True)
+    os.makedirs(DATA_FOLDER, exist_ok=True)
 
-    workbook = xlsxwriter.Workbook(os.path.join(XLS_FOLDER,
+    workbook = xlsxwriter.Workbook(os.path.join(DATA_FOLDER,
                                                 XLS_NAME),
                                    {'remove_timezone': True})
     worksheet = workbook.add_worksheet()
@@ -74,9 +43,11 @@ def import_xls():
 
     ExperimentalData.objects.all().delete()
 
-    print("Reading from csv...")
+    print("Reading from xlsx...", end=" ", flush=True)
     df = pd.read_excel(os.path.join('data', 'data.xlsx'), )
+    print("Done!")
 
+    print("Writing in db...", end=" ", flush=True)
     entries = df.to_dict('records')
 
     for entry_dic in entries:
@@ -84,27 +55,29 @@ def import_xls():
             datetime.strptime(entry_dic['date'], DATE_FORMAT)\
             .astimezone(pytz.UTC)
 
-    #     if k == 'date':
-    #         v = v.strftime(DATE_FORMAT)
-    #     entries.append(ExperimentalData()
     ExperimentalData.objects.bulk_create(
         ExperimentalData(**val) for val in entries)
 
-    # database_name = settings.DATABASES['default']['NAME']
-    #
-    # database_url = f'sqlite:///{database_name}'
-    #
-    # engine = create_engine(database_url, echo=False)
-    # df.to_sql(ExperimentalData._meta.db_table, con=engine)
-
-    # col = [f.name for f in ExperimentalData._meta.get_fields()]
+    print("Done!")
 
 
-if __name__ == "__main__":
-
-    import_xls()
-
-
+# def get_table_class(table_name):
+#     a = "".join([i.capitalize() for i in table_name.split("_")])
+#     return eval(a)
+#
+#
+# def convert_choice(choice):
+#
+#     if choice == 'None':
+#         return -1
+#     elif choice == "left":
+#         return 0
+#     elif choice == "right":
+#         return 1
+#     else:
+#         raise ValueError
+#
+#
 # def import_from_old_db():
 #
 #     print("Preparing the new entries...")

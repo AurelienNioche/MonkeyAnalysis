@@ -48,7 +48,7 @@ def exemplary_case(d):
 
     for i, monkey in enumerate(monkeys):
 
-        log(f"Creating figure 'exemplary_case' for {monkey}...",
+        log(f"Stats for exemplary case - {monkey}...",
             name=NAME)
 
         ex_d = experimental_data.filter.get_exemplary_case(d[monkey])
@@ -58,6 +58,9 @@ def exemplary_case(d):
             color_gain=COLOR_GAIN,
             color_loss=COLOR_LOSS,
             ax=axes[i])
+
+    log(f"Creating figure '{FIG_EXEMPLARY_CASE}'...",
+        name=NAME)
 
     ax = fig.add_subplot(gs[:, :])
     ax.set_axis_off()
@@ -72,3 +75,5 @@ def exemplary_case(d):
 
     gs.tight_layout(fig)
     fig.savefig(fname=FIG_EXEMPLARY_CASE)
+
+    log(f"Done!\n", NAME)

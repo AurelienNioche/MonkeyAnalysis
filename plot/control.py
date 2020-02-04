@@ -85,13 +85,16 @@ def control(d):
 
     for i, monkey in enumerate(monkeys):
 
-        log(f"Creating figure 'control' for {monkey}...", NAME)
+        log(f"Stats for control trials - {monkey}:", NAME)
 
         alternatives, control_types, hits = experimental_data.filter.get_control(d[monkey])
         control_d = experimental_data.filter.cluster_hit_by_control_cond(
             alternatives, control_types, hits)
 
         _plot(results=control_d, ax=axes[i])
+
+    log(f"Creating figure '{FIG_CONTROL}'...",
+        name=NAME)
 
     gs.tight_layout(fig)
 
@@ -108,3 +111,4 @@ def control(d):
         fontsize=15)
 
     fig.savefig(fname=FIG_CONTROL)
+    log(f"Done!\n", NAME)

@@ -2,5 +2,6 @@ matplotlib
 numpy
 scipy
 django
+xlrd
 xlsxwriter
 pandas

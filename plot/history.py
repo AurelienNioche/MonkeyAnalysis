@@ -138,14 +138,19 @@ def history_control(d, n_chunk,
     i = 0
     for monkey in monkeys:
 
-        log(f"Creating fig 'control_history' for {monkey}", name=NAME)
-        alternatives, control_types, hits = experimental_data.filter.get_control(d[monkey])
+        log(f"Stats for success to control trials over time "
+            f"(fig: '{FIG_HISTORY_CONTROL}') - {monkey}",
+            NAME)
+
+        alternatives, control_types, hits = \
+            experimental_data.filter.get_control(d[monkey])
 
         control_d = control_history_sort_data(alternatives, control_types,
                                               hits, n_chunk=n_chunk)
 
-        for cond, color, title in zip(experimental_data.filter.control_conditions, colors,
-                                      labels):
+        for cond, color, title in \
+                zip(experimental_data.filter.control_conditions,
+                    colors, labels):
 
             last = i == n-1
 
@@ -158,6 +163,8 @@ def history_control(d, n_chunk,
             )
 
             i += 1
+
+    log(f"Creating '{FIG_HISTORY_CONTROL}'...", NAME)
 
     gs.tight_layout(fig)
 
@@ -174,6 +181,7 @@ def history_control(d, n_chunk,
         fontsize=15)
 
     fig.savefig(fname=FIG_HISTORY_CONTROL)
+    log(f"Done!\n", NAME)
 
 
 def history_best_param(fit, regression_param=None):
@@ -197,9 +205,6 @@ def history_best_param(fit, regression_param=None):
     )
 
     for i, monkey in enumerate(monkeys):
-
-        log(f"Creating 'supplementary_history_best_param' for {monkey}...",
-            NAME)
 
         for j, arg in enumerate(args):
 
@@ -235,6 +240,8 @@ def history_best_param(fit, regression_param=None):
                     axes[i][j].plot(x, y, color=color, linestyle=line_style,
                                     alpha=alpha)
 
+    log(f"Creating '{FIG_HISTORY_BEST_PARAM}'...", NAME)
+
     ax = fig.add_subplot(gs[:, :])
     ax.set_axis_off()
 
@@ -249,3 +256,5 @@ def history_best_param(fit, regression_param=None):
 
     gs.tight_layout(fig)
     fig.savefig(fname=FIG_HISTORY_BEST_PARAM)
+
+    log(f"Done!\n", NAME)

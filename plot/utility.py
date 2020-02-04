@@ -77,8 +77,6 @@ def utility(fit, show_average=True, alpha_chunk=0.5):
 
     for i, monkey in enumerate(monkeys):
 
-        log(f"Creating figure 'utility' for {monkey}...", NAME)
-
         pra = fit[monkey]['pos_risk_aversion']
         nra = fit[monkey]['neg_risk_aversion']
 
@@ -95,6 +93,8 @@ def utility(fit, show_average=True, alpha_chunk=0.5):
                 neg_risk_aversion=np.mean(nra),
                 ax=axes[i])
 
+    log(f"Creating figure '{FIG_UTILITY}'...", NAME)
+
     ax = fig.add_subplot(gs[:, :])
     ax.set_axis_off()
     ax.text(
@@ -108,3 +108,5 @@ def utility(fit, show_average=True, alpha_chunk=0.5):
 
     gs.tight_layout(fig)
     fig.savefig(fname=FIG_UTILITY)
+
+    log(f"Done!\n", NAME)

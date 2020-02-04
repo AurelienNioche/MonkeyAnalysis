@@ -24,16 +24,21 @@
         python3 manage.py makemigrations
         python3 migrate
         
-    For data viewing (optional for analysis)
+    For data viewing (optional if only doing analysis)
         
         python3 manage.py createsuperuser
+        
+ 
+ * Import data from excel file
+ 
+        python3 import_xlsx.py
         
 
 ## Data viewing
 
 * Launch the server
     
-    python3 manage.py runserver
+       python3 manage.py runserver
     
     
 * Go to http://127.0.0.1:8000/

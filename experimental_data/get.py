@@ -46,7 +46,7 @@ def _run(monkey, starting_point, end_point):
     entries = ExperimentalData.objects\
         .filter(error="None", monkey=monkey).order_by("date", "id")
 
-    assert entries.count(), "Fatal: No entry found!"
+    assert entries.count(), "Fatal: No entry found! Did you upload the data?"
 
     new_entries = []
     for e in entries:
