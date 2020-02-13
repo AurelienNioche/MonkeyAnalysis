@@ -5,3 +5,5 @@ django
 xlrd
 xlsxwriter
 pandas
+statsmodels
+sklearn
