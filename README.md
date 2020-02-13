@@ -22,7 +22,7 @@
 * Django setup
 
         python3 manage.py makemigrations
-        python3 migrate
+        python3 manage.py migrate
         
     For data viewing (optional if only doing analysis)
         
