@@ -31,11 +31,13 @@ class Data:
 
 def _run(monkey, starting_point, end_point):
 
-    starting_point = \
-        datetime.strptime(starting_point, DATE_FORMAT)\
-        .astimezone(pytz.UTC)
-    end_point = datetime.strptime(end_point, DATE_FORMAT)\
-        .astimezone(pytz.UTC)
+    if starting_point is not None:
+        starting_point = \
+            datetime.strptime(starting_point, DATE_FORMAT)\
+            .astimezone(pytz.UTC)
+    if end_point is not None:
+        end_point = datetime.strptime(end_point, DATE_FORMAT)\
+            .astimezone(pytz.UTC)
 
     p = {k: [] for k in ("left", "right")}
     x = {k: [] for k in ("left", "right")}
@@ -50,12 +52,18 @@ def _run(monkey, starting_point, end_point):
 
     new_entries = []
     for e in entries:
-        if e.date > end_point or e.date < starting_point:
-            pass
-        else:
+        if (end_point is None
+            or e.date <= end_point) \
+                and (starting_point is None
+                     or e.date >= starting_point):
+
             new_entries.append(e)
 
     entries = new_entries
+
+    assert len(entries), "Fatal: No trial matching date requirement! " \
+                         "Did you set correctly the dates?"
+
     dates = [e.date.strftime(DATE_FORMAT) for e in entries]
     unq_dates = list(np.unique(dates))
 
@@ -73,8 +81,8 @@ def _run(monkey, starting_point, end_point):
                 choice=choice, session=session, date=date)
 
 
-def get_data(starting_point="2017-03-01",
-             end_point="2019-09-30"):
+def get_data(starting_point=None,
+             end_point=None):
 
     monkeys = np.unique(ExperimentalData.objects.values_list("monkey",
                                                              flat=True))
@@ -94,6 +102,7 @@ def get_data(starting_point="2017-03-01",
         for i, day in enumerate(days):
             n_trials_per_days[i] = np.sum(d[monkey].session == day)
         log(f'N days: {len(days)}', name=NAME)
+        log(f'N trials: {len(d[monkey].choice)}', name=NAME)
         log(f'N trials per day: '
             f'{np.mean(n_trials_per_days):.02f} '
             f'+/- {np.std(n_trials_per_days):.02f} SD\n',

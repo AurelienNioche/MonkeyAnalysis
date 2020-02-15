@@ -87,8 +87,9 @@ def _get_cross_validation(d, randomize, n_chunk,
 
         for p in parts:
 
-            alt, n, k = experimental_data.filter.cluster_risky_choice_by_alternative(
-                alternatives[p], choose_risky[p])
+            alt, n, k = experimental_data.filter\
+                .cluster_risky_choice_by_alternative(
+                    alternatives[p], choose_risky[p])
 
             args = (alt, n, k,)
 
@@ -149,8 +150,7 @@ def _pickle_load(d, force, randomize, n_chunk, method):
     return fit
 
 
-def run(d, n_chunk=20,
-        force=False, randomize=False,
+def run(d, n_chunk, force, randomize,
         method='SLSQP'):
 
     fit = _pickle_load(d=d, force=force, randomize=randomize, n_chunk=n_chunk,

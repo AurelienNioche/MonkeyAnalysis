@@ -20,9 +20,6 @@ BACKUP_FOLDER = os.path.join(DATA_FOLDER, 'pickle')
 for folder in FIG_FOLDER, DATA_FOLDER, BACKUP_FOLDER:
     os.makedirs(folder, exist_ok=True)
 
-
-N_CHUNK = 20
-
 FIG_PRECISION = \
     os.path.join(FIG_FOLDER, "precision.pdf")
 

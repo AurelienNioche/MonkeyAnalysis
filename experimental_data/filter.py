@@ -339,8 +339,14 @@ def get_exemplary_case(d):
         log(f'For condition "{c}", '
             f'I got {len(pairs)} pair(s) of lotteries ({pairs}).', NAME)
 
-        assert len(pairs) == 1, \
-            'I expected only one pair of lotteries to meet the conditions.'
+        if len(pairs) != 1:
+
+            log(
+                f'[{NAME}] Exemplary case: '
+                f'I expected one (and only one) pair of lotteries to meet '
+                f'the conditions but I got {len(pairs)} instead.',
+                name="WARNING")
+            return None
 
         chosen = sorted_data[c][pairs[0]]
 

@@ -1,5 +1,10 @@
 # Monkey Analysis
 
+WARNING: If you want to replicate 
+'An asymmetry of treatment between lotteries involving 
+gains and losses in rhesus monkeys' 
+(https://doi.org/10.1038/s41598-019-46975-2), 
+please use the branch 'django'
 
 ## Config
 

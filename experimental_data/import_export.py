@@ -51,8 +51,11 @@ def import_xls():
     entries = df.to_dict('records')
 
     for entry_dic in entries:
+        date_string = entry_dic['date']
+        date_string = date_string.replace('None', '')
+        print(date_string)
         entry_dic['date'] = \
-            datetime.strptime(entry_dic['date'], DATE_FORMAT)\
+            datetime.strptime(date_string, DATE_FORMAT)\
             .astimezone(pytz.UTC)
 
     ExperimentalData.objects.bulk_create(

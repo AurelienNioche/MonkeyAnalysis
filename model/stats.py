@@ -74,7 +74,7 @@ def regression(x, y):
     return f, p, n, alpha, beta
 
 
-def stats_regression_best_values(fit):
+def stats_regression_best_values(fit, print_latex=False):
 
     monkeys = sorted(fit.keys())
 
@@ -120,26 +120,27 @@ def stats_regression_best_values(fit):
             name=NAME)
     print()
 
-    print("[LATEX TABLE CONTENT]")
-    for monkey, param, fstat, p, p_c, n, alpha, beta in zip(
-            ["Monkey H", ] * 6 + ["Monkey G", ] * 6,
-            [i for i in [
-            r"\omega_G",
-            r"\omega_L",
-            r"\alpha_G",
-            r"\alpha_L",
-            r"\lambda_G",
-            r"\lambda_L"]]*2, fs, ps, p_corr, ns, alphas, betas):
+    if print_latex:
+        print("[LATEX TABLE CONTENT]")
+        for monkey, param, fstat, p, p_c, n, alpha, beta in zip(
+                ["Monkey H", ] * 6 + ["Monkey G", ] * 6,
+                [i for i in [
+                r"\omega_G",
+                r"\omega_L",
+                r"\alpha_G",
+                r"\alpha_L",
+                r"\lambda_G",
+                r"\lambda_L"]]*2, fs, ps, p_corr, ns, alphas, betas):
 
-        p_str = "p<0.001" if p == 0 else f"p={p:.3f}"
-        p_c_str = "p<0.001" if p_c == 0 else f"p={p_c:.3f}"
+            p_str = "p<0.001" if p == 0 else f"p={p:.3f}"
+            p_c_str = "p<0.001" if p_c == 0 else f"p={p_c:.3f}"
 
-        if p_c < 0.01:
-            p_c_str += '^*'
-        print(f"{monkey} & ${param}$ &" + r'$2\times'
-              + f"{n}$ & ${alpha:.2f}$ & ${beta:.2f}$ & "
-              + f"{fstat:.2f} & ${p_str}$ & ${p_c_str}$" + r"\\")
-    print("[LATEX TABLE CONTENT]\n")
+            if p_c < 0.01:
+                p_c_str += '^*'
+            print(f"{monkey} & ${param}$ &" + r'$2\times'
+                  + f"{n}$ & ${alpha:.2f}$ & ${beta:.2f}$ & "
+                  + f"{fstat:.2f} & ${p_str}$ & ${p_c_str}$" + r"\\")
+        print("[LATEX TABLE CONTENT]\n")
 
     return rgr_line_param
 

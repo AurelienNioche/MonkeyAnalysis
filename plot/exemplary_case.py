@@ -52,6 +52,11 @@ def exemplary_case(d):
             name=NAME)
 
         ex_d = experimental_data.filter.get_exemplary_case(d[monkey])
+        if ex_d is None:
+            log(f"[{NAME}] "
+                f"No data available I can not plot '{FIG_EXEMPLARY_CASE}'.",
+                name="WARNING")
+            continue
 
         _plot(
             results=ex_d,
