@@ -10,4 +10,6 @@ from experimental_data.import_export import import_xls
 
 if __name__ == "__main__":
 
+    # # For reproduction:
+    # import_xls('data_GH.xlsx')
     import_xls()

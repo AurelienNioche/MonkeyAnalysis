@@ -5,6 +5,7 @@ Produce the probability distortion figure
 import matplotlib.gridspec
 import numpy as np
 from matplotlib import pyplot as plt
+import string
 
 from parameters.parameters import COLOR_LOSS, COLOR_GAIN, \
     FIG_PROBABILITY_DISTORTION
@@ -19,7 +20,8 @@ def pi(p, distortion):
     return np.exp(-(-np.log(p)) ** distortion) if p > 0 else 0
 
 
-def _plot(neg_distortion, pos_distortion, ax, linewidth=3, alpha=1):
+def _plot(neg_distortion, pos_distortion, ax,
+          linewidth=3, alpha=1):
 
     label_font_size = 20
     ticks_label_size = 14
@@ -55,13 +57,14 @@ def probability_distortion(fit, show_average=True):
     log(f"Creating figure '{FIG_PROBABILITY_DISTORTION}'...", NAME)
 
     monkeys = sorted(fit.keys())
+    n_monkeys = len(monkeys)
 
     alpha_chunk = 0.5 if show_average else 1
 
-    n_rows, n_cols = 1, 2
+    n_rows, n_cols = 1, n_monkeys
     gs = matplotlib.gridspec.GridSpec(nrows=n_rows, ncols=n_cols)
 
-    fig = plt.figure(figsize=(12, 5), dpi=200)
+    fig = plt.figure(figsize=(6*n_cols, 5), dpi=200)
 
     axes = [fig.add_subplot(gs[0, i]) for i in range(len(monkeys))]
 
@@ -85,19 +88,15 @@ def probability_distortion(fit, show_average=True):
                 pos_distortion=np.mean(pdi),
                 ax=axes[i])
 
-    ax = fig.add_subplot(gs[:, :])
-    ax.set_axis_off()
-
-    ax.text(
-        s='A', x=-0.05, y=-0.05, horizontalalignment='center',
-        verticalalignment='center', transform=ax.transAxes,
-        fontsize=30)
-    ax.text(
-        s='B', x=0.5, y=-0.05, horizontalalignment='center',
-        verticalalignment='center', transform=ax.transAxes,
-        fontsize=30)
-
     gs.tight_layout(fig)
+
+    for i, ax in enumerate(fig.get_axes()):
+        ax.text(
+            s=string.ascii_uppercase[i],
+            x=-0.2, y=-0.1, horizontalalignment='center',
+            verticalalignment='center', transform=ax.transAxes,
+            fontsize=30)
+
     fig.savefig(fname=FIG_PROBABILITY_DISTORTION)
 
     log(f"Done!\n", NAME)

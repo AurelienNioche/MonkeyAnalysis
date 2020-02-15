@@ -5,6 +5,7 @@ Produce the control figures
 import matplotlib.gridspec
 import numpy as np
 from matplotlib import pyplot as plt
+import string
 
 import experimental_data.filter
 
@@ -15,7 +16,7 @@ from parameters.parameters import FIG_CONTROL, COLOR_GAIN, COLOR_LOSS
 NAME = "plot.control"
 
 
-def _plot(results, ax):
+def _plot(results, ax, letter=None):
 
     n = len(results.keys())
 
@@ -72,12 +73,18 @@ def _plot(results, ax):
 
     ax.set_aspect(3)
 
+    ax.text(
+        s=letter, x=-0.1, y=-0.1, horizontalalignment='center',
+        verticalalignment='center', transform=ax.transAxes,
+        fontsize=25)
+
 
 def control(d):
 
     monkeys = sorted(d.keys())
+    n_monkey = len(monkeys)
 
-    n_rows, n_cols = 2, 1
+    n_rows, n_cols = n_monkey, 1
     gs = matplotlib.gridspec.GridSpec(nrows=n_rows, ncols=n_cols)
 
     fig = plt.figure(figsize=(4.7, 5.4), dpi=200)
@@ -91,24 +98,13 @@ def control(d):
         control_d = experimental_data.filter.cluster_hit_by_control_cond(
             alternatives, control_types, hits)
 
-        _plot(results=control_d, ax=axes[i])
+        _plot(results=control_d, ax=axes[i],
+              letter=string.ascii_uppercase[i])
 
     log(f"Creating figure '{FIG_CONTROL}'...",
         name=NAME)
 
     gs.tight_layout(fig)
-
-    ax = fig.add_subplot(gs[:, :])
-    ax.set_axis_off()
-
-    ax.text(
-        s='A', x=-0.1, y=0.5, horizontalalignment='center',
-        verticalalignment='center', transform=ax.transAxes,
-        fontsize=15)
-    ax.text(
-        s='B', x=-0.1, y=-0.02, horizontalalignment='center',
-        verticalalignment='center', transform=ax.transAxes,
-        fontsize=15)
 
     fig.savefig(fname=FIG_CONTROL)
     log(f"Done!\n", NAME)

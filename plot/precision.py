@@ -5,6 +5,7 @@ Produce the precision figure
 import matplotlib.gridspec
 import numpy as np
 from matplotlib import pyplot as plt
+import string
 
 from parameters.parameters import COLOR_GAIN, COLOR_LOSS, FIG_PRECISION
 from model import model
@@ -82,13 +83,14 @@ def precision(fit, show_average=True):
     log(f"Creating figure '{FIG_PRECISION}'...", NAME)
 
     monkeys = sorted(fit.keys())
+    n_monkeys = len(monkeys)
 
     alpha_chunk = 0.5 if show_average else 1
 
-    n_rows, n_cols = 1, 2
+    n_rows, n_cols = 1, n_monkeys
     gs = matplotlib.gridspec.GridSpec(nrows=n_rows, ncols=n_cols)
 
-    fig = plt.figure(figsize=(12, 5), dpi=200)
+    fig = plt.figure(figsize=(6*n_monkeys, 5), dpi=200)
 
     axes = [fig.add_subplot(gs[0, i]) for i in range(len(monkeys))]
 
@@ -123,21 +125,18 @@ def precision(fit, show_average=True):
                 pos_distortion=np.mean(pdi),
                 neg_precision=np.mean(npr),
                 pos_precision=np.mean(ppr),
-                ax=axes[i])
-
-    ax = fig.add_subplot(gs[:, :])
-    ax.set_axis_off()
-
-    ax.text(
-        s='A', x=-0.05, y=-0.1, horizontalalignment='center',
-        verticalalignment='center', transform=ax.transAxes,
-        fontsize=30)
-    ax.text(
-        s='B', x=0.49, y=-0.1, horizontalalignment='center',
-        verticalalignment='center', transform=ax.transAxes,
-        fontsize=30)
+                ax=axes[i]
+            )
 
     gs.tight_layout(fig)
+
+    for i, ax in enumerate(fig.get_axes()):
+        ax.text(
+            s=string.ascii_uppercase[i],
+            x=-0.1, y=-0.1, horizontalalignment='center',
+            verticalalignment='center', transform=ax.transAxes,
+            fontsize=30)
+
     fig.savefig(fname=FIG_PRECISION)
 
     log(f"Done!\n", NAME)

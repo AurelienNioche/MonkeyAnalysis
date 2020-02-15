@@ -24,6 +24,9 @@ def main(n_chunk=5, randomize_chunk_trials=False, force_fit=True,
          print_latex=False):
 
     # Get data
+    # # For reproduction:
+    # d = get_data(starting_point="2017-03-01",
+    #              end_point="2019-09-30")
     d = get_data()
 
     # Get fit

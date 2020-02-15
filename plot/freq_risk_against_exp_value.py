@@ -9,6 +9,7 @@ import matplotlib.gridspec
 import numpy as np
 from matplotlib import pyplot as plt
 from scipy.optimize import curve_fit
+import string
 
 import experimental_data.filter
 
@@ -122,16 +123,24 @@ def freq_risk_against_exp_value(d, f=sigmoid):
     log(f"Analysing data for the risk attitude...\n", NAME)
 
     monkeys = sorted(d.keys())
+    n_monkey = len(monkeys)
 
-    n_rows, n_cols = 2, 2
+    n_rows, n_cols = n_monkey, 2
     gs = matplotlib.gridspec.GridSpec(nrows=n_rows, ncols=n_cols)
-    fig = plt.figure(figsize=(12, 10), dpi=200)
+    fig = plt.figure(figsize=(12, 5*n_monkey), dpi=200)
     axes = [[] for _ in range(n_cols)]
     for i in range(len(monkeys)):
         for j in range(2):
             axes[i].append(fig.add_subplot(gs[i, j]))
 
     for i, monkey in enumerate(monkeys):
+
+        ax = axes[i][0]
+        letter = string.ascii_uppercase[i]
+        ax.text(
+            s=letter, x=-0.1, y=-0.1, horizontalalignment='center',
+            verticalalignment='center', transform=ax.transAxes,
+            fontsize=30)
 
         for j, gain_only in enumerate((1, 0)):
 
@@ -153,17 +162,6 @@ def freq_risk_against_exp_value(d, f=sigmoid):
 
     log(f"Creating figure '{FIG_FREQ_RISK_AGAINST_EXP_VALUE}'...",
         name=NAME)
-
-    ax = fig.add_subplot(gs[:, :])
-    ax.set_axis_off()
-    ax.text(
-        s='A', x=-0.05, y=0.5, horizontalalignment='center',
-        verticalalignment='center', transform=ax.transAxes,
-        fontsize=30)
-    ax.text(
-        s='B', x=-0.05, y=-0.1, horizontalalignment='center',
-        verticalalignment='center', transform=ax.transAxes,
-        fontsize=30)
 
     gs.tight_layout(fig)
     fig.savefig(fname=FIG_FREQ_RISK_AGAINST_EXP_VALUE)

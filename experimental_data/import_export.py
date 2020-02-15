@@ -39,12 +39,12 @@ def export_as_xls():
     workbook.close()
 
 
-def import_xls():
+def import_xls(data_file='data.xlsx'):
 
     ExperimentalData.objects.all().delete()
 
     print("Reading from xlsx...", end=" ", flush=True)
-    df = pd.read_excel(os.path.join('data', 'data.xlsx'), )
+    df = pd.read_excel(os.path.join(DATA_FOLDER, data_file), )
     print("Done!")
 
     print("Writing in db...", end=" ", flush=True)

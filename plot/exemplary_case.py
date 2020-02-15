@@ -3,6 +3,7 @@ Produce the the certainty-risk trade-off figure
 """
 import matplotlib.gridspec
 from matplotlib import pyplot as plt
+import string
 
 import experimental_data.filter
 from parameters.parameters import COLOR_GAIN, COLOR_LOSS, FIG_EXEMPLARY_CASE
@@ -12,7 +13,7 @@ from utils.utils import log
 NAME = "plot.exemplary_case"
 
 
-def _plot(results, color_gain, color_loss, ax):
+def _plot(results, color_gain, color_loss, ax, letter):
 
     axis_label_font_size = 14
     ticks_font_size = 14
@@ -35,6 +36,11 @@ def _plot(results, color_gain, color_loss, ax):
         fontsize=axis_label_font_size)
 
     ax.set_aspect(2)
+
+    ax.text(
+        s=letter, x=-0.1, y=-0.1, horizontalalignment='center',
+        verticalalignment='center', transform=ax.transAxes,
+        fontsize=20)
 
 
 def exemplary_case(d):
@@ -62,7 +68,9 @@ def exemplary_case(d):
             results=ex_d,
             color_gain=COLOR_GAIN,
             color_loss=COLOR_LOSS,
-            ax=axes[i])
+            ax=axes[i],
+            letter=string.ascii_uppercase[i]
+        )
 
     log(f"Creating figure '{FIG_EXEMPLARY_CASE}'...",
         name=NAME)

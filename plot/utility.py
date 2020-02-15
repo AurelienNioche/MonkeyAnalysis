@@ -5,6 +5,7 @@ Produce the utility function figure
 import matplotlib.gridspec
 import numpy as np
 from matplotlib import pyplot as plt
+import string
 
 from parameters.parameters import FIG_UTILITY
 from utils.utils import log
@@ -27,7 +28,7 @@ def u(m, pos_risk_aversion, neg_risk_aversion):
         return 0
 
 
-def _plot(pos_risk_aversion, neg_risk_aversion, ax, alpha=1.0,
+def _plot(pos_risk_aversion, neg_risk_aversion, ax, letter=None, alpha=1.0,
           linewidth=3, color="black", linestyle="-"):
 
     reward_max = 1
@@ -65,14 +66,21 @@ def _plot(pos_risk_aversion, neg_risk_aversion, ax, alpha=1.0,
 
     ax.set_aspect(1)
 
+    if letter is not None:
+        ax.text(
+            s=letter, x=-0.1, y=0, horizontalalignment='center',
+            verticalalignment='center', transform=ax.transAxes,
+            fontsize=30)
+
 
 def utility(fit, show_average=True, alpha_chunk=0.5):
 
     monkeys = sorted(fit.keys())
+    n_monkeys = len(monkeys)
 
-    n_rows, n_cols = 1, 2
+    n_rows, n_cols = 1, n_monkeys
     gs = matplotlib.gridspec.GridSpec(nrows=n_rows, ncols=n_cols)
-    fig = plt.figure(figsize=(12, 5), dpi=200)
+    fig = plt.figure(figsize=(6*n_monkeys, 5), dpi=200)
     axes = [fig.add_subplot(gs[0, i]) for i in range(len(monkeys))]
 
     for i, monkey in enumerate(monkeys):
@@ -91,20 +99,11 @@ def utility(fit, show_average=True, alpha_chunk=0.5):
             _plot(
                 pos_risk_aversion=np.mean(pra),
                 neg_risk_aversion=np.mean(nra),
-                ax=axes[i])
+                ax=axes[i],
+                letter=string.ascii_uppercase[i]
+            )
 
     log(f"Creating figure '{FIG_UTILITY}'...", NAME)
-
-    ax = fig.add_subplot(gs[:, :])
-    ax.set_axis_off()
-    ax.text(
-        s='A', x=0, y=0, horizontalalignment='center',
-        verticalalignment='center', transform=ax.transAxes,
-        fontsize=30)
-    ax.text(
-        s='B', x=0.5, y=0, horizontalalignment='center',
-        verticalalignment='center', transform=ax.transAxes,
-        fontsize=30)
 
     gs.tight_layout(fig)
     fig.savefig(fname=FIG_UTILITY)
