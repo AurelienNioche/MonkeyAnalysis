@@ -6,10 +6,12 @@ import pytz
 import xlsxwriter
 
 from experimental_data.models import ExperimentalData
+from stimuli.models import Stimuli
+
 from parameters.parameters import DATA_FOLDER, XLS_NAME, DATE_FORMAT
 
 
-def export_as_xls():
+def export_as_xlsx():
 
     col = [f.name for f in ExperimentalData._meta.get_fields()]
     os.makedirs(DATA_FOLDER, exist_ok=True)
@@ -39,7 +41,7 @@ def export_as_xls():
     workbook.close()
 
 
-def import_xls(data_file='data.xlsx'):
+def import_data_xlsx(data_file='data.xlsx'):
 
     ExperimentalData.objects.all().delete()
 
@@ -53,13 +55,47 @@ def import_xls(data_file='data.xlsx'):
     for entry_dic in entries:
         date_string = entry_dic['date']
         date_string = date_string.replace('None', '')
-        print(date_string)
         entry_dic['date'] = \
             datetime.strptime(date_string, DATE_FORMAT)\
             .astimezone(pytz.UTC)
 
     ExperimentalData.objects.bulk_create(
         ExperimentalData(**val) for val in entries)
+
+    print("Done!")
+
+
+def import_stimuli_xlsx(data_file='stimuli.xlsx'):
+
+    Stimuli.objects.all().delete()
+
+    print("Reading from xlsx...", end=" ", flush=True)
+    df = pd.read_excel(os.path.join(DATA_FOLDER, data_file), )
+    print("Done!")
+
+    print("Writing in db...", end=" ", flush=True)
+    xl_rows = df.to_dict('records')
+
+    entries = []
+
+    for i, row_dic in enumerate(xl_rows):
+
+        entries.append(
+            Stimuli(
+                id=i+1,
+                left_p=row_dic["left_p"],
+                right_p=row_dic["right_p"],
+                left_x0=row_dic["left_x0"],
+                right_x0=row_dic["right_x0"],
+                lottery_type=row_dic["lottery_type"],
+                control="CONTROL" in row_dic["comment"],
+                congruent="CONGRUENT" in row_dic["comment"],
+                incongruent="INCONGRUENT" in row_dic["comment"],
+                description=row_dic["comment"]
+            )
+        )
+
+    Stimuli.objects.bulk_create(entries)
 
     print("Done!")
 

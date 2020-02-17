@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import scipy.stats
 
-from utils.utils import log
+from utils.log import log
 
 NAME = 'experimental_data.filter'
 

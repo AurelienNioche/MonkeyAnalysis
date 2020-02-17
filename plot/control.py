@@ -2,21 +2,20 @@
 Produce the control figures
 """
 
-import matplotlib.gridspec
 import numpy as np
-from matplotlib import pyplot as plt
-import string
+import matplotlib.pyplot as plt
 
 import experimental_data.filter
 
-from utils.utils import log
+from utils.log import log
+from utils.plot import fig_name
 
 from parameters.parameters import FIG_CONTROL, COLOR_GAIN, COLOR_LOSS
 
 NAME = "plot.control"
 
 
-def _plot(results, ax, letter=None):
+def _plot(results, ax):
 
     n = len(results.keys())
 
@@ -73,38 +72,27 @@ def _plot(results, ax, letter=None):
 
     ax.set_aspect(3)
 
-    ax.text(
-        s=letter, x=-0.1, y=-0.1, horizontalalignment='center',
-        verticalalignment='center', transform=ax.transAxes,
-        fontsize=25)
-
 
 def control(d):
 
     monkeys = sorted(d.keys())
-    n_monkey = len(monkeys)
 
-    n_rows, n_cols = n_monkey, 1
-    gs = matplotlib.gridspec.GridSpec(nrows=n_rows, ncols=n_cols)
-
-    fig = plt.figure(figsize=(4.7, 5.4), dpi=200)
-    axes = [fig.add_subplot(gs[i, 0]) for i in range(len(monkeys))]
-
-    for i, monkey in enumerate(monkeys):
+    for monkey in monkeys:
 
         log(f"Stats for control trials - {monkey}:", NAME)
 
-        alternatives, control_types, hits = experimental_data.filter.get_control(d[monkey])
+        alternatives, control_types, hits = \
+            experimental_data.filter.get_control(d[monkey])
         control_d = experimental_data.filter.cluster_hit_by_control_cond(
             alternatives, control_types, hits)
 
-        _plot(results=control_d, ax=axes[i],
-              letter=string.ascii_uppercase[i])
+        fig, ax = plt.subplots(figsize=(5, 3), dpi=200)
 
-    log(f"Creating figure '{FIG_CONTROL}'...",
-        name=NAME)
+        _plot(results=control_d, ax=ax)
 
-    gs.tight_layout(fig)
+        log(f"Creating figure '{FIG_CONTROL}'...",
+            name=NAME)
+        plt.tight_layout()
 
-    fig.savefig(fname=FIG_CONTROL)
-    log(f"Done!\n", NAME)
+        plt.savefig(fig_name(fig_type=FIG_CONTROL, monkey=monkey))
+        log(f"Done!\n", NAME)

@@ -1,19 +1,20 @@
 """
 Produce the the certainty-risk trade-off figure
 """
-import matplotlib.gridspec
-from matplotlib import pyplot as plt
-import string
+
+import matplotlib.pyplot as plt
 
 import experimental_data.filter
 from parameters.parameters import COLOR_GAIN, COLOR_LOSS, FIG_EXEMPLARY_CASE
-from utils.utils import log
+
+from utils.log import log
+from utils.plot import fig_name
 
 
 NAME = "plot.exemplary_case"
 
 
-def _plot(results, color_gain, color_loss, ax, letter):
+def _plot(results, color_gain, color_loss, ax):
 
     axis_label_font_size = 14
     ticks_font_size = 14
@@ -37,22 +38,14 @@ def _plot(results, color_gain, color_loss, ax, letter):
 
     ax.set_aspect(2)
 
-    ax.text(
-        s=letter, x=-0.1, y=-0.1, horizontalalignment='center',
-        verticalalignment='center', transform=ax.transAxes,
-        fontsize=20)
-
 
 def exemplary_case(d):
 
     monkeys = sorted(d.keys())
 
-    n_rows, n_cols = 1, 2
-    gs = matplotlib.gridspec.GridSpec(nrows=n_rows, ncols=n_cols)
-    fig = plt.figure(figsize=(12, 5), dpi=200)
-    axes = [fig.add_subplot(gs[0, i]) for i in range(len(monkeys))]
+    for monkey in monkeys:
 
-    for i, monkey in enumerate(monkeys):
+        fig, ax = plt.subplots(figsize=(6, 5), dpi=200)
 
         log(f"Stats for exemplary case - {monkey}...",
             name=NAME)
@@ -68,25 +61,14 @@ def exemplary_case(d):
             results=ex_d,
             color_gain=COLOR_GAIN,
             color_loss=COLOR_LOSS,
-            ax=axes[i],
-            letter=string.ascii_uppercase[i]
+            ax=ax
         )
 
-    log(f"Creating figure '{FIG_EXEMPLARY_CASE}'...",
-        name=NAME)
+        log(f"Creating figure '{FIG_EXEMPLARY_CASE}' for monkey {monkey}...",
+            name=NAME)
 
-    ax = fig.add_subplot(gs[:, :])
-    ax.set_axis_off()
-    ax.text(
-        s='A', x=0, y=0, horizontalalignment='center',
-        verticalalignment='center', transform=ax.transAxes,
-        fontsize=30)
-    ax.text(
-        s='B', x=0.5, y=0, horizontalalignment='center',
-        verticalalignment='center', transform=ax.transAxes,
-        fontsize=30)
+        plt.tight_layout()
+        plt.savefig(fig_name(fig_type=FIG_EXEMPLARY_CASE,
+                             monkey=monkey))
 
-    gs.tight_layout(fig)
-    fig.savefig(fname=FIG_EXEMPLARY_CASE)
-
-    log(f"Done!\n", NAME)
+        log(f"Done!\n", NAME)

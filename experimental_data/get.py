@@ -2,7 +2,7 @@ import numpy as np
 from datetime import datetime
 import pytz
 
-from utils.utils import log
+from utils.log import log
 from experimental_data.models import ExperimentalData
 
 from parameters.parameters import DATE_FORMAT

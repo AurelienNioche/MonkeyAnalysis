@@ -31,6 +31,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'stimuli.apps.StimuliConfig',
     'experimental_data.apps.ExperimentalDataConfig',
     'django.contrib.admin',
     'django.contrib.auth',

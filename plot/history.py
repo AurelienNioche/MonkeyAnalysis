@@ -1,12 +1,11 @@
-import matplotlib.gridspec
 import numpy as np
-from matplotlib import pyplot as plt
-import string
+import matplotlib.pyplot as plt
 
 import experimental_data.filter
 
 from experimental_data.filter import control_history_sort_data
-from utils.utils import log
+from utils.log import log
+from utils.plot import fig_name
 
 from parameters.parameters import FIG_HISTORY_CONTROL,\
     FIG_HISTORY_BEST_PARAM, \
@@ -57,7 +56,7 @@ def _plot_history_best_param(
     ax.tick_params(axis='both', which='minor', labelsize=ticks_label_font_size)
 
 
-def _plot_history_control(results, color, ax, last=False, letter=None,
+def _plot_history_control(results, color, ax, last=False,
                           ylabel="Success rate", title="Title", fontsize=5):
     """
     Called by 'control history'
@@ -120,13 +119,6 @@ def _plot_history_control(results, color, ax, last=False, letter=None,
         ax.set_xlabel('Chunk', fontsize=fontsize)
     ax.set_title(title, fontsize=fontsize+1)
 
-    if letter is not None:
-        pass
-        # ax.text(
-        #     s=letter, x=-0.3, y=-0.4, horizontalalignment='center',
-        #     verticalalignment='center', transform=ax.transAxes,
-        #     fontsize=20)
-
 
 def history_control(d, n_chunk,
                     labels=("Loss vs gains", "Diff. $x +$, same $p$",
@@ -137,18 +129,12 @@ def history_control(d, n_chunk,
 
     monkeys = sorted(d.keys())
 
-    n_monkey = len(monkeys)
     n_cond = len(experimental_data.filter.control_conditions)
-    n = n_monkey * n_cond
 
-    n_rows, n_cols = n, 1
-    gs = matplotlib.gridspec.GridSpec(nrows=n_rows, ncols=n_cols)
+    for monkey in monkeys:
 
-    fig = plt.figure(figsize=(3, 5*n_monkey), dpi=200)
-    axes = [fig.add_subplot(gs[i, 0]) for i in range(n)]
-
-    i = 0
-    for j, monkey in enumerate(monkeys):
+        fig, axes = plt.subplots(nrows=n_cond,
+                                 figsize=(3, 5), dpi=200)
 
         log(f"Stats for success to control trials over time "
             f"(fig: '{FIG_HISTORY_CONTROL}') - {monkey}",
@@ -160,18 +146,12 @@ def history_control(d, n_chunk,
         control_d = control_history_sort_data(alternatives, control_types,
                                               hits, n_chunk=n_chunk)
 
+        i = 0
         for cond, color, title in \
                 zip(experimental_data.filter.control_conditions,
                     colors, labels):
 
-            last = i == n-1
-
-            last_for_monkey = (i+1) % n_cond == 0
-            if last_for_monkey:
-                letter = string.ascii_uppercase[j]
-
-            else:
-                letter = None
+            last = i == n_cond-1
 
             _plot_history_control(
                 results=control_d[cond],
@@ -179,46 +159,19 @@ def history_control(d, n_chunk,
                 ax=axes[i],
                 last=last,
                 title=title,
-                letter=letter
             )
 
             i += 1
 
-    log(f"Creating '{FIG_HISTORY_CONTROL}'...", NAME)
-    # plt.tight_layout()
-
-    gs.tight_layout(fig)
-
-    j = 0
-    for i, ax in enumerate(fig.get_axes()):
-        last_for_monkey = (i + 1) % n_cond == 0
-        if last_for_monkey:
-            ax.text(
-                s=string.ascii_uppercase[j],
-                x=-0.12, y=-0.2, horizontalalignment='center',
-                verticalalignment='center', transform=ax.transAxes,
-                fontsize=20)
-            j += 1
-
-    fig.savefig(fname=FIG_HISTORY_CONTROL)
-    log(f"Done!\n", NAME)
+        log(f"Creating '{FIG_HISTORY_CONTROL}' for monkey '{monkey}'...", NAME)
+        plt.tight_layout()
+        plt.savefig(fig_name(fig_type=FIG_HISTORY_CONTROL,
+                             monkey=monkey))
 
 
 def history_best_param(fit, regression_param=None):
 
     monkeys = sorted(fit.keys())
-
-    n_monkey = len(monkeys)
-
-    n_rows, n_cols = n_monkey, 3
-    gs = matplotlib.gridspec.GridSpec(nrows=n_rows, ncols=n_cols)
-
-    fig = plt.figure(figsize=(15, 5*n_rows), dpi=200)
-
-    axes = [[] for _ in range(n_cols)]
-    for i in range(len(monkeys)):
-        for j in range(3):
-            axes[i].append(fig.add_subplot(gs[i, j]))
 
     args = (
         ('pos_risk_aversion', 'neg_risk_aversion', (-1, 1), True, r"$\omega$"),
@@ -226,21 +179,16 @@ def history_best_param(fit, regression_param=None):
         ('pos_precision', 'neg_precision', (0, 5), False, r"$\lambda$")
     )
 
-    for i, monkey in enumerate(monkeys):
+    for monkey in monkeys:
 
-        ax = axes[i][0]
-        letter = string.ascii_uppercase[i]
-        ax.text(
-            s=letter, x=-0.2, y=-0.1, horizontalalignment='center',
-            verticalalignment='center', transform=ax.transAxes,
-            fontsize=30)
+        fig, axes = plt.subplots(figsize=(15, 5), ncols=3, dpi=200)
 
-        for j, arg in enumerate(args):
+        for i, arg in enumerate(args):
 
             pos_param, neg_param, y_lim, show_mid_line, param_name = arg
 
             _plot_history_best_param(
-                ax=axes[i][j],
+                ax=axes[i],
                 pos_param=fit[monkey][pos_param],
                 neg_param=fit[monkey][neg_param],
                 y_lim=y_lim,
@@ -266,12 +214,14 @@ def history_best_param(fit, regression_param=None):
                     else:
                         line_style = ":"
                         alpha = 0.4
-                    axes[i][j].plot(x, y, color=color, linestyle=line_style,
-                                    alpha=alpha)
+                    axes[i].plot(x, y, color=color, linestyle=line_style,
+                                 alpha=alpha)
 
-    log(f"Creating '{FIG_HISTORY_BEST_PARAM}'...", NAME)
+        log(f"Creating '{FIG_HISTORY_BEST_PARAM}' "
+            f"for monkey {monkey}...", NAME)
 
-    gs.tight_layout(fig)
-    fig.savefig(fname=FIG_HISTORY_BEST_PARAM)
+        plt.tight_layout()
+        plt.savefig(fig_name(fig_type=FIG_HISTORY_BEST_PARAM,
+                             monkey=monkey))
 
-    log(f"Done!\n", NAME)
+        log(f"Done!\n", NAME)

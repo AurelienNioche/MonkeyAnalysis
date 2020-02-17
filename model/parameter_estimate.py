@@ -6,7 +6,7 @@ import scipy.optimize
 
 import experimental_data.filter
 from parameters.parameters import MODEL_PARAMETERS, BACKUP_FOLDER
-from utils.utils import log
+from utils.log import log
 from model import model
 
 NAME = 'model.parameter_estimate'

@@ -1,6 +1,5 @@
 import os
-
-from utils.utils import log
+from utils.log import log
 
 NAME = "parameters.parameters"
 
@@ -20,29 +19,21 @@ BACKUP_FOLDER = os.path.join(DATA_FOLDER, 'pickle')
 for folder in FIG_FOLDER, DATA_FOLDER, BACKUP_FOLDER:
     os.makedirs(folder, exist_ok=True)
 
-FIG_PRECISION = \
-    os.path.join(FIG_FOLDER, "precision.pdf")
+FIG_PRECISION = "precision"
 
-FIG_PROBABILITY_DISTORTION = \
-    os.path.join(FIG_FOLDER, "probability_distortion.pdf")
+FIG_PROBABILITY_DISTORTION = "probability_distortion"
 
-FIG_UTILITY = \
-    os.path.join(FIG_FOLDER, "utility.pdf")
+FIG_UTILITY = "utility"
 
-FIG_CONTROL = \
-    os.path.join(FIG_FOLDER, "control.pdf")
+FIG_CONTROL = "control"
 
-FIG_FREQ_RISK_AGAINST_EXP_VALUE = \
-    os.path.join(FIG_FOLDER, "freq_risk_against_exp_value.pdf")
+FIG_FREQ_RISK_AGAINST_EXP_VALUE = "freq_risk_against_exp_value"
 
-FIG_EXEMPLARY_CASE = \
-    os.path.join(FIG_FOLDER, "exemplary.pdf")
+FIG_EXEMPLARY_CASE = "exemplary"
 
-FIG_HISTORY_CONTROL = \
-    os.path.join(FIG_FOLDER, "supplementary_history_control.pdf")
+FIG_HISTORY_CONTROL = "supplementary_history_control"
 
-FIG_HISTORY_BEST_PARAM = \
-    os.path.join(FIG_FOLDER, f"supplementary_history_best_param.pdf")
+FIG_HISTORY_BEST_PARAM = "supplementary_history_best_param"
 
 XLS_NAME = "data.xlsx"
 

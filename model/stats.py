@@ -6,7 +6,7 @@ from sklearn.linear_model import LinearRegression
 from statsmodels import api as sm
 
 from parameters.parameters import MODEL_PARAMETERS
-from utils.utils import log
+from utils.log import log
 
 
 NAME = "model.stats"

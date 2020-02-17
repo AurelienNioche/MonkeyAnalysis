@@ -5,15 +5,14 @@ between expected values,
 i.e. the certainty-risk trade-off figure
 """
 
-import matplotlib.gridspec
 import numpy as np
-from matplotlib import pyplot as plt
+import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
-import string
 
 import experimental_data.filter
 
-from utils.utils import log
+from utils.log import log
+from utils.plot import fig_name
 
 from scipy.stats.distributions import t
 
@@ -123,24 +122,10 @@ def freq_risk_against_exp_value(d, f=sigmoid):
     log(f"Analysing data for the risk attitude...\n", NAME)
 
     monkeys = sorted(d.keys())
-    n_monkey = len(monkeys)
 
-    n_rows, n_cols = n_monkey, 2
-    gs = matplotlib.gridspec.GridSpec(nrows=n_rows, ncols=n_cols)
-    fig = plt.figure(figsize=(12, 5*n_monkey), dpi=200)
-    axes = [[] for _ in range(n_cols)]
-    for i in range(len(monkeys)):
-        for j in range(2):
-            axes[i].append(fig.add_subplot(gs[i, j]))
+    for monkey in monkeys:
 
-    for i, monkey in enumerate(monkeys):
-
-        ax = axes[i][0]
-        letter = string.ascii_uppercase[i]
-        ax.text(
-            s=letter, x=-0.1, y=-0.1, horizontalalignment='center',
-            verticalalignment='center', transform=ax.transAxes,
-            fontsize=30)
+        fig, axes = plt.subplots(ncols=2, figsize=(12, 5), dpi=200)
 
         for j, gain_only in enumerate((1, 0)):
 
@@ -156,14 +141,18 @@ def freq_risk_against_exp_value(d, f=sigmoid):
                 expected_values_differences=expected_values_differences,
                 risky_choice_means=risky_choice_means,
                 color=color,
-                ax=axes[i][j],
+                ax=axes[j],
                 f=f
             )
 
-    log(f"Creating figure '{FIG_FREQ_RISK_AGAINST_EXP_VALUE}'...",
-        name=NAME)
+        log(f"Creating figure '{FIG_FREQ_RISK_AGAINST_EXP_VALUE}' "
+            f"for monkey {monkey}...", NAME)
 
-    gs.tight_layout(fig)
-    fig.savefig(fname=FIG_FREQ_RISK_AGAINST_EXP_VALUE)
+        plt.tight_layout()
 
-    log(f"Done!\n", NAME)
+        plt.savefig(fig_name(fig_type=FIG_FREQ_RISK_AGAINST_EXP_VALUE,
+                             monkey=monkey))
+        log(f"Done!\n", NAME)
+
+
+
