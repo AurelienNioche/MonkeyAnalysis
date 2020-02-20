@@ -81,31 +81,31 @@ def _run(monkey, starting_point, end_point):
                 choice=choice, session=session, date=date)
 
 
-def get_data(starting_point=None,
+def get_monkeys():
+
+    return np.unique(ExperimentalData.objects.values_list("monkey",
+                                                          flat=True))
+
+
+def get_data(monkey, starting_point=None,
              end_point=None):
 
-    monkeys = np.unique(ExperimentalData.objects.values_list("monkey",
-                                                             flat=True))
+    log(f'Getting data for {monkey}...', name=NAME)
 
-    d = dict()
-    for monkey in monkeys:
+    d = _run(
+        monkey=monkey, starting_point=starting_point, end_point=end_point)
 
-        log(f'Getting data for {monkey}...', name=NAME)
+    log("Done!", NAME)
 
-        d[monkey] = _run(
-            monkey=monkey, starting_point=starting_point, end_point=end_point)
-
-        log("Done!", NAME)
-
-        days = np.unique(d[monkey].session)
-        n_trials_per_days = np.zeros(len(days))
-        for i, day in enumerate(days):
-            n_trials_per_days[i] = np.sum(d[monkey].session == day)
-        log(f'N days: {len(days)}', name=NAME)
-        log(f'N trials: {len(d[monkey].choice)}', name=NAME)
-        log(f'N trials per day: '
-            f'{np.mean(n_trials_per_days):.02f} '
-            f'+/- {np.std(n_trials_per_days):.02f} SD\n',
-            name=NAME)
+    days = np.unique(d.session)
+    n_trials_per_days = np.zeros(len(days))
+    for i, day in enumerate(days):
+        n_trials_per_days[i] = np.sum(d.session == day)
+    log(f'N days: {len(days)}', name=NAME)
+    log(f'N trials: {len(d.choice)}', name=NAME)
+    log(f'N trials per day: '
+        f'{np.mean(n_trials_per_days):.02f} '
+        f'+/- {np.std(n_trials_per_days):.02f} SD\n',
+        name=NAME)
 
     return d

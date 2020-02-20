@@ -6,8 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from parameters.parameters import FIG_UTILITY
-from utils.log import log
-from utils.plot import fig_name
+from plot.utils import save_fig
 
 NAME = "plot.utility"
 
@@ -66,34 +65,25 @@ def _plot(pos_risk_aversion, neg_risk_aversion, ax, alpha=1.0,
     ax.set_aspect(1)
 
 
-def utility(fit, show_average=True, alpha_chunk=0.5):
+def utility(fit, monkey, show_average=True, alpha_chunk=0.5, pdf=None):
 
-    monkeys = sorted(fit.keys())
+    fig, ax = plt.subplots(figsize=(6, 5), dpi=200)
 
-    for monkey in monkeys:
+    pra = fit['pos_risk_aversion']
+    nra = fit['neg_risk_aversion']
 
-        fig, ax = plt.subplots(figsize=(6, 5), dpi=200)
+    for j in range(len(fit['pos_risk_aversion'])):
+        _plot(
+            pos_risk_aversion=pra[j],
+            neg_risk_aversion=nra[j],
+            ax=ax, linewidth=1, alpha=alpha_chunk,
+        )
 
-        pra = fit[monkey]['pos_risk_aversion']
-        nra = fit[monkey]['neg_risk_aversion']
+    if show_average:
+        _plot(
+            pos_risk_aversion=np.mean(pra),
+            neg_risk_aversion=np.mean(nra),
+            ax=ax
+        )
 
-        for j in range(len(fit[monkey]['pos_risk_aversion'])):
-            _plot(
-                pos_risk_aversion=pra[j],
-                neg_risk_aversion=nra[j],
-                ax=ax, linewidth=1, alpha=alpha_chunk,
-            )
-
-        if show_average:
-            _plot(
-                pos_risk_aversion=np.mean(pra),
-                neg_risk_aversion=np.mean(nra),
-                ax=ax
-            )
-
-        log(f"Creating figure '{FIG_UTILITY}' for monkey {monkey}...", NAME)
-
-        plt.tight_layout()
-        plt.savefig(fig_name(fig_type=FIG_UTILITY, monkey=monkey))
-
-        log(f"Done!\n", NAME)
+    save_fig(fig_type=FIG_UTILITY, fig=fig, pdf=pdf, monkey=monkey)

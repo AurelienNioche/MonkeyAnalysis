@@ -43,100 +43,97 @@ def _objective(parameters, alternatives, n, k):
     return lls * -1
 
 
-def _get_cross_validation(d, randomize, n_chunk,
+def _get_cross_validation(d, monkey, randomize, n_chunk,
                           bounds=((-0.99, 0.99), (-0.99, 0.99), (0.01, 1),
                                   (0.01, 1), (0, 5), (0, 5)),
                           init_guess=None,
                           method='evolutionary'):
 
-    monkeys = d.keys()
+    log(f'Getting fit for {monkey}...', NAME)
+    fit = {}
 
-    fit = {i: {} for i in monkeys}
+    alternatives, choose_risky = experimental_data.filter.get_choose_risky(d)
 
-    for monkey in monkeys:
+    n_trials = len(alternatives)
+    reminder = n_trials % n_chunk
 
-        log(f'Getting fit for {monkey}...', NAME)
+    idx = np.arange(n_trials)
+    if randomize:
+        np.random.shuffle(idx)
 
-        alternatives, choose_risky = experimental_data.filter.get_choose_risky(d[monkey])
+    if reminder > 0:
+        idx = idx[:-reminder]
 
-        n_trials = len(alternatives)
-        reminder = n_trials % n_chunk
+    parts = np.split(idx, n_chunk)
 
-        idx = np.arange(n_trials)
-        if randomize:
-            np.random.shuffle(idx)
+    log(f'Chunk using '
+        f'{"chronological" if not randomize else "randomized"} '
+        f'order', NAME)
+    log(f'N trials = {n_trials}', NAME)
+    log(f'N parts = {len(parts)} '
+        f'(n trials per part = {int(n_trials / n_chunk)}, '
+        f'reminder = {reminder})', NAME)
 
-        if reminder > 0:
-            idx = idx[:-reminder]
+    for label in [
+            'pos_risk_aversion', 'neg_risk_aversion', 'pos_distortion',
+            'neg_distortion',
+            'pos_precision', 'neg_precision', 'log_likelihood_sum']:
+        fit[label] = []
 
-        parts = np.split(idx, n_chunk)
+    for p in parts:
 
-        log(f'Chunk using '
-            f'{"chronological" if not randomize else "randomized"} '
-            f'order', NAME)
-        log(f'N trials = {n_trials}', NAME)
-        log(f'N parts = {len(parts)} '
-            f'(n trials per part = {int(n_trials / n_chunk)}, '
-            f'reminder = {reminder})', NAME)
+        alt, n, k = experimental_data.filter\
+            .cluster_risky_choice_by_alternative(
+                alternatives[p], choose_risky[p])
 
-        for label in [
-                'pos_risk_aversion', 'neg_risk_aversion', 'pos_distortion',
-                'neg_distortion',
-                'pos_precision', 'neg_precision', 'log_likelihood_sum']:
-            fit[monkey][label] = []
+        args = (alt, n, k,)
 
-        for p in parts:
+        if method == "SLSQP":
 
-            alt, n, k = experimental_data.filter\
-                .cluster_risky_choice_by_alternative(
-                    alternatives[p], choose_risky[p])
+            if init_guess is None:
+                init_guess = np.array([0, 0, 0.5, 0.5, 1, 1])
+            res = scipy.optimize.minimize(
+                _objective, init_guess, args=args,
+                bounds=bounds)  # method=SLSQP
 
-            args = (alt, n, k,)
+        elif method == "evolutionary":
+            if init_guess is not None:
+                raise AttributeError(
+                    "Method '{}' can not handle an initial guess")
+            res = scipy.optimize.differential_evolution(
+                func=_objective, args=args, bounds=bounds)
 
-            if method == "SLSQP":
+        else:
+            raise NotImplementedError(
+                f"Method '{method}' is not implemented")
 
-                if init_guess is None:
-                    init_guess = np.array([0, 0, 0.5, 0.5, 1, 1])
-                res = scipy.optimize.minimize(
-                    _objective, init_guess, args=args,
-                    bounds=bounds)  # method=SLSQP
+        nra, pra, ndi, pdi, npr, ppr = res.x
+        lls = res.fun * -1
 
-            elif method == "evolutionary":
-                if init_guess is not None:
-                    raise AttributeError(
-                        "Method '{}' can not handle an initial guess")
-                res = scipy.optimize.differential_evolution(
-                    func=_objective, args=args, bounds=bounds)
-
-            else:
-                raise NotImplementedError(
-                    f"Method '{method}' is not implemented")
-
-            nra, pra, ndi, pdi, npr, ppr = res.x
-            lls = res.fun * -1
-
-            fit[monkey]['neg_risk_aversion'].append(nra)
-            fit[monkey]['pos_risk_aversion'].append(pra)
-            fit[monkey]['neg_distortion'].append(ndi)
-            fit[monkey]['pos_distortion'].append(pdi)
-            fit[monkey]['neg_precision'].append(npr)
-            fit[monkey]['pos_precision'].append(ppr)
-            fit[monkey]['log_likelihood_sum'].append(lls)
+        fit['neg_risk_aversion'].append(nra)
+        fit['pos_risk_aversion'].append(pra)
+        fit['neg_distortion'].append(ndi)
+        fit['pos_distortion'].append(pdi)
+        fit['neg_precision'].append(npr)
+        fit['pos_precision'].append(ppr)
+        fit['log_likelihood_sum'].append(lls)
 
         print()
 
     return fit
 
 
-def _pickle_load(d, force, randomize, n_chunk, method):
+def _pickle_load(d, monkey, force, randomize, n_chunk, method):
 
     randomize_str = "random_order" if randomize else "chronological_order"
     fit_path = os.path.join(BACKUP_FOLDER,
-                            f'fit_{randomize_str}_{n_chunk}chunk_{method}.p')
+                            f'fit_{monkey}_{randomize_str}_'
+                            f'{n_chunk}chunk_{method}.p')
 
     if not os.path.exists(fit_path) or force:
 
-        fit = _get_cross_validation(d, randomize=randomize, n_chunk=n_chunk,
+        fit = _get_cross_validation(d, monkey=monkey,
+                                    randomize=randomize, n_chunk=n_chunk,
                                     method=method)
 
         os.makedirs(os.path.dirname(fit_path), exist_ok=True)
@@ -150,18 +147,17 @@ def _pickle_load(d, force, randomize, n_chunk, method):
     return fit
 
 
-def run(d, n_chunk, force, randomize,
+def run(d, monkey, n_chunk, force, randomize,
         method='SLSQP'):
 
-    fit = _pickle_load(d=d, force=force, randomize=randomize, n_chunk=n_chunk,
+    fit = _pickle_load(d=d, monkey=monkey,
+                       force=force, randomize=randomize, n_chunk=n_chunk,
                        method=method)
 
-    monkeys = sorted(d.keys())
-    for monkey in monkeys:
-        log(f'Results fit: {monkey}', NAME)
-        for label in MODEL_PARAMETERS + ['log_likelihood_sum', ]:
-            log(f'{label} = {np.mean(fit[monkey][label]):.2f} '
-                f'(+/-{np.std(fit[monkey][label]):.2f} SD)', NAME)
-        print()
+    log(f'Results fit: {monkey}', NAME)
+    for label in MODEL_PARAMETERS + ['log_likelihood_sum', ]:
+        log(f'{label} = {np.mean(fit[label]):.2f} '
+            f'(+/-{np.std(fit[label]):.2f} SD)', NAME)
+    print()
 
     return fit

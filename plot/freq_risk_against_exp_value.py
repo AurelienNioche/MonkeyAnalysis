@@ -12,7 +12,7 @@ from scipy.optimize import curve_fit
 import experimental_data.filter
 
 from utils.log import log
-from utils.plot import fig_name
+from plot.utils import save_fig
 
 from scipy.stats.distributions import t
 
@@ -117,42 +117,34 @@ def _plot(expected_values_differences, risky_choice_means, color, ax,
     ax.tick_params(axis='both', which='minor', labelsize=ticks_label_font_size)
 
 
-def freq_risk_against_exp_value(d, f=sigmoid):
+def freq_risk_against_exp_value(d, monkey, f=sigmoid, pdf=None):
 
-    log(f"Analysing data for the risk attitude...\n", NAME)
+    log(f"Analysing data for the risk attitude for monkey {monkey}...\n", NAME)
 
-    monkeys = sorted(d.keys())
+    fig, axes = plt.subplots(ncols=2, figsize=(12, 5), dpi=200)
 
-    for monkey in monkeys:
+    for i, gain_only in enumerate((1, 0)):
 
-        fig, axes = plt.subplots(ncols=2, figsize=(12, 5), dpi=200)
+        log(f"Stats for risk against exp value "
+            f"- {monkey}"
+            f"- {'gain' if gain_only else 'loss'}:", name=NAME)
 
-        for j, gain_only in enumerate((1, 0)):
+        expected_values_differences, risky_choice_means = \
+            experimental_data.filter.get_choose_risky_loss_or_gain_only(
+                d, gain_only=gain_only)
 
-            log(f"Stats for risk against exp value - {monkey}:", name=NAME)
+        color = (COLOR_LOSS, COLOR_GAIN)[gain_only]
 
-            expected_values_differences, risky_choice_means = \
-                experimental_data.filter.get_choose_risky_loss_or_gain_only(
-                    d[monkey], gain_only=gain_only)
+        _plot(
+            expected_values_differences=expected_values_differences,
+            risky_choice_means=risky_choice_means,
+            color=color,
+            ax=axes[i],
+            f=f
+        )
 
-            color = (COLOR_LOSS, COLOR_GAIN)[gain_only]
-
-            _plot(
-                expected_values_differences=expected_values_differences,
-                risky_choice_means=risky_choice_means,
-                color=color,
-                ax=axes[j],
-                f=f
-            )
-
-        log(f"Creating figure '{FIG_FREQ_RISK_AGAINST_EXP_VALUE}' "
-            f"for monkey {monkey}...", NAME)
-
-        plt.tight_layout()
-
-        plt.savefig(fig_name(fig_type=FIG_FREQ_RISK_AGAINST_EXP_VALUE,
-                             monkey=monkey))
-        log(f"Done!\n", NAME)
+    save_fig(fig_type=FIG_FREQ_RISK_AGAINST_EXP_VALUE,
+             fig=fig, pdf=pdf, monkey=monkey)
 
 
 

@@ -5,7 +5,10 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE",
 from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
 
-from experimental_data.get import get_data
+from parameters.parameters import FIG_FOLDER
+from utils.log import log
+
+from experimental_data.get import get_data, get_monkeys
 
 from plot.history import history_best_param, history_control
 from plot.precision import precision
@@ -17,56 +20,81 @@ from plot.exemplary_case import exemplary_case
 
 import model.parameter_estimate
 from model.stats import stats_comparison_best_values, \
-    stats_regression_best_values, display_table_content
+    stats_regression_best_values
+
+import matplotlib.backends.backend_pdf
 
 
-def main(n_chunk=5, randomize_chunk_trials=False, force_fit=True,
-         print_latex=False):
+NAME = "main"
 
-    # Get data
-    # # For reproduction:
-    # d = get_data(starting_point="2017-03-01",
-    #              end_point="2019-09-30")
-    d = get_data()
 
-    # Get fit
-    fit = model.parameter_estimate.run(d, force=force_fit,
-                                       n_chunk=n_chunk,
-                                       randomize=randomize_chunk_trials)
+def main(n_chunk=5, randomize_chunk_trials=False, force_fit=True):
 
-    if print_latex:
-        # Print line for latex table
-        display_table_content(fit)
+    monkeys = get_monkeys()
 
-    # Stats for comparison of best parameter values
-    stats_comparison_best_values(fit)
+    for monkey in monkeys:
 
-    # Stats for comparison of best parameter values
-    rgr_param = stats_regression_best_values(fit, print_latex=print_latex)
+        try:
+            print()
+            log("-"*60 + f" {monkey} " + "-"*60 + "\n", name=NAME)
 
-    # Control history figure
-    history_control(d, n_chunk=n_chunk)
+            # A single pdf file for every figure
+            pdf = matplotlib.backends.backend_pdf.PdfPages(
+                os.path.join(FIG_FOLDER, f"{monkey}_fig.pdf"))
 
-    # Fig: Exemplary case
-    exemplary_case(d)
+            # Data
+            d = get_data(monkey)
+            # # For reproduction:
+            # d = get_data(monkey,
+            #              starting_point="2017-03-01",
+            #              end_point="2019-09-30")
 
-    # Fig: Control
-    control(d)
+            # Get fit
+            fit = model.parameter_estimate.run(
+                d,
+                monkey=monkey,
+                force=force_fit,
+                n_chunk=n_chunk,
+                randomize=randomize_chunk_trials)
 
-    # Freq risky choice against expected value
-    freq_risk_against_exp_value(d)
+            # Stats for comparison of best parameter values
+            stats_comparison_best_values(fit, monkey=monkey)
 
-    # Fig: History
-    history_best_param(fit, regression_param=rgr_param)
+            # Stats for comparison of best parameter values
+            rgr_param = stats_regression_best_values(fit, monkey=monkey)
 
-    # Fig: Utility function
-    utility(fit)
+            # Fig: Control
+            control(d, monkey=monkey, pdf=pdf)
 
-    # Fig: Probability distortion
-    probability_distortion(fit)
+            # Fig: Exemplary case
+            exemplary_case(d, monkey=monkey, pdf=pdf)
 
-    # Fig: Precision
-    precision(fit)
+            # Freq risky choice against expected value
+            freq_risk_against_exp_value(d, monkey=monkey, pdf=pdf)
+
+            # Fig: Utility function
+            utility(fit, monkey=monkey, pdf=pdf)
+
+            # Fig: Probability distortion
+            probability_distortion(fit, monkey=monkey, pdf=pdf)
+
+            # Fig: Precision
+            precision(fit, monkey=monkey, pdf=pdf)
+
+            # Fig: Control history
+            history_control(d, monkey=monkey, n_chunk=n_chunk, pdf=pdf)
+
+            # Fig: Best param history
+            history_best_param(fit, monkey=monkey,
+                               regression_param=rgr_param,
+                               pdf=pdf)
+
+            pdf.close()
+
+        except Exception as e:
+            log(f"I encountered exeception '{e}' "
+                f"while trying to execute for monkey '{monkey}'."
+                "I will skip this monkey...", name=NAME)
 
 
 if __name__ == '__main__':

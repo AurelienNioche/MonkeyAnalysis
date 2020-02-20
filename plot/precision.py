@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from parameters.parameters import COLOR_GAIN, COLOR_LOSS, FIG_PRECISION
 from model import model
 from utils.log import log
-from utils.plot import fig_name
+from plot.utils import save_fig
 
 NAME = "plot.precision"
 
@@ -77,52 +77,46 @@ def _plot(neg_precision, pos_precision, neg_risk_aversion, pos_risk_aversion,
     ax.set_ylabel("P(Choose risky option)", fontsize=axis_label_font_size)
 
 
-def precision(fit, show_average=True):
-
-    monkeys = sorted(fit.keys())
+def precision(fit, monkey, show_average=True, pdf=None):
 
     alpha_chunk = 0.5 if show_average else 1
 
-    for monkey in monkeys:
+    log(f"Creating figure '{FIG_PRECISION}' for monkey {monkey}...", NAME)
 
-        log(f"Creating figure '{FIG_PRECISION}' for monkey {monkey}...", NAME)
+    fig, ax = plt.subplots(figsize=(6, 5), dpi=200)
 
-        fig, ax = plt.subplots(figsize=(6, 5), dpi=200)
+    pra, nra, pdi, ndi, ppr, npr = \
+        fit['pos_risk_aversion'], \
+        fit['neg_risk_aversion'], \
+        fit['pos_distortion'], \
+        fit['neg_distortion'], \
+        fit['pos_precision'], \
+        fit['neg_precision']
 
-        pra = fit[monkey]['pos_risk_aversion']
-        nra = fit[monkey]['neg_risk_aversion']
-        pdi = fit[monkey]['pos_distortion']
-        ndi = fit[monkey]['neg_distortion']
-        ppr = fit[monkey]['pos_precision']
-        npr = fit[monkey]['neg_precision']
+    for j in range(len(pra)):
 
-        for j in range(len(pra)):
+        _plot(
+            neg_risk_aversion=nra[j],
+            pos_risk_aversion=pra[j],
+            neg_distortion=ndi[j],
+            pos_distortion=pdi[j],
+            neg_precision=npr[j],
+            pos_precision=ppr[j],
+            ax=ax,
+            linewidth=1,
+            alpha=alpha_chunk
+        )
 
-            _plot(
-                neg_risk_aversion=nra[j],
-                pos_risk_aversion=pra[j],
-                neg_distortion=ndi[j],
-                pos_distortion=pdi[j],
-                neg_precision=npr[j],
-                pos_precision=ppr[j],
-                ax=ax,
-                linewidth=1,
-                alpha=alpha_chunk
-            )
+    if show_average:
+        _plot(
+            neg_risk_aversion=np.mean(nra),
+            pos_risk_aversion=np.mean(pra),
+            neg_distortion=np.mean(ndi),
+            pos_distortion=np.mean(pdi),
+            neg_precision=np.mean(npr),
+            pos_precision=np.mean(ppr),
+            ax=ax
+        )
 
-        if show_average:
-            _plot(
-                neg_risk_aversion=np.mean(nra),
-                pos_risk_aversion=np.mean(pra),
-                neg_distortion=np.mean(ndi),
-                pos_distortion=np.mean(pdi),
-                neg_precision=np.mean(npr),
-                pos_precision=np.mean(ppr),
-                ax=ax
-            )
-
-        plt.tight_layout()
-
-        plt.savefig(fig_name(fig_type=FIG_PRECISION,
-                             monkey=monkey))
-        log(f"Done!\n", NAME)
+    save_fig(fig_type=FIG_PRECISION, fig=fig,
+             pdf=pdf, monkey=monkey)

@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from parameters.parameters import COLOR_LOSS, COLOR_GAIN, \
     FIG_PROBABILITY_DISTORTION
 from utils.log import log
-from utils.plot import fig_name
+from plot.utils import save_fig
 
 NAME = "plot.probability_distortion"
 
@@ -51,39 +51,32 @@ def _plot(neg_distortion, pos_distortion, ax,
     ax.tick_params(axis='both', which='major', labelsize=ticks_label_size)
 
 
-def probability_distortion(fit, show_average=True):
-
-    monkeys = sorted(fit.keys())
+def probability_distortion(fit, monkey, show_average=True, pdf=None):
 
     alpha_chunk = 0.5 if show_average else 1
 
-    for monkey in monkeys:
+    fig, ax = plt.subplots(figsize=(6, 5), dpi=200)
 
-        fig, ax = plt.subplots(figsize=(6, 5), dpi=200)
+    log(f"Creating figure '{FIG_PROBABILITY_DISTORTION}' "
+        f"for monkey {monkey}...", NAME)
 
-        log(f"Creating figure '{FIG_PROBABILITY_DISTORTION}' "
-            f"for monkey {monkey}...", NAME)
+    pdi = fit['pos_distortion']
+    ndi = fit['neg_distortion']
 
-        pdi = fit[monkey]['pos_distortion']
-        ndi = fit[monkey]['neg_distortion']
+    for j in range(len(pdi)):
 
-        for j in range(len(pdi)):
+        _plot(
+            neg_distortion=ndi[j],
+            pos_distortion=pdi[j],
+            alpha=alpha_chunk,
+            linewidth=1,
+            ax=ax)
 
-            _plot(
-                neg_distortion=ndi[j],
-                pos_distortion=pdi[j],
-                alpha=alpha_chunk,
-                linewidth=1,
-                ax=ax)
+    if show_average:
+        _plot(
+            neg_distortion=np.mean(ndi),
+            pos_distortion=np.mean(pdi),
+            ax=ax)
 
-        if show_average:
-            _plot(
-                neg_distortion=np.mean(ndi),
-                pos_distortion=np.mean(pdi),
-                ax=ax)
-
-        plt.tight_layout()
-
-        plt.savefig(fig_name(fig_type=FIG_PROBABILITY_DISTORTION,
-                             monkey=monkey))
-        log(f"Done!\n", NAME)
+    save_fig(fig_type=FIG_PROBABILITY_DISTORTION, fig=fig,
+             pdf=pdf, monkey=monkey)

@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import experimental_data.filter
 
 from utils.log import log
-from utils.plot import fig_name
+from plot.utils import save_fig
 
 from parameters.parameters import FIG_CONTROL, COLOR_GAIN, COLOR_LOSS
 
@@ -42,12 +42,12 @@ def _plot(results, ax):
 
             # For scatter
             y_scatter.append(v)
-            x_scatter.append(i)
+            x_scatter.append(i + np.random.uniform(-0.025*n, 0.025*n))
             colors_scatter.append(colors[i])
 
     fontsize = 10
 
-    ax.scatter(x_scatter, y_scatter, c=colors_scatter, s=30, alpha=0.5,
+    ax.scatter(x_scatter, y_scatter, c=colors_scatter, s=50, alpha=0.5,
                linewidth=0.0, zorder=1)
 
     ax.axhline(0.5, linestyle='--', color='0.3', zorder=-10, linewidth=0.5)
@@ -73,26 +73,18 @@ def _plot(results, ax):
     ax.set_aspect(3)
 
 
-def control(d):
+def control(d, monkey, pdf=None):
 
-    monkeys = sorted(d.keys())
+    log(f"Stats for control trials - {monkey}:", NAME)
 
-    for monkey in monkeys:
+    alternatives, control_types, hits = \
+        experimental_data.filter.get_control(d)
 
-        log(f"Stats for control trials - {monkey}:", NAME)
+    control_d = experimental_data.filter.cluster_hit_by_control_cond(
+        alternatives, control_types, hits)
 
-        alternatives, control_types, hits = \
-            experimental_data.filter.get_control(d[monkey])
-        control_d = experimental_data.filter.cluster_hit_by_control_cond(
-            alternatives, control_types, hits)
+    fig, ax = plt.subplots(figsize=(12, 6), dpi=200)
 
-        fig, ax = plt.subplots(figsize=(5, 3), dpi=200)
+    _plot(results=control_d, ax=ax)
 
-        _plot(results=control_d, ax=ax)
-
-        log(f"Creating figure '{FIG_CONTROL}'...",
-            name=NAME)
-        plt.tight_layout()
-
-        plt.savefig(fig_name(fig_type=FIG_CONTROL, monkey=monkey))
-        log(f"Done!\n", NAME)
+    save_fig(fig_type=FIG_CONTROL, fig=fig, pdf=pdf, monkey=monkey)
