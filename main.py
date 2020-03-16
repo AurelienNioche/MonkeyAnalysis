@@ -24,11 +24,13 @@ from model.stats import stats_comparison_best_values, \
 
 import matplotlib.backends.backend_pdf
 
+from plot import info
 
 NAME = "main"
 
 
-def main(n_chunk=5, randomize_chunk_trials=False, force_fit=True):
+def main(n_chunk=5, randomize_chunk_trials=False, force_fit=True,
+         skip_exception=True):
 
     monkeys = get_monkeys()
 
@@ -48,6 +50,9 @@ def main(n_chunk=5, randomize_chunk_trials=False, force_fit=True):
             # d = get_data(monkey,
             #              starting_point="2017-03-01",
             #              end_point="2019-09-30")
+
+            # Print info
+            info.write_pdf(d=d, monkey=monkey, pdf=pdf)
 
             # Get fit
             fit = model.parameter_estimate.run(
@@ -92,9 +97,12 @@ def main(n_chunk=5, randomize_chunk_trials=False, force_fit=True):
             pdf.close()
 
         except Exception as e:
-            log(f"I encountered exeception '{e}' "
-                f"while trying to execute for monkey '{monkey}'."
-                "I will skip this monkey...", name=NAME)
+            if skip_exception:
+                log(f"I encountered exeception '{e}' "
+                    f"while trying to execute for monkey '{monkey}'."
+                    "I will skip this monkey...", name=NAME)
+            else:
+                raise e
 
 
 if __name__ == '__main__':
