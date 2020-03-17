@@ -499,6 +499,8 @@ def control_history_sort_data(alternatives, control_types, hits, n_chunk):
             split = np.split(np.asarray(d[alt])[idx], n_chunk)
 
             for j, sp in enumerate(split):
-                results[cond][j][alt] = np.mean(sp)
+                # Skip empty slices
+                if len(sp):
+                    results[cond][j][alt] = np.mean(sp)
 
     return results

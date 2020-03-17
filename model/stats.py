@@ -31,7 +31,10 @@ def stats_comparison_best_values(fit, monkey):
     ]
 
     for x1, x2 in to_compare:
-        u, p = scipy.stats.mannwhitneyu(x1, x2)
+        try:
+            u, p = scipy.stats.mannwhitneyu(x1, x2)
+        except ValueError:
+            u, p = None, np.inf
         ps.append(p)
         us.append(u)
 

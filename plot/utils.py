@@ -16,7 +16,8 @@ def fig_name(fig_type, monkey):
 
 def save_fig(fig, fig_type, monkey, pdf):
 
-    log(f"Creating '{fig_type}' for monkey '{monkey}'...", name=NAME)
+    log(f"'{monkey}' - Creating figure '{fig_type}'...",
+        name=NAME, end=' ', flush=True)
     plt.tight_layout()
 
     if pdf is None:
@@ -25,4 +26,6 @@ def save_fig(fig, fig_type, monkey, pdf):
     else:
         pdf.savefig(fig)
 
-    log(f"Creating '{fig_type}' for monkey '{monkey}'...", name=NAME)
+    plt.close(fig)
+
+    print(f"Done!")

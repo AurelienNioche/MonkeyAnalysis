@@ -133,9 +133,9 @@ def history_control(d, monkey, n_chunk,
     fig, axes = plt.subplots(nrows=n_cond,
                              figsize=(12, 10), dpi=200)
 
-    log(f"Stats for success to control trials over time "
-        f"(fig: '{FIG_HISTORY_CONTROL}') - {monkey}",
-        NAME)
+    # log(f"Stats for success to control trials over time "
+    #     f"(fig: '{FIG_HISTORY_CONTROL}') - {monkey}",
+    #     NAME)
 
     alternatives, control_types, hits = \
         experimental_data.filter.get_control(d)

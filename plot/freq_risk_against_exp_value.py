@@ -50,7 +50,14 @@ def stats(y, p_opt, p_cov, alpha=0.01):
         name=NAME)
     log(f"student-t value: {tval:.2f}", name=NAME)
 
-    p_err = np.sqrt(np.diag(p_cov))
+    try:
+        p_err = np.sqrt(np.diag(p_cov))
+    except FloatingPointError:
+        print(np.diag(p_cov))
+        d = np.diag(p_cov)
+        d.setflags(write=True)
+        d[d < 0] = 0
+        p_err = np.sqrt(d)
 
     for i, p, std in zip(range(n), p_opt, p_err):
 
@@ -119,14 +126,14 @@ def _plot(expected_values_differences, risky_choice_means, color, ax,
 
 def freq_risk_against_exp_value(d, monkey, f=sigmoid, pdf=None):
 
-    log(f"Analysing data for the risk attitude for monkey {monkey}...\n", NAME)
+    print()
 
     fig, axes = plt.subplots(ncols=2, figsize=(12, 5), dpi=200)
 
     for i, gain_only in enumerate((1, 0)):
 
-        log(f"Stats for risk against exp value "
-            f"- {monkey}"
+        log(f"{monkey} "
+            f"- Stats for risk against exp value "
             f"- {'gain' if gain_only else 'loss'}:", name=NAME)
 
         expected_values_differences, risky_choice_means = \

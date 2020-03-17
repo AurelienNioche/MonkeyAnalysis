@@ -81,7 +81,7 @@ def precision(fit, monkey, show_average=True, pdf=None):
 
     alpha_chunk = 0.5 if show_average else 1
 
-    log(f"Creating figure '{FIG_PRECISION}' for monkey {monkey}...", NAME)
+    # log(f"Creating figure '{FIG_PRECISION}' for monkey {monkey}...", NAME)
 
     fig, ax = plt.subplots(figsize=(6, 5), dpi=200)
 

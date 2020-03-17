@@ -1,6 +1,8 @@
 import os
 from datetime import datetime
+import warnings
 
+import numpy as np
 import pandas as pd
 import pytz
 import xlsxwriter
@@ -49,18 +51,36 @@ def import_data_xlsx(data_file='data.xlsx'):
     df = pd.read_excel(os.path.join(DATA_FOLDER, data_file), )
     print("Done!")
 
-    print("Writing in db...", end=" ", flush=True)
+    print("Preprocess the data...", end=" ", flush=True)
     entries = df.to_dict('records')
 
-    for entry_dic in entries:
-        date_string = entry_dic['date']
-        date_string = date_string.replace('None', '')
-        entry_dic['date'] = \
-            datetime.strptime(date_string, DATE_FORMAT)\
-            .astimezone(pytz.UTC)
+    filtered_entries = []
 
+    for i, entry_dic in enumerate(entries):
+        # if 'nan' in entry_dic.values():
+        #     raise ValueError
+        error = False
+        for k, v in entry_dic.items():
+            if str(v) == '':
+                error = True
+            elif type(v) in (float, int) and np.isnan(v):
+                error = True
+
+            if error:
+                msg = f"I will ignore line {i+1} / id={entry_dic['id']} (missing data or wrong format for column '{k}')"
+                warnings.warn(msg)
+                break
+        if error is False:
+            date_string = entry_dic['date']
+            date_string = date_string.replace('None', '')
+            entry_dic['date'] = \
+                datetime.strptime(date_string, DATE_FORMAT) \
+                .astimezone(pytz.UTC)
+            filtered_entries.append(entry_dic)
+    print("Done!")
+    print("Writing in db...", end=" ", flush=True)
     ExperimentalData.objects.bulk_create(
-        ExperimentalData(**val) for val in entries)
+        ExperimentalData(**val) for val in filtered_entries)
 
     print("Done!")
 

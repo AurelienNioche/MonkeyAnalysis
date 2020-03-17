@@ -48,7 +48,7 @@ def _get_cross_validation(d, monkey, randomize, n_chunk,
                                   (0.01, 1), (0, 5), (0, 5)),
                           init_guess=None,
                           method='evolutionary'):
-
+    print()
     log(f'Getting fit for {monkey}...', NAME)
     fit = {}
 
@@ -117,8 +117,6 @@ def _get_cross_validation(d, monkey, randomize, n_chunk,
         fit['neg_precision'].append(npr)
         fit['pos_precision'].append(ppr)
         fit['log_likelihood_sum'].append(lls)
-
-        print()
 
     return fit
 

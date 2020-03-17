@@ -6,8 +6,7 @@ from plot.utils import save_fig
 
 def write_pdf(d, monkey, pdf):
 
-
-    n_trials= len(d.choice)
+    n_trials = len(d.choice)
 
     lotteries = {}
     for i in range(n_trials):
@@ -86,4 +85,4 @@ def write_pdf(d, monkey, pdf):
             va='center')
 
     ax.set_axis_off()
-    save_fig(fig=fig, pdf=pdf, monkey=monkey, fig_type='INFO')
+    save_fig(fig=fig, pdf=pdf, monkey=monkey, fig_type='info')

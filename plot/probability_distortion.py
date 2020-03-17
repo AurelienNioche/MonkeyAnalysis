@@ -57,8 +57,8 @@ def probability_distortion(fit, monkey, show_average=True, pdf=None):
 
     fig, ax = plt.subplots(figsize=(6, 5), dpi=200)
 
-    log(f"Creating figure '{FIG_PROBABILITY_DISTORTION}' "
-        f"for monkey {monkey}...", NAME)
+    # log(f"Creating figure '{FIG_PROBABILITY_DISTORTION}' "
+    #     f"for monkey {monkey}...", NAME)
 
     pdi = fit['pos_distortion']
     ndi = fit['neg_distortion']

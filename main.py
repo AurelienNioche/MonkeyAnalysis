@@ -26,11 +26,17 @@ import matplotlib.backends.backend_pdf
 
 from plot import info
 
+import numpy as np
+
+import warnings
+
+np.seterr(all='raise')
+
 NAME = "main"
 
 
 def main(n_chunk=5, randomize_chunk_trials=False, force_fit=True,
-         skip_exception=True):
+         skip_exception=False):
 
     monkeys = get_monkeys()
 
@@ -38,7 +44,7 @@ def main(n_chunk=5, randomize_chunk_trials=False, force_fit=True,
 
         try:
             print()
-            log("-"*60 + f" {monkey} " + "-"*60 + "\n", name=NAME)
+            print("-"*60 + f" {monkey} " + "-"*60 + "\n")
 
             # A single pdf file for every figure
             pdf = matplotlib.backends.backend_pdf.PdfPages(
@@ -98,9 +104,11 @@ def main(n_chunk=5, randomize_chunk_trials=False, force_fit=True,
 
         except Exception as e:
             if skip_exception:
-                log(f"I encountered exeception '{e}' "
-                    f"while trying to execute for monkey '{monkey}'."
-                    "I will skip this monkey...", name=NAME)
+                msg = \
+                    f"I encountered exeception '{e}' " \
+                    f"while trying to execute for monkey '{monkey}'." \
+                    "I will skip this monkey..."
+                warnings.warn(msg, name=NAME)
             else:
                 raise e
 
