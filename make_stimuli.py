@@ -5,7 +5,6 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE",
 from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
 
-import inspect
 import itertools as it
 
 import numpy as np
@@ -14,7 +13,7 @@ import xlsxwriter
 from stimuli.import_export import import_stimuli_xlsx
 
 
-class StimuliFinder:
+class StimuliGenerator:
 
     XLS_NAME = "stimuli.xlsx"
     XLS_FOLDER = "data"
@@ -71,7 +70,7 @@ class StimuliFinder:
               f"x0 = ({left_x}, {right_x}), type={lottery_type}")
         self.xls_row += 1
 
-    def _type_1(self):
+    def _type_01(self):
 
         comment = "CONTROL; p fixed / x varies, x0 negative vs positive"
         print(comment)
@@ -82,7 +81,7 @@ class StimuliFinder:
             self._write(left_p=i, right_p=i, left_x=j[0], right_x=j[1],
                         lottery_type=1, comment=comment)
 
-    def _type_2(self):
+    def _type_02(self):
 
         comment = "CONTROL; p fixed / x varies; x0 positive"
         print(comment)
@@ -94,7 +93,7 @@ class StimuliFinder:
                         lottery_type=2,
                         comment=comment)
 
-    def _type_3(self):
+    def _type_03(self):
 
         comment = "CONTROL; p fixed / x varies; x0 negative"
         print(comment)
@@ -105,7 +104,7 @@ class StimuliFinder:
             self._write(left_p=i, right_p=i, left_x=j[0], right_x=j[1],
                         lottery_type=3, comment=comment)
 
-    def _type_4(self):
+    def _type_04(self):
 
         comment = "CONTROL; p varies / x fixed; x0 positive"
         print(comment)
@@ -116,7 +115,7 @@ class StimuliFinder:
             self._write(left_p=i[0], right_p=i[1], left_x=j, right_x=j,
                         lottery_type=4, comment=comment)
 
-    def _type_5(self):
+    def _type_05(self):
 
         comment = "CONTROL; p varies / x fixed; x0 negative"
         print(comment)
@@ -127,7 +126,7 @@ class StimuliFinder:
             self._write(left_p=i[0], right_p=i[1], left_x=j, right_x=j,
                         lottery_type=5, comment=comment)
 
-    def _type_6(self):
+    def _type_06(self):
 
         comment = "INCONGRUENT POS; p varies / x varies; x0 positive"
         print(comment)
@@ -139,7 +138,7 @@ class StimuliFinder:
             self._write(left_p=i[0], right_p=i[1], left_x=j[0], right_x=j[1],
                         lottery_type=6, comment=comment)
 
-    def _type_7(self):
+    def _type_07(self):
 
         comment = "INCONGRUENT NEG; p varies / x varies; x0 negative"
         print(comment)
@@ -151,7 +150,7 @@ class StimuliFinder:
             self._write(left_p=i[0], right_p=i[1], left_x=j[0], right_x=j[1],
                         lottery_type=7, comment=comment)
 
-    def _type_8(self):
+    def _type_08(self):
 
         comment = "CONGRUENT POS; p varies / x varies; x0 positive."
         print(comment)
@@ -163,7 +162,7 @@ class StimuliFinder:
             self._write(left_p=i[0], right_p=i[1], left_x=j[0], right_x=j[1],
                         lottery_type=8, comment=comment)
 
-    def _type_9(self):
+    def _type_09(self):
 
         comment = "CONGRUENT NEG; p varies / x varies; x0 negative"
         print(comment)
@@ -211,7 +210,7 @@ class StimuliFinder:
             self._write(left_p=i, right_p=1, left_x=j, right_x=0,
                         lottery_type=12, comment=comment)
 
-    def all(self):
+    def make_xlsx(self):
 
         attr_list = sorted(dir(self))
         for attr in attr_list:
@@ -223,9 +222,8 @@ class StimuliFinder:
 
 def main():
 
-    sf = StimuliFinder()
-
-    sf.all()
+    sf = StimuliGenerator()
+    sf.make_xlsx()
 
     import_stimuli_xlsx()
 

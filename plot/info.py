@@ -13,42 +13,47 @@ def write_pdf(d, monkey, pdf):
     lotteries = {}
     for i in range(n_trials):
 
-        st = Stimuli.objects.filter(
-            left_p=d.p.left[i],
-            left_x0=d.x.left[i],
-            right_p=d.p.right[i],
-            right_x0=d.x.right[i])
-
-        if st.count():
-            lt = (d.p.left[i],
-                  d.x.left[i],
-                  d.p.right[i],
-                  d.x.right[i])
-        else:
-            st = Stimuli.objects.filter(
-                left_p=d.p.right[i],
-                left_x0=d.x.right[i],
-                right_p=d.p.left[i],
-                right_x0=d.x.left[i]
-            )
-            if st.count():
-                lt = (d.p.right[i],
-                      d.x.right[i],
-                      d.p.left[i],
-                      d.x.left[i])
-            else:
-                raise ValueError("Pair of lottery is not referenced: \n"
-                                 f"p_left={d.p.left[i]}\n"
-                                 f"p_right={d.p.right[i]}\n"
-                                 f"x0_left={d.x.left[i]}\n"
-                                 f"x0_right={d.x.right[i]}\n")
-            # else:
+        lt = (d.p.left[i],
+              d.x.left[i],
+              d.p.right[i],
+              d.x.right[i])
 
         if lt in lotteries:
             lotteries[lt] += 1
         else:
+            lt_r = \
+                (d.p.right[i],
+                 d.x.right[i],
+                 d.p.left[i],
+                 d.x.left[i])
+            if lt_r in lotteries:
+                lotteries[lt_r] += 1
 
-            lotteries[lt] = 1
+            else:
+                st = Stimuli.objects.filter(
+                    left_p=d.p.left[i],
+                    left_x0=d.x.left[i],
+                    right_p=d.p.right[i],
+                    right_x0=d.x.right[i])
+
+                if st.count():
+                    lotteries[lt] = 1
+                else:
+                    st = Stimuli.objects.filter(
+                        left_p=d.p.right[i],
+                        left_x0=d.x.right[i],
+                        right_p=d.p.left[i],
+                        right_x0=d.x.left[i]
+                    )
+                    if st.count():
+                        lotteries[lt_r] = 1
+                    else:
+                        raise ValueError(
+                            "Pair of lottery is not referenced: \n"
+                             f"p_left={d.p.left[i]}\n"
+                             f"p_right={d.p.right[i]}\n"
+                             f"x0_left={d.x.left[i]}\n"
+                             f"x0_right={d.x.right[i]}\n")
 
     counts = list(lotteries.values())
 
