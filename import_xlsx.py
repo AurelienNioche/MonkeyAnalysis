@@ -14,4 +14,3 @@ if __name__ == "__main__":
     # # For reproduction:
     # import_xls('data_GH.xlsx')
     import_data_xlsx()
-    import_stimuli_xlsx()

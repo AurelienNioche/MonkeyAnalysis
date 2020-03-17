@@ -3,6 +3,8 @@ import numpy as np
 
 from plot.utils import save_fig
 
+from stimuli.models import Stimuli
+
 
 def write_pdf(d, monkey, pdf):
 
@@ -10,26 +12,47 @@ def write_pdf(d, monkey, pdf):
 
     lotteries = {}
     for i in range(n_trials):
-        lt = (d.p.left[i],
-              d.x.left[i],
-              d.p.right[i],
-              d.x.right[i])
+
+        st = Stimuli.objects.filter(
+            left_p=d.p.left[i],
+            left_x0=d.x.left[i],
+            right_p=d.p.right[i],
+            right_x0=d.x.right[i])
+
+        if st.count():
+            lt = (d.p.left[i],
+                  d.x.left[i],
+                  d.p.right[i],
+                  d.x.right[i])
+        else:
+            st = Stimuli.objects.filter(
+                left_p=d.p.right[i],
+                left_x0=d.x.right[i],
+                right_p=d.p.left[i],
+                right_x0=d.x.left[i]
+            )
+            if st.count():
+                lt = (d.p.right[i],
+                      d.x.right[i],
+                      d.p.left[i],
+                      d.x.left[i])
+            else:
+                raise ValueError("Pair of lottery is not referenced: \n"
+                                 f"p_left={d.p.left[i]}\n"
+                                 f"p_right={d.p.right[i]}\n"
+                                 f"x0_left={d.x.left[i]}\n"
+                                 f"x0_right={d.x.right[i]}\n")
+            # else:
+
         if lt in lotteries:
             lotteries[lt] += 1
         else:
-            lt_r = (d.p.right[i],
-                    d.x.right[i],
-                    d.p.left[i],
-                    d.x.left[i])
-            if lt_r in lotteries:
-                lotteries[lt_r] += 1
-            else:
-                if d.p.left[i] <= d.p.right[i]:
-                    lotteries[lt] = 1
-                else:
-                    lotteries[lt_r] = 1
+
+            lotteries[lt] = 1
 
     counts = list(lotteries.values())
+
+    n_lotteries = len(counts)
     n_per_lottery_mean = np.mean(counts)
     n_per_lottery_std = np.std(counts)
 
@@ -75,6 +98,7 @@ def write_pdf(d, monkey, pdf):
     fig, ax = plt.subplots()
 
     t = f"{monkey}\n\n" \
+        f"N lotteries = {n_lotteries}\n" \
         f"N trials = {n_trials}\n" \
         f"N per lottery = {n_per_lottery_mean:.2f} " \
         f"(+/- {n_per_lottery_std:.2f} STD)\n" \
