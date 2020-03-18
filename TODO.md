@@ -1,20 +1,28 @@
 # TO DO
 
+Figures: 
 * Display stats on figures 
 
-* Freq against EV: same figure 
+* Freq against EV: put losses and gains on the same figure 
 
-In table:
-    * bias L/R
-    * Each median control per type
-    * Each best-fit parameter value
+Output table:
+
+* bias L/R
+* Each median control per type
+* Each best-fit parameter value
     
-For control:
-    * sigmoid?
+Supplementary analysis:
+
+* for control: sigmoid EV / p choice?
     
  
-Define hypothesis
+Define hypothesis:
 
 * Rank <=> risk
 * understanding prob <=> rank
 * Food access due to rank => risk
+
+
+Target:
+* Animal Cognition
+* Animal Behavior
