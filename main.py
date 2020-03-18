@@ -6,7 +6,7 @@ from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
 
 from parameters.parameters import FIG_FOLDER
-from utils.log import log
+# from utils.log import log
 
 from experimental_data.get import get_data, get_monkeys
 
@@ -51,7 +51,7 @@ def main(n_chunk=5, randomize_chunk_trials=False, force_fit=True,
                 os.path.join(FIG_FOLDER, f"{monkey}_fig.pdf"))
 
             # Data
-            d = get_data(monkey)
+            d = get_data(monkey, starting_point="2020-02-18")
             # # For reproduction:
             # d = get_data(monkey,
             #              starting_point="2017-03-01",

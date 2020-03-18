@@ -96,19 +96,19 @@ def write_pdf(d, monkey, pdf):
             else:
                 pass
 
-    fo_st_dominance = success / n_control
+    fo_st_dominance = success / n_control * 100
 
     choice_right = (np.sum(d.choice) / n_trials)*100
 
     fig, ax = plt.subplots()
 
     t = f"{monkey}\n\n" \
-        f"N lotteries = {n_lotteries}\n" \
-        f"N trials = {n_trials}\n" \
-        f"N per lottery = {n_per_lottery_mean:.2f} " \
+        f"N lottery pairs = {n_lotteries}\n" \
+        f"N total trials = {n_trials}\n" \
+        f"N trials per lottery pair = {n_per_lottery_mean:.2f} " \
         f"(+/- {n_per_lottery_std:.2f} STD)\n" \
         f"Choose right = {choice_right:.2f}%\n" \
-        f"Respect of first-order stochastic dominance = {fo_st_dominance:.2f}%"
+        f"Choose the best option if it exists = {fo_st_dominance:.2f}%"
 
     ax.text(0.5, 0.5, t, fontsize=15, wrap=True, ha='center',
             va='center')
