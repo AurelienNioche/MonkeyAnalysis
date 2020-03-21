@@ -1,9 +1,12 @@
 # TO DO
 
 Figures: 
-* Display stats on figures 
+* Display stats on figures [DONE]
 
-* Freq against EV: put losses and gains on the same figure 
+* Freq against EV: put losses and gains on the same figure [DONE]
+
+Data structure:
+* Choose between n_chunk and n_trial_per_chunk
 
 Output table:
 

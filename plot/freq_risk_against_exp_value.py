@@ -9,7 +9,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 
-import experimental_data.filter
+from experimental_data.filter.risk import get_choose_risky_loss_or_gain_only
 
 from utils.log import log
 from plot.utils import save_fig
@@ -59,15 +59,21 @@ def stats(y, p_opt, p_cov, alpha=0.01):
         d[d < 0] = 0
         p_err = np.sqrt(d)
 
+    r = []
+
     for i, p, std in zip(range(n), p_opt, p_err):
 
         me = std * tval
         log(f'p{i}: {p:.2f} [{p - me:.2f}  {p + me:.2f}]', name=NAME)
-    print()
+        r.append(
+            {"val": p, "ic-": p - me, "ic+": p + me}
+        )
+
+    return r
 
 
 def _plot(expected_values_differences, risky_choice_means, color, ax,
-          f=sigmoid):
+          f=sigmoid, label=None):
 
     line_width = 3
     axis_label_font_size = 20
@@ -77,6 +83,7 @@ def _plot(expected_values_differences, risky_choice_means, color, ax,
     x_data = expected_values_differences
     y_data = risky_choice_means
 
+    stats_r = None
     try:
 
         # Fit sigmoid
@@ -84,14 +91,15 @@ def _plot(expected_values_differences, risky_choice_means, color, ax,
                                  maxfev=10000)
 
         # Do stats about fit
-        stats(y=y_data, p_cov=p_cov, p_opt=p_opt)
+        stats_r = stats(y=y_data, p_cov=p_cov, p_opt=p_opt)
 
         # Plot
         n_points = 50  # Arbitrary neither too small, or too large
         x = np.linspace(min(x_data), max(x_data), n_points)
         y = f(x, *p_opt)
 
-        ax.plot(x, y, color=color, linewidth=line_width)
+        ax.plot(x, y, color=color, linewidth=line_width, label=label)
+        ax.legend()
 
     except RuntimeError as e:
         log(e, NAME)
@@ -123,32 +131,51 @@ def _plot(expected_values_differences, risky_choice_means, color, ax,
     ax.tick_params(axis='both', which='major', labelsize=ticks_label_font_size)
     ax.tick_params(axis='both', which='minor', labelsize=ticks_label_font_size)
 
+    return stats_r[-1]
+
 
 def freq_risk_against_exp_value(d, monkey, f=sigmoid, pdf=None):
 
     print()
 
-    fig, axes = plt.subplots(ncols=2, figsize=(12, 5), dpi=200)
+    fig, ax = plt.subplots(figsize=(6, 5), dpi=200)
+
+    stats_r = {}
 
     for i, gain_only in enumerate((1, 0)):
 
+        cond = 'gain' if gain_only else 'loss'
+
         log(f"{monkey} "
             f"- Stats for risk against exp value "
-            f"- {'gain' if gain_only else 'loss'}:", name=NAME)
+            f"- {cond}:", name=NAME)
 
         expected_values_differences, risky_choice_means = \
-            experimental_data.filter.get_choose_risky_loss_or_gain_only(
+            get_choose_risky_loss_or_gain_only(
                 d, gain_only=gain_only)
 
         color = (COLOR_LOSS, COLOR_GAIN)[gain_only]
 
-        _plot(
+        stats_r[cond] = _plot(
             expected_values_differences=expected_values_differences,
             risky_choice_means=risky_choice_means,
             color=color,
-            ax=axes[i],
+            ax=ax,
+            label=cond,
             f=f
         )
+
+    txt = r"$F(x) = \dfrac{1}{1 + \exp(-k * (x - x_0))}$" + "\n\n"
+    for cond in ('gain', 'loss'):
+        txt += r"$k_{" + f"{cond}" + "}=" + \
+               f"{stats_r[cond]['val']:.2f}\," \
+               f"[{stats_r[cond]['ic-']:.2f}, " \
+               f"{stats_r[cond]['ic+']:.2f}]" + "$\n"
+
+    ax.text(0.05, 0.9, txt,
+            horizontalalignment='left',
+            verticalalignment='center',
+            transform=ax.transAxes)
 
     save_fig(fig_type=FIG_FREQ_RISK_AGAINST_EXP_VALUE,
              fig=fig, pdf=pdf, monkey=monkey)

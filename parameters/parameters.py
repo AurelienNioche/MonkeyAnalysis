@@ -48,3 +48,18 @@ MODEL_PARAMETERS = [
 
 COLOR_LOSS = 'C1'
 COLOR_GAIN = 'C0'
+
+SAME_P_GAIN_VS_LOSS = 'same p - gain vs loss'
+SAME_P_GAIN = 'same p - gain'
+SAME_P_LOSS = 'same p - loss'
+SAME_X0_GAIN = 'same x0 - gain'
+SAME_X0_LOSS = 'same x0 - loss'
+
+GAIN = 'gain'
+LOSS = 'loss'
+
+CONTROL_CONDITIONS = SAME_P_GAIN_VS_LOSS, \
+                     SAME_P_GAIN, SAME_P_LOSS, \
+                     SAME_X0_GAIN, SAME_X0_LOSS
+LEFT = 'left'
+RIGHT = 'right'

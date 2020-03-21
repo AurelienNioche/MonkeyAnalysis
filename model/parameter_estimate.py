@@ -5,6 +5,7 @@ import scipy.stats
 import scipy.optimize
 
 import experimental_data.filter
+import experimental_data.filter.risk
 from parameters.parameters import MODEL_PARAMETERS, BACKUP_FOLDER
 from utils.log import log
 from model import model
@@ -52,7 +53,7 @@ def _get_cross_validation(d, monkey, randomize, n_chunk,
     log(f'Getting fit for {monkey}...', NAME)
     fit = {}
 
-    alternatives, choose_risky = experimental_data.filter.get_choose_risky(d)
+    alternatives, choose_risky = experimental_data.filter.risk.get_choose_risky(d)
 
     n_trials = len(alternatives)
     reminder = n_trials % n_chunk
@@ -82,8 +83,7 @@ def _get_cross_validation(d, monkey, randomize, n_chunk,
 
     for p in parts:
 
-        alt, n, k = experimental_data.filter\
-            .cluster_risky_choice_by_alternative(
+        alt, n, k = experimental_data.filter.risk.cluster_risky_choice_by_alternative(
                 alternatives[p], choose_risky[p])
 
         args = (alt, n, k,)

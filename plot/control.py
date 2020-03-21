@@ -73,15 +73,9 @@ def _plot(results, ax):
     ax.set_aspect(3)
 
 
-def control(d, monkey, pdf=None):
+def control(control_d, monkey, pdf=None):
 
     log(f"Stats for control trials - {monkey}:", NAME)
-
-    alternatives, control_types, hits = \
-        experimental_data.filter.get_control(d)
-
-    control_d = experimental_data.filter.cluster_hit_by_control_cond(
-        alternatives, control_types, hits)
 
     fig, ax = plt.subplots(figsize=(12, 6), dpi=200)
 

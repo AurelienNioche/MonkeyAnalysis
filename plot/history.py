@@ -2,8 +2,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import experimental_data.filter
+import experimental_data.filter.control
+import parameters.parameters
 
-from experimental_data.filter import control_history_sort_data
+from experimental_data.filter.control import control_history_sort_data
 from utils.log import log
 from plot.utils import save_fig
 
@@ -120,7 +122,7 @@ def _plot_history_control(results, color, ax, last=False,
     ax.set_title(title, fontsize=fontsize+1)
 
 
-def history_control(d, monkey, n_chunk,
+def history_control(hist_control_d, monkey,
                     labels=("Loss vs gains", "Diff. $x +$, same $p$",
                             "Diff. $x -$, same $p$",
                             "Diff. $p$, same $x +$", "Diff. $p$, same $x -$"),
@@ -128,7 +130,7 @@ def history_control(d, monkey, n_chunk,
                             COLOR_LOSS),
                     pdf=None):
 
-    n_cond = len(experimental_data.filter.control_conditions)
+    n_cond = len(parameters.parameters.CONTROL_CONDITIONS)
 
     fig, axes = plt.subplots(nrows=n_cond,
                              figsize=(12, 10), dpi=200)
@@ -137,13 +139,13 @@ def history_control(d, monkey, n_chunk,
     #     f"(fig: '{FIG_HISTORY_CONTROL}') - {monkey}",
     #     NAME)
 
-    alternatives, control_types, hits = \
-        experimental_data.filter.get_control(d)
+    # alternatives, control_types, hits = \
+    #     experimental_data.filter.control.get_control(d)
+    #
+    # control_d = control_history_sort_data(alternatives, control_types,
+    #                                       hits, n_chunk=n_chunk)
 
-    control_d = control_history_sort_data(alternatives, control_types,
-                                          hits, n_chunk=n_chunk)
-
-    for i, cond in enumerate(experimental_data.filter.control_conditions):
+    for i, cond in enumerate(parameters.parameters.CONTROL_CONDITIONS):
 
         color = colors[i]
         title = labels[i]
@@ -151,7 +153,7 @@ def history_control(d, monkey, n_chunk,
         last = i == n_cond-1
 
         _plot_history_control(
-            results=control_d[cond],
+            results=hist_control_d[cond],
             color=color,
             ax=axes[i],
             last=last,

@@ -5,7 +5,9 @@ Produce the the certainty-risk trade-off figure
 import matplotlib.pyplot as plt
 
 import experimental_data.filter
-from parameters.parameters import COLOR_GAIN, COLOR_LOSS, FIG_EXEMPLARY_CASE
+import experimental_data.filter.exemplary
+from parameters.parameters import COLOR_GAIN, COLOR_LOSS, FIG_EXEMPLARY_CASE, \
+    GAIN, LOSS
 
 from utils.log import log
 from plot.utils import save_fig
@@ -21,10 +23,10 @@ def _plot(results, color_gain, color_loss, ax):
 
     names = "Gain", "Loss"
 
-    ax.scatter(names, (results["gains"], results["losses"]),
+    ax.scatter(names, (results[GAIN], results[LOSS]),
                color=(color_gain, color_loss), s=80, zorder=2)
 
-    ax.plot(names, (results["gains"], results["losses"]), color="black",
+    ax.plot(names, (results[GAIN], results[LOSS]), color="black",
             zorder=1, alpha=0.5, linestyle='--')
     ax.set_xlabel("\nLotteries potential outputs",
                   fontsize=axis_label_font_size)
@@ -36,6 +38,18 @@ def _plot(results, color_gain, color_loss, ax):
         "F(Choose riskiest option)",
         fontsize=axis_label_font_size)
 
+    p = results['stats']['p']
+    str_p = f"{p:.3f}" if p >= 0.001 else " < 0.001"
+
+    txt = \
+        r"$\chi^2=" + f"{results['stats']['val']:.2f}$\n" + \
+        f"$p={str_p}$"
+
+    ax.text(0.1, 0.9, txt,
+            horizontalalignment='left',
+            verticalalignment='center',
+            transform=ax.transAxes)
+
     ax.set_aspect(2)
 
 
@@ -46,7 +60,7 @@ def exemplary_case(d, monkey, pdf=None):
     log(f"Stats for exemplary case - {monkey}...",
         name=NAME)
 
-    ex_d = experimental_data.filter.get_exemplary_case(d)
+    ex_d = experimental_data.filter.exemplary.get_exemplary_case(d)
     if ex_d is None:
         log(f"[{NAME}] "
             f"No data available I can not plot '{FIG_EXEMPLARY_CASE}'.",
