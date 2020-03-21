@@ -95,8 +95,12 @@ def main(n_chunk=5, starting_point="2020-02-18",
             alternatives, control_types, hits = \
                 experimental_data.filter.control.get_control(d)
 
-            control_d = experimental_data.filter.control.cluster_hit_by_control_cond(
-                alternatives, control_types, hits)
+            control_d = \
+                experimental_data.filter.control.cluster_hit_by_control_cond(
+                    alternatives, control_types, hits)
+
+            for cd in control_types:
+                results[cd].append(np.median(list(control_d[cd].values())))
 
             # Fig: Control
             control(control_d=control_d, monkey=monkey, pdf=pdf)
