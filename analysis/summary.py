@@ -4,7 +4,7 @@ import xlsxwriter
 from parameters.parameters import DATA_FOLDER
 
 from parameters.parameters import FIG_FOLDER, MODEL_PARAMETERS, \
-    CONTROL_CONDITIONS, CHOOSE_RIGHT, MONKEY_NAME
+    CONTROL_CONDITIONS, CHOOSE_RIGHT, MONKEY_NAME, N_TRIALS
 
 
 class Summary:
@@ -18,7 +18,7 @@ class Summary:
     @staticmethod
     def _get_columns():
 
-        col = [MONKEY_NAME, CHOOSE_RIGHT]
+        col = [MONKEY_NAME, N_TRIALS, CHOOSE_RIGHT]
         for cd in CONTROL_CONDITIONS:
             col.append(cd)
 

@@ -66,3 +66,4 @@ RIGHT = 'right'
 
 CHOOSE_RIGHT = 'choose_right'
 MONKEY_NAME = 'monkey_name'
+N_TRIALS = 'n_trials'
