@@ -10,7 +10,7 @@ application = get_wsgi_application()
 import matplotlib.backends.backend_pdf
 
 from parameters.parameters import FIG_FOLDER, MODEL_PARAMETERS, \
-    CONTROL_CONDITIONS
+    CONTROL_CONDITIONS, CHOOSE_RIGHT, MONKEY_NAME
 # from utils.log import log
 
 from experimental_data.get import get_data, get_monkeys
@@ -27,6 +27,9 @@ from plot.exemplary_case import exemplary_case
 import model.parameter_estimate
 from model.stats import stats_comparison_best_values, \
     stats_regression_best_values
+
+import analysis.summary
+import analysis.info
 
 from plot import info
 
@@ -45,14 +48,7 @@ def main(n_chunk=5, starting_point="2020-02-18",
 
     monkeys = get_monkeys()
 
-    results = {
-        "choose_right": [],
-    }
-    for cd in CONTROL_CONDITIONS:
-        results[cd] = []
-
-    for pr in MODEL_PARAMETERS:
-        results[pr] = []
+    summary = analysis.summary.create()
 
     for monkey in monkeys:
 
@@ -71,8 +67,13 @@ def main(n_chunk=5, starting_point="2020-02-18",
             #              starting_point="2017-03-01",
             #              end_point="2019-09-30")
 
+            # Add monkey name in summary
+            summary[MONKEY_NAME].append(monkey)
+
             # Print info
-            info.write_pdf(d=d, monkey=monkey, pdf=pdf)
+            _info = analysis.info.get(d=d)
+            info.write_pdf(info=_info, monkey=monkey, pdf=pdf)
+            summary[CHOOSE_RIGHT].append(_info.choose_right)
 
             # Get fit
             fit = model.parameter_estimate.run(
@@ -84,7 +85,8 @@ def main(n_chunk=5, starting_point="2020-02-18",
 
             # Include in summary table
             for pr in MODEL_PARAMETERS:
-                results[pr].append(np.mean(fit[pr]))
+                mean = np.mean(fit[pr])
+                summary[pr].append(mean)
 
             # Stats for comparison of best parameter values
             stats_comparison_best_values(fit, monkey=monkey)
@@ -99,8 +101,9 @@ def main(n_chunk=5, starting_point="2020-02-18",
                 experimental_data.filter.control.cluster_hit_by_control_cond(
                     alternatives, control_types, hits)
 
-            for cd in control_types:
-                results[cd].append(np.median(list(control_d[cd].values())))
+            for cd in CONTROL_CONDITIONS:
+                median = np.median(list(control_d[cd].values()))
+                summary[cd].append(median)
 
             # Fig: Control
             control(control_d=control_d, monkey=monkey, pdf=pdf)
@@ -147,7 +150,7 @@ def main(n_chunk=5, starting_point="2020-02-18",
             else:
                 raise e
 
-        break
+    analysis.summary.export_as_xlsx(summary=summary)
 
 
 if __name__ == '__main__':

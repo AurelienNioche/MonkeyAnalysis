@@ -63,3 +63,6 @@ CONTROL_CONDITIONS = SAME_P_GAIN_VS_LOSS, \
                      SAME_X0_GAIN, SAME_X0_LOSS
 LEFT = 'left'
 RIGHT = 'right'
+
+CHOOSE_RIGHT = 'choose_right'
+MONKEY_NAME = 'monkey_name'

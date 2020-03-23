@@ -8,7 +8,7 @@ Figures:
 Data structure:
 * Choose between n_chunk and n_trial_per_chunk
 
-Output table:
+Output table: [DONE]
 
 * bias L/R
 * Each median control per type
