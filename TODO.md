@@ -1,31 +1,30 @@
 # TO DO
 
-Figures: 
+### Figures 
 * Display stats on figures [DONE]
-
 * Freq against EV: put losses and gains on the same figure [DONE]
 
-Data structure:
+### Output table
+
+* bias L/R [DONE]
+* Each median control per type [DONE]
+* Each best-fit parameter value [DONE]
+* Total number of trials [DONE]
+* documentation [DONE]
+    
+### Supplementary analysis
+* for control: sigmoid EV / p choice [DONE]
+* Reaction time / EV
+    
+### Data structure
 * Choose between n_chunk and n_trial_per_chunk
-
-Output table: [DONE]
-
-* bias L/R
-* Each median control per type
-* Each best-fit parameter value
-    
-Supplementary analysis:
-
-* for control: sigmoid EV / p choice?
-    
  
-Define hypothesis:
+### Define hypothesis
 
 * Rank <=> risk
 * understanding prob <=> rank
 * Food access due to rank => risk
 
-
-Target:
+## Target
 * Animal Cognition
 * Animal Behavior

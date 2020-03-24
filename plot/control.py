@@ -5,8 +5,6 @@ Produce the control figures
 import numpy as np
 import matplotlib.pyplot as plt
 
-import experimental_data.filter
-
 from utils.log import log
 from plot.utils import save_fig
 

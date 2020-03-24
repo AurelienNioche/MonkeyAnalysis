@@ -45,8 +45,8 @@ def _plot(neg_distortion, pos_distortion, ax,
     ax.yaxis.set_ticks_position('left')
     ax.spines['top'].set_color('none')
 
-    ax.set_xticks([0, 0.25, 0.5, 0.75, 1])
-    ax.set_yticks([0, 0.25, 0.5, 0.75, 1])
+    ax.set_xticks((0, 0.5, 1))
+    ax.set_yticks((0, 0.5, 1))
 
     ax.tick_params(axis='both', which='major', labelsize=ticks_label_size)
 

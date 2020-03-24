@@ -23,6 +23,7 @@ from plot.utility import utility
 from plot.control import control
 from plot.freq_risk_against_exp_value import freq_risk_against_exp_value
 from plot.exemplary_case import exemplary_case
+from plot.control_sigmoid import control_sigmoid
 
 import model.parameter_estimate
 from model.stats import stats_comparison_best_values, \
@@ -44,7 +45,7 @@ NAME = "main"
 
 def main(n_chunk=5, starting_point="2020-02-18",
          randomize_chunk_trials=False, force_fit=True,
-         skip_exception=False):
+         skip_exception=True):
 
     monkeys = get_monkeys()
 
@@ -108,6 +109,12 @@ def main(n_chunk=5, starting_point="2020-02-18",
             # Fig: Control
             control(control_d=control_d, monkey=monkey, pdf=pdf)
 
+            # Fig: Control sigmoid
+            control_sigmoid(alternatives=alternatives,
+                            control_types=control_types,
+                            hits=hits, monkey=monkey,
+                            pdf=pdf)
+
             # Fig: Exemplary case
             exemplary_case(d, monkey=monkey, pdf=pdf)
 
@@ -165,8 +172,8 @@ def main(n_chunk=5, starting_point="2020-02-18",
             else:
                 raise e
 
-    analysis.summary.export_as_xlsx(summary=summary)
+    summary.export_as_xlsx()
 
 
 if __name__ == '__main__':
-    main(force_fit=True)
+    main()

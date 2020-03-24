@@ -8,9 +8,13 @@ import pytz
 import xlsxwriter
 
 from experimental_data.models import ExperimentalData
-from stimuli.models import Stimuli
 
 from parameters.parameters import DATA_FOLDER, XLS_NAME, DATE_FORMAT
+
+from utils.log import log
+
+
+NAME = "experimental_data.import_export"
 
 
 def export_as_xlsx():
@@ -23,7 +27,7 @@ def export_as_xlsx():
                                    {'remove_timezone': True})
     worksheet = workbook.add_worksheet()
 
-    # Write title
+    # Write column headers
     for j, c in enumerate(col):
         worksheet.write(0, j, c)
 
@@ -47,11 +51,11 @@ def import_data_xlsx(data_file='data.xlsx'):
 
     ExperimentalData.objects.all().delete()
 
-    print("Reading from xlsx...", end=" ", flush=True)
+    log("Reading from xlsx...", end=" ", flush=True, name=NAME)
     df = pd.read_excel(os.path.join(DATA_FOLDER, data_file), )
     print("Done!")
 
-    print("Preprocess the data...", end=" ", flush=True)
+    log("Preprocess the data...", end=" ", flush=True, name=NAME)
     entries = df.to_dict('records')
 
     filtered_entries = []
@@ -78,7 +82,7 @@ def import_data_xlsx(data_file='data.xlsx'):
                 .astimezone(pytz.UTC)
             filtered_entries.append(entry_dic)
     print("Done!")
-    print("Writing in db...", end=" ", flush=True)
+    log("Writing in db...", end=" ", flush=True, name=NAME)
     ExperimentalData.objects.bulk_create(
         ExperimentalData(**val) for val in filtered_entries)
 

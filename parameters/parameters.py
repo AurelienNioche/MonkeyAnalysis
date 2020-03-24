@@ -26,6 +26,7 @@ FIG_PROBABILITY_DISTORTION = "probability_distortion"
 FIG_UTILITY = "utility"
 
 FIG_CONTROL = "control"
+FIG_CONTROL_SIGMOID = "fig_control_sigmoid"
 
 FIG_FREQ_RISK_AGAINST_EXP_VALUE = "freq_risk_against_exp_value"
 
@@ -37,13 +38,20 @@ FIG_HISTORY_BEST_PARAM = "supplementary_history_best_param"
 
 XLS_NAME = "data.xlsx"
 
+POS_RISK_AVERSION = 'pos_risk_aversion'
+NEG_RISK_AVERSION = 'neg_risk_aversion'
+POS_DISTORTION = 'pos_distortion'
+NEG_DISTORTION = 'neg_distortion'
+POS_PRECISION = 'pos_precision'
+NEG_PRECISION = 'neg_precision'
+
 MODEL_PARAMETERS = [
-    'pos_risk_aversion',
-    'neg_risk_aversion',
-    'pos_distortion',
-    'neg_distortion',
-    'pos_precision',
-    'neg_precision'
+    POS_RISK_AVERSION,
+    NEG_RISK_AVERSION,
+    POS_DISTORTION,
+    NEG_DISTORTION,
+    POS_PRECISION,
+    NEG_PRECISION
 ]
 
 COLOR_LOSS = 'C1'
@@ -67,3 +75,59 @@ RIGHT = 'right'
 CHOOSE_RIGHT = 'choose_right'
 MONKEY_NAME = 'monkey_name'
 N_TRIALS = 'n_trials'
+
+
+DOC = {
+    MONKEY_NAME: "Name of the monkey",
+    N_TRIALS: "Total number of trials",
+    CHOOSE_RIGHT: "Frequency with which the monkey chooses the target on the right side",
+    POS_RISK_AVERSION: "Best-fit parameter value "
+                       "describing the risk aversion in gains",
+    NEG_RISK_AVERSION: "Best-fit parameter value "
+                       "describing the risk aversion in losses",
+    POS_DISTORTION: "Best-fit parameter value "
+                    "describing the probability distortion in gains",
+    NEG_DISTORTION: "Best-fit parameter value "
+                    "describing the probability distortion in losses",
+    POS_PRECISION: "Best-fit parameter value "
+                   "describing the precision in gains",
+    NEG_PRECISION: "Best-fit parameter value "
+                   "describing the precision in losses",
+    SAME_P_GAIN_VS_LOSS: "Median of the frequencies with which "
+                         "the monkey chooses the best target "
+                         "for a specific alternative such that: "
+                         "(i) a best option exists, "
+                         "(ii) one target contains a gain and the other a loss",
+    SAME_P_GAIN: "Median of the frequencies with which "
+                 "the monkey chooses the best target "
+                 "for a specific alternative "
+                 "such that: "
+                 "(i) a best option exists, "
+                 "(ii) probabilities of non-zero outputs are the same, "
+                 "(iii) the non-zero outputs are different "
+                 "(iv) the possible outputs are only zero and positive rewards",
+    SAME_P_LOSS: "Median of the frequencies with which "
+                 "the monkey chooses the best target "
+                 "for a specific alternative "
+                 "such that: "
+                 "(i) a best option exists, "
+                 "(ii) probabilities of non-zero outputs are the same, "
+                 "(iii) the non-zero outputs are different "
+                 "(iv) the possible outputs are only zero and negative rewards",
+    SAME_X0_GAIN: "Median of the frequencies with which "
+                 "the monkey chooses the best target "
+                 "for a specific alternative "
+                 "such that: "
+                 "(i) a best option exists, "
+                 "(ii) probabilities of non-zero outputs are different, "
+                 "(iii) the non-zero outputs are the same "
+                 "(iv) the possible outputs are only zero and positive rewards",
+    SAME_X0_LOSS: "Median of the frequencies with which "
+                 "the monkey chooses the best target "
+                 "for a specific alternative "
+                 "such that: "
+                 "(i) a best option exists, "
+                 "(ii) probabilities of non-zero outputs are different, "
+                 "(iii) the non-zero outputs are the same "
+                 "(iv) the possible outputs are only zero and negative rewards",
+}
