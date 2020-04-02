@@ -76,6 +76,28 @@ CHOOSE_RIGHT = 'choose_right'
 MONKEY_NAME = 'monkey_name'
 N_TRIALS = 'n_trials'
 
+SIG_STEEP_SAME_P_GAIN_VS_LOSS = 'sig - steep - same p - gain vs loss'
+SIG_STEEP_SAME_P_GAIN = 'sig - steep - same p - gain'
+SIG_STEEP_SAME_P_LOSS = 'sig - steep - same p - loss'
+SIG_STEEP_SAME_X0_GAIN = 'sig - steep - same x0 - gain'
+SIG_STEEP_SAME_X0_LOSS = 'sig - steep - same x0 - loss'
+
+SIG_MID_SAME_P_GAIN_VS_LOSS = 'sig mid - same p - gain vs loss'
+SIG_MID_SAME_P_GAIN = 'sig mid - same p - gain'
+SIG_MID_SAME_P_LOSS = 'sig mid - same p - loss'
+SIG_MID_SAME_X0_GAIN = 'sig mid - same x0 - gain'
+SIG_MID_SAME_X0_LOSS = 'sig mid - same x0 - loss'
+
+SIG_PARAM = SIG_STEEP_SAME_P_GAIN_VS_LOSS,  \
+    SIG_STEEP_SAME_P_GAIN, \
+    SIG_STEEP_SAME_P_LOSS, \
+    SIG_STEEP_SAME_X0_GAIN, \
+    SIG_STEEP_SAME_X0_LOSS, \
+    SIG_MID_SAME_P_GAIN_VS_LOSS, \
+    SIG_MID_SAME_P_GAIN, \
+    SIG_MID_SAME_P_LOSS, \
+    SIG_MID_SAME_X0_GAIN, \
+    SIG_MID_SAME_X0_LOSS
 
 DOC = {
     MONKEY_NAME: "Name of the monkey",
@@ -130,4 +152,14 @@ DOC = {
                  "(ii) probabilities of non-zero outputs are different, "
                  "(iii) the non-zero outputs are the same "
                  "(iv) the possible outputs are only zero and negative rewards",
+    SIG_STEEP_SAME_P_GAIN_VS_LOSS: "Best-fit parameter value for the steepness of the curve for the 'same p - gain vs loss' control trials",
+    SIG_STEEP_SAME_P_GAIN: "Best-fit parameter value for the steepness of the curve for the 'same p - gain' control trials",
+    SIG_STEEP_SAME_P_LOSS: "Best-fit parameter value for the steepness of the curve for the 'same p - loss' control trials",
+    SIG_STEEP_SAME_X0_GAIN: "Best-fit parameter value for the steepness of the curve for the 'same x0 - gain' control trials",
+    SIG_STEEP_SAME_X0_LOSS: "Best-fit parameter value for the steepness of the curve for the 'same x0 - loss' control trials",
+    SIG_MID_SAME_P_GAIN_VS_LOSS: "Best-fit parameter value for the midpoint of the curve for the 'same p - gain vs loss'control trials",
+    SIG_MID_SAME_P_GAIN: "Best-fit parameter value for the midpoint of the curve for the 'same p - gain' control trials",
+    SIG_MID_SAME_P_LOSS:"Best-fit parameter value for the midpoint of the curve for the 'same p - loss' control trials",
+    SIG_MID_SAME_X0_GAIN: "Best-fit parameter value for the midpoint of the curve for the 'same x0 - gain' control trials",
+    SIG_MID_SAME_X0_LOSS:"Best-fit parameter value for the midpoint of the curve for the 'same x0 - loss' control trials",
 }

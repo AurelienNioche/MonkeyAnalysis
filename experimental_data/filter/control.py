@@ -37,19 +37,20 @@ def _type_of_control(d, t):
 
 
 def _control_alternative(d, t, best_option):
+
+    alternative_sided = (
+        (d.p.left[t], d.x.left[t]),
+        (d.p.right[t], d.x.right[t])
+    )
+
     if best_option == LEFT:
-        alternative = (
-            (d.p.left[t], d.x.left[t]),
-            (d.p.right[t], d.x.right[t])
-        )
+        alternative = alternative_sided
 
     else:
-        alternative = (
-            (d.p.right[t], d.x.right[t]),
-            (d.p.left[t], d.x.left[t])
-        )
+        alternative = (alternative_sided[1],
+                       alternative_sided[0])
 
-    return alternative
+    return alternative, alternative_sided
 
 
 def _hit(d, t, best_option):
@@ -145,8 +146,10 @@ def cluster_hit_by_control_cond(alternatives, control_types, hits):
 def get_control(d):
 
     alternatives = []
+    alternatives_sided = []
     control_types = []
     hits = []
+    choose_right = []
 
     n_trials = len(d.p.left)
 
@@ -158,13 +161,17 @@ def get_control(d):
 
         best_option = _best_option(d, t, ct)
         hit = _hit(d, t, best_option)
-        alt = _control_alternative(d, t, best_option)
+        cr = d.choice[t]
+
+        alt, alt_sided = _control_alternative(d, t, best_option)
 
         alternatives.append(alt)
+        alternatives_sided.append(alt_sided)
         control_types.append(ct)
         hits.append(hit)
+        choose_right.append(cr)
 
-    return alternatives, control_types, hits
+    return alternatives, alternatives_sided, control_types, hits, choose_right
 
 
 def control_history_sort_data(alternatives, control_types, hits, n_chunk):

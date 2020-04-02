@@ -10,7 +10,7 @@ application = get_wsgi_application()
 import matplotlib.backends.backend_pdf
 
 from parameters.parameters import FIG_FOLDER, MODEL_PARAMETERS, \
-    CONTROL_CONDITIONS, CHOOSE_RIGHT, MONKEY_NAME, N_TRIALS
+    CONTROL_CONDITIONS, CHOOSE_RIGHT, MONKEY_NAME, N_TRIALS, SIG_PARAM
 # from utils.log import log
 
 from experimental_data.get import get_data, get_monkeys
@@ -84,7 +84,9 @@ def main(n_chunk=5, starting_point="2020-02-18",
             rgr_param = stats_regression_best_values(fit, monkey=monkey)
 
             # Preprocess data for control trials
-            alternatives, control_types, hits = \
+            alternatives, alternatives_sided, \
+                control_types, \
+                hits, choose_right = \
                 experimental_data.filter.control.get_control(d)
 
             control_d = \
@@ -110,10 +112,11 @@ def main(n_chunk=5, starting_point="2020-02-18",
             control(control_d=control_d, monkey=monkey, pdf=pdf)
 
             # Fig: Control sigmoid
-            control_sigmoid(alternatives=alternatives,
-                            control_types=control_types,
-                            hits=hits, monkey=monkey,
-                            pdf=pdf)
+            sig_fit = control_sigmoid(
+                alternatives=alternatives_sided,
+                control_types=control_types,
+                choose_right=choose_right, monkey=monkey,
+                pdf=pdf)
 
             # Fig: Exemplary case
             exemplary_case(d, monkey=monkey, pdf=pdf)
@@ -162,13 +165,16 @@ def main(n_chunk=5, starting_point="2020-02-18",
                 mean = np.mean(fit[pr])
                 summary[pr].append(mean)
 
+            for pr in SIG_PARAM:
+                summary[pr].append(sig_fit[pr])
+
         except Exception as e:
             if skip_exception:
                 msg = \
                     f"I encountered exeception '{e}' " \
                     f"while trying to execute for monkey '{monkey}'." \
                     "I will skip this monkey..."
-                warnings.warn(msg, name=NAME)
+                warnings.warn(msg)
             else:
                 raise e
 

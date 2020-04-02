@@ -17,7 +17,8 @@ def sigmoid_one_param(x, theta):
     return 1 / (1 + np.exp(-theta * x))
 
 
-def sigmoid_fit(x_data, y_data, f=sigmoid, n_points=50, make_stats=True):
+def sigmoid_fit(x_data, y_data, f=sigmoid, n_points=50, return_p_opt=False,
+                make_stats=True):
     # Fit sigmoid
     p_opt, p_cov = curve_fit(f, x_data, y_data,
                              maxfev=10000)
@@ -26,13 +27,18 @@ def sigmoid_fit(x_data, y_data, f=sigmoid, n_points=50, make_stats=True):
     x = np.linspace(min(x_data), max(x_data), n_points)
     y = f(x, *p_opt)
 
+    to_return = (x, y)
+
+    if return_p_opt:
+        to_return += (p_opt, )
+
     if make_stats:
         # Do stats about fit
         stats_r = stats(y=y_data, p_cov=p_cov, p_opt=p_opt)
 
-        return x, y, stats_r
-    else:
-        return x, y
+        to_return += (stats_r,)
+
+    return to_return
 
 
 def stats(y, p_opt, p_cov, alpha=0.01):

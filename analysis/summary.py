@@ -4,7 +4,8 @@ import xlsxwriter
 from parameters.parameters import DATA_FOLDER
 
 from parameters.parameters import MODEL_PARAMETERS, \
-    CONTROL_CONDITIONS, CHOOSE_RIGHT, MONKEY_NAME, N_TRIALS, DOC
+    CONTROL_CONDITIONS, CHOOSE_RIGHT, MONKEY_NAME, N_TRIALS, DOC, \
+    SIG_PARAM
 
 
 class Summary:
@@ -23,6 +24,9 @@ class Summary:
             col.append(cd)
 
         for pr in MODEL_PARAMETERS:
+            col.append(pr)
+
+        for pr in SIG_PARAM:
             col.append(pr)
 
         return col
