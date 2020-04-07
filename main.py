@@ -147,7 +147,7 @@ def main(n_chunk=5, starting_point="2020-02-18",
     n_monkey = len(monkeys)
 
     # A single pdf file for everything
-    with PdfPages(os.path.join(FIG_FOLDER, "exemplary_d.pdf")) as pdf:
+    with PdfPages(os.path.join(FIG_FOLDER, "results.pdf")) as pdf:
 
         # Fig: Info
         fig, axes = plt.subplots(ncols=n_monkey, figsize=(6*n_monkey, 6))
