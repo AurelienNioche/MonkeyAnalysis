@@ -1,17 +1,7 @@
 import numpy as np
-import matplotlib.pyplot as plt
 
-import experimental_data.filter
-import experimental_data.filter.control
-import parameters.parameters
-
-from experimental_data.filter.control import control_history_sort_data
-from utils.log import log
-from plot.utils import save_fig
-
-from parameters.parameters import FIG_HISTORY_CONTROL,\
-    FIG_HISTORY_BEST_PARAM, \
-    COLOR_LOSS, COLOR_GAIN
+from parameters.parameters import \
+    COLOR_LOSS, COLOR_GAIN, CONTROL_CONDITIONS
 
 NAME = "plot.history"
 
@@ -64,7 +54,7 @@ def _plot_history_control(results, color, ax, last=False,
     Called by 'control history'
     """
 
-    # results is a list (n=number of boxplot) of list (n=number of datapoints)
+    # exemplary_d is a list (n=number of boxplot) of list (n=number of datapoints)
     n = len(results)
 
     tick_labels = [f"{i + 1}" for i in range(n)]
@@ -122,18 +112,17 @@ def _plot_history_control(results, color, ax, last=False,
     ax.set_title(title, fontsize=fontsize+1)
 
 
-def history_control(hist_control_d, monkey,
+def history_control(axes, hist_control_d,
                     labels=("Loss vs gains", "Diff. $x +$, same $p$",
                             "Diff. $x -$, same $p$",
                             "Diff. $p$, same $x +$", "Diff. $p$, same $x -$"),
                     colors=("black", COLOR_GAIN, COLOR_LOSS, COLOR_GAIN,
-                            COLOR_LOSS),
-                    pdf=None):
+                            COLOR_LOSS)):
 
-    n_cond = len(parameters.parameters.CONTROL_CONDITIONS)
+    n_cond = len(CONTROL_CONDITIONS)
 
-    fig, axes = plt.subplots(nrows=n_cond,
-                             figsize=(12, 10), dpi=200)
+    # fig, axes = plt.subplots(nrows=n_cond,
+    #                          figsize=(12, 10), dpi=200)
 
     # log(f"Stats for success to control trials over time "
     #     f"(fig: '{FIG_HISTORY_CONTROL}') - {monkey}",
@@ -145,7 +134,7 @@ def history_control(hist_control_d, monkey,
     # control_d = control_history_sort_data(alternatives, control_types,
     #                                       hits, n_chunk=n_chunk)
 
-    for i, cond in enumerate(parameters.parameters.CONTROL_CONDITIONS):
+    for i, cond in enumerate(CONTROL_CONDITIONS):
 
         color = colors[i]
         title = labels[i]
@@ -160,18 +149,14 @@ def history_control(hist_control_d, monkey,
             title=title,
         )
 
-    save_fig(fig_type=FIG_HISTORY_CONTROL, fig=fig, pdf=pdf, monkey=monkey)
 
-
-def history_best_param(fit, monkey, regression_param=None, pdf=None):
+def history_best_param(axes, fit, regression_param=None):
 
     args = (
         ('pos_risk_aversion', 'neg_risk_aversion', (-1, 1), True, r"$\omega$"),
         ('pos_distortion', 'neg_distortion', (0, 1), False, r"$\alpha$"),
         ('pos_precision', 'neg_precision', (0, 5), False, r"$\lambda$")
     )
-
-    fig, axes = plt.subplots(figsize=(12, 5), ncols=3, dpi=200)
 
     for i, arg in enumerate(args):
 
@@ -206,5 +191,3 @@ def history_best_param(fit, monkey, regression_param=None, pdf=None):
                     alpha = 0.4
                 axes[i].plot(x, y, color=color, linestyle=line_style,
                              alpha=alpha)
-
-    save_fig(fig_type=FIG_HISTORY_BEST_PARAM, fig=fig, pdf=pdf, monkey=monkey)

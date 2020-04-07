@@ -19,7 +19,7 @@ def _certain_option(d, t):
     return d.p.left[t] == 1. or d.p.right[t] == 1.
 
 
-def get_exemplary_case(d):
+def get(d):
 
     log('Getting data for exemplary case...', NAME)
 

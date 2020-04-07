@@ -3,19 +3,15 @@ Produce the control figures
 """
 
 import numpy as np
-import matplotlib.pyplot as plt
 
-from utils.log import log
-from plot.utils import save_fig
-
-from parameters.parameters import FIG_CONTROL, COLOR_GAIN, COLOR_LOSS
+from parameters.parameters import COLOR_GAIN, COLOR_LOSS
 
 NAME = "plot.control"
 
 
-def _plot(results, ax):
+def plot(control_d, ax):
 
-    n = len(results.keys())
+    n = len(control_d.keys())
 
     tick_labels = [
         "Loss\nvs\ngains", "Diff. $x +$\nSame $p$", "Diff. $x -$\nSame $p$",
@@ -30,11 +26,11 @@ def _plot(results, ax):
 
     values_box_plot = []
 
-    for i, cond in enumerate(results.keys()):
+    for i, cond in enumerate(control_d.keys()):
 
         values_box_plot.append([])
 
-        for v in results[cond].values():
+        for v in control_d[cond].values():
             # For box plot
             values_box_plot[-1].append(v)
 
@@ -71,12 +67,12 @@ def _plot(results, ax):
     ax.set_aspect(3)
 
 
-def control(control_d, monkey, pdf=None):
-
-    log(f"Stats for control trials - {monkey}:", NAME)
-
-    fig, ax = plt.subplots(figsize=(12, 6), dpi=200)
-
-    _plot(results=control_d, ax=ax)
-
-    save_fig(fig_type=FIG_CONTROL, fig=fig, pdf=pdf, monkey=monkey)
+# def control(control_d, monkey, pdf=None):
+#
+#     log(f"Stats for control trials - {monkey}:", NAME)
+#
+#     fig, ax = plt.subplots(figsize=(12, 6), dpi=200)
+#
+#     _plot(control_d=control_d, ax=ax)
+#
+#     save_fig(fig_type=FIG_CONTROL, fig=fig, pdf=pdf, monkey=monkey)

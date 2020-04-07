@@ -3,22 +3,16 @@ Produce the precision figure
 """
 
 import numpy as np
-import matplotlib.pyplot as plt
 
-from parameters.parameters import COLOR_GAIN, COLOR_LOSS, FIG_PRECISION
+from parameters.parameters import COLOR_GAIN, COLOR_LOSS
 from model import model
-from utils.log import log
-from plot.utils import save_fig
 
 NAME = "plot.precision"
 
 
-def _plot(neg_precision, pos_precision, neg_risk_aversion, pos_risk_aversion,
+def _line(neg_precision, pos_precision, neg_risk_aversion, pos_risk_aversion,
           neg_distortion, pos_distortion,
           ax, alpha=1, linewidth=3):
-
-    axis_label_font_size = 20
-    ticks_label_size = 14
 
     n_points = 1000
 
@@ -57,33 +51,19 @@ def _plot(neg_precision, pos_precision, neg_risk_aversion, pos_risk_aversion,
             neg_precision=neg_precision, pos_precision=pos_precision
         )
 
-    ax.set_xticks([0, 1, 2])
-    ax.set_yticks([0, 0.5, 1])
-
-    ax.set_xlim(-0.01, 2.01)
-    ax.set_ylim(-0.01, 1.01)
-
     ax.plot(x, y_gain, color=COLOR_GAIN, linewidth=linewidth, alpha=alpha)
     ax.plot(x, y_loss, color=COLOR_LOSS, linewidth=linewidth, alpha=alpha)
 
-    ax.tick_params(axis='both', labelsize=ticks_label_size)
 
-    ax.spines['right'].set_color('none')
-    ax.xaxis.set_ticks_position('bottom')
-    ax.yaxis.set_ticks_position('left')
-    ax.spines['top'].set_color('none')
-
-    ax.set_xlabel("$|x_{Risky} - x_{Safe}|$", fontsize=axis_label_font_size)
-    ax.set_ylabel("P(Choose risky option)", fontsize=axis_label_font_size)
-
-
-def precision(fit, monkey, show_average=True, pdf=None):
+def plot(ax, fit, show_average=True,
+         axis_label_font_size=20,
+         ticks_label_size=14):
 
     alpha_chunk = 0.5 if show_average else 1
 
     # log(f"Creating figure '{FIG_PRECISION}' for monkey {monkey}...", NAME)
 
-    fig, ax = plt.subplots(figsize=(6, 5), dpi=200)
+    # fig, ax = plt.subplots(figsize=(6, 5), dpi=200)
 
     pra, nra, pdi, ndi, ppr, npr = \
         fit['pos_risk_aversion'], \
@@ -95,7 +75,7 @@ def precision(fit, monkey, show_average=True, pdf=None):
 
     for j in range(len(pra)):
 
-        _plot(
+        _line(
             neg_risk_aversion=nra[j],
             pos_risk_aversion=pra[j],
             neg_distortion=ndi[j],
@@ -108,7 +88,7 @@ def precision(fit, monkey, show_average=True, pdf=None):
         )
 
     if show_average:
-        _plot(
+        _line(
             neg_risk_aversion=np.mean(nra),
             pos_risk_aversion=np.mean(pra),
             neg_distortion=np.mean(ndi),
@@ -118,5 +98,21 @@ def precision(fit, monkey, show_average=True, pdf=None):
             ax=ax
         )
 
-    save_fig(fig_type=FIG_PRECISION, fig=fig,
-             pdf=pdf, monkey=monkey)
+    ax.set_xticks([0, 1, 2])
+    ax.set_yticks([0, 0.5, 1])
+
+    ax.set_xlim(-0.01, 2.01)
+    ax.set_ylim(-0.01, 1.01)
+
+    ax.tick_params(axis='both', labelsize=ticks_label_size)
+
+    ax.spines['right'].set_color('none')
+    ax.xaxis.set_ticks_position('bottom')
+    ax.yaxis.set_ticks_position('left')
+    ax.spines['top'].set_color('none')
+
+    ax.set_xlabel("$|x_{Risky} - x_{Safe}|$", fontsize=axis_label_font_size)
+    ax.set_ylabel("P(Choose risky option)", fontsize=axis_label_font_size)
+    #
+    # save_fig(fig_type=FIG_PRECISION, fig=fig,
+    #          pdf=pdf, monkey=monkey)

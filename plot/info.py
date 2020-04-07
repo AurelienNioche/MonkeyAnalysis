@@ -1,14 +1,4 @@
-import matplotlib.pyplot as plt
-import numpy as np
-
-from plot.utils import save_fig
-
-from stimuli.models import Stimuli
-
-
-def write_pdf(info, monkey, pdf):
-
-    fig, ax = plt.subplots()
+def fig_info(ax, info, monkey):
 
     t = f"{monkey}\n\n" \
         f"N lottery pairs = {info.n_lotteries}\n" \
@@ -22,4 +12,3 @@ def write_pdf(info, monkey, pdf):
             va='center')
 
     ax.set_axis_off()
-    save_fig(fig=fig, pdf=pdf, monkey=monkey, fig_type='info')

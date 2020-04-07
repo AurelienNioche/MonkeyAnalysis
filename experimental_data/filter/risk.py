@@ -151,8 +151,8 @@ def get_choose_risky_loss_or_gain_only(d, gain_only):
 
         # # -------------------- #
         #
-        # p = scipy.stats.binom.pmf(k=np.sum(results[alt]),
-        #                           n=len(results[alt]), p=0.5)
+        # p = scipy.stats.binom.pmf(k=np.sum(exemplary_d[alt]),
+        #                           n=len(exemplary_d[alt]), p=0.5)
         # log(f'P sample if random DM (binomial law): {p:.03f}', "Stats")
         #
         # # -------------------- #

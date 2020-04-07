@@ -19,23 +19,6 @@ BACKUP_FOLDER = os.path.join(DATA_FOLDER, 'pickle')
 for folder in FIG_FOLDER, DATA_FOLDER, BACKUP_FOLDER:
     os.makedirs(folder, exist_ok=True)
 
-FIG_PRECISION = "precision"
-
-FIG_PROBABILITY_DISTORTION = "probability_distortion"
-
-FIG_UTILITY = "utility"
-
-FIG_CONTROL = "control"
-FIG_CONTROL_SIGMOID = "fig_control_sigmoid"
-
-FIG_FREQ_RISK_AGAINST_EXP_VALUE = "freq_risk_against_exp_value"
-
-FIG_EXEMPLARY_CASE = "exemplary"
-
-FIG_HISTORY_CONTROL = "supplementary_history_control"
-
-FIG_HISTORY_BEST_PARAM = "supplementary_history_best_param"
-
 XLS_NAME = "data.xlsx"
 
 POS_RISK_AVERSION = 'pos_risk_aversion'
@@ -76,6 +59,9 @@ CHOOSE_RIGHT = 'choose_right'
 MONKEY_NAME = 'monkey_name'
 N_TRIALS = 'n_trials'
 
+SIG_STEEP = 'sig_steep'
+SIG_MID = 'sig_mid'
+
 SIG_STEEP_SAME_P_GAIN_VS_LOSS = 'sig - steep - same p - gain vs loss'
 SIG_STEEP_SAME_P_GAIN = 'sig - steep - same p - gain'
 SIG_STEEP_SAME_P_LOSS = 'sig - steep - same p - loss'
@@ -83,21 +69,31 @@ SIG_STEEP_SAME_X0_GAIN = 'sig - steep - same x0 - gain'
 SIG_STEEP_SAME_X0_LOSS = 'sig - steep - same x0 - loss'
 
 SIG_MID_SAME_P_GAIN_VS_LOSS = 'sig mid - same p - gain vs loss'
-SIG_MID_SAME_P_GAIN = 'sig mid - same p - gain'
-SIG_MID_SAME_P_LOSS = 'sig mid - same p - loss'
-SIG_MID_SAME_X0_GAIN = 'sig mid - same x0 - gain'
-SIG_MID_SAME_X0_LOSS = 'sig mid - same x0 - loss'
+SIG_MID_SAME_P_GAIN = 'sig - mid - same p - gain'
+SIG_MID_SAME_P_LOSS = 'sig - mid - same p - loss'
+SIG_MID_SAME_X0_GAIN = 'sig - mid - same x0 - gain'
+SIG_MID_SAME_X0_LOSS = 'sig - mid - same x0 - loss'
 
-SIG_PARAM = SIG_STEEP_SAME_P_GAIN_VS_LOSS,  \
-    SIG_STEEP_SAME_P_GAIN, \
-    SIG_STEEP_SAME_P_LOSS, \
-    SIG_STEEP_SAME_X0_GAIN, \
-    SIG_STEEP_SAME_X0_LOSS, \
-    SIG_MID_SAME_P_GAIN_VS_LOSS, \
-    SIG_MID_SAME_P_GAIN, \
-    SIG_MID_SAME_P_LOSS, \
-    SIG_MID_SAME_X0_GAIN, \
-    SIG_MID_SAME_X0_LOSS
+CONTROL_SIG_PARAM = SIG_STEEP_SAME_P_GAIN_VS_LOSS, \
+                    SIG_STEEP_SAME_P_GAIN, \
+                    SIG_STEEP_SAME_P_LOSS, \
+                    SIG_STEEP_SAME_X0_GAIN, \
+                    SIG_STEEP_SAME_X0_LOSS, \
+                    SIG_MID_SAME_P_GAIN_VS_LOSS, \
+                    SIG_MID_SAME_P_GAIN, \
+                    SIG_MID_SAME_P_LOSS, \
+                    SIG_MID_SAME_X0_GAIN, \
+                    SIG_MID_SAME_X0_LOSS
+
+SIG_STEEP_RISK_GAIN = 'sig - steep - risk - gain'
+SIG_STEEP_RISK_LOSS = 'sig - steep - risk - loss'
+SIG_MID_RISK_GAIN = 'sig - mid - risk - gain'
+SIG_MID_RISK_LOSS = 'sig - mid - risk - loss'
+
+RISK_SIG_PARAM = \
+    SIG_STEEP_RISK_GAIN, SIG_STEEP_RISK_LOSS, \
+    SIG_MID_RISK_GAIN, SIG_MID_RISK_LOSS
+
 
 DOC = {
     MONKEY_NAME: "Name of the monkey",
@@ -162,4 +158,8 @@ DOC = {
     SIG_MID_SAME_P_LOSS:"Best-fit parameter value for the midpoint of the curve for the 'same p - loss' control trials",
     SIG_MID_SAME_X0_GAIN: "Best-fit parameter value for the midpoint of the curve for the 'same x0 - gain' control trials",
     SIG_MID_SAME_X0_LOSS:"Best-fit parameter value for the midpoint of the curve for the 'same x0 - loss' control trials",
+    SIG_STEEP_RISK_GAIN: "Best-fit parameter value for the steepness of the curve for modeling the frequency of risky choice depending on the expected value for pairs of lottery with gains only",
+    SIG_STEEP_RISK_LOSS: "Best-fit parameter value for the steepness of the curve for modeling the frequency of risky choice depending on the expected value for pairs of lottery with losses only",
+    SIG_MID_RISK_GAIN: "Best-fit parameter value for the midpoint of the curve for modeling the frequency of risky choice depending on the expected value for pairs of lottery with gains only",
+    SIG_MID_RISK_LOSS: "Best-fit parameter value for the midpoint of the curve for modeling the frequency of risky choice depending on the expected value for pairs of lottery with losses only",
 }

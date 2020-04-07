@@ -70,7 +70,7 @@ def regression(x, y):
     return f, p, n, alpha, beta
 
 
-def stats_regression_best_values(fit, monkey):
+def stats_regression_best_values(fit):
 
     fs, ps, ns, alphas, betas = [], [], [], [], []
 
@@ -97,7 +97,7 @@ def stats_regression_best_values(fit, monkey):
 
     log(f'Linear regression for parameter values over time: ', NAME)
 
-    labels = [f"{monkey} - {param}"
+    labels = [f"{param}"
               for param in MODEL_PARAMETERS]
 
     for label, f, p, p_c, n, alpha, beta \

@@ -1,6 +1,7 @@
 # TO DO
 
 ### Figures 
+* Figure of each type for all monkey in the same page (one single PDF)
 * Display stats on figures [DONE]
 * Freq against EV: put losses and gains on the same figure [DONE]
 

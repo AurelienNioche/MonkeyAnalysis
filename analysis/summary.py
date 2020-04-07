@@ -1,11 +1,32 @@
 import os
 import xlsxwriter
+import numpy as np
 
 from parameters.parameters import DATA_FOLDER
 
 from parameters.parameters import MODEL_PARAMETERS, \
     CONTROL_CONDITIONS, CHOOSE_RIGHT, MONKEY_NAME, N_TRIALS, DOC, \
-    SIG_PARAM
+    CONTROL_SIG_PARAM, RISK_SIG_PARAM, \
+    SIG_STEEP_SAME_P_GAIN_VS_LOSS, \
+    SIG_STEEP_SAME_P_GAIN, \
+    SIG_STEEP_SAME_P_LOSS, \
+    SIG_STEEP_SAME_X0_GAIN, \
+    SIG_STEEP_SAME_X0_LOSS, \
+    SIG_MID_SAME_P_GAIN_VS_LOSS, \
+    SIG_MID_SAME_P_GAIN, \
+    SIG_MID_SAME_P_LOSS, \
+    SIG_MID_SAME_X0_GAIN, \
+    SIG_MID_SAME_X0_LOSS, \
+    SAME_P_GAIN_VS_LOSS, \
+    SAME_P_GAIN, \
+    SAME_P_LOSS, \
+    SAME_X0_GAIN, \
+    SAME_X0_LOSS, \
+    SIG_STEEP, \
+    SIG_MID, \
+    SIG_STEEP_RISK_GAIN, SIG_STEEP_RISK_LOSS, \
+    SIG_MID_RISK_GAIN, SIG_MID_RISK_LOSS, \
+    GAIN, LOSS
 
 
 class Summary:
@@ -20,14 +41,11 @@ class Summary:
     def _get_columns():
 
         col = [MONKEY_NAME, N_TRIALS, CHOOSE_RIGHT]
-        for cd in CONTROL_CONDITIONS:
-            col.append(cd)
 
-        for pr in MODEL_PARAMETERS:
-            col.append(pr)
-
-        for pr in SIG_PARAM:
-            col.append(pr)
+        for cat in (CONTROL_CONDITIONS, MODEL_PARAMETERS,
+                    CONTROL_SIG_PARAM, RISK_SIG_PARAM):
+            for cd in cat:
+                col.append(cd)
 
         return col
 
@@ -68,6 +86,59 @@ class Summary:
     @staticmethod
     def _format_column_name(c):
         return c.replace(" ", "_").replace("-", "")
+
+    def append_performance_to_control(self, control_d):
+
+        for cd in CONTROL_CONDITIONS:
+            median = np.median(list(control_d[cd].values()))
+            self[cd].append(median)
+
+    def append_cpt_fit(self, cpt_fit):
+        for pr in MODEL_PARAMETERS:
+            mean = np.mean(cpt_fit[pr])
+            self[pr].append(mean)
+
+    def append_control_sig_fit(self, control_sig_fit):
+
+        fit = control_sig_fit
+
+        self[SIG_STEEP_SAME_P_GAIN_VS_LOSS].append(
+            fit[SAME_P_GAIN_VS_LOSS][SIG_STEEP])
+        self[SIG_MID_SAME_P_GAIN_VS_LOSS].append(
+            fit[SAME_P_GAIN_VS_LOSS][SIG_MID])
+
+        self[SIG_STEEP_SAME_P_GAIN].append(
+            fit[SAME_P_GAIN][SIG_STEEP])
+        self[SIG_MID_SAME_P_GAIN].append(
+            fit[SAME_P_GAIN][SIG_MID])
+
+        self[SIG_STEEP_SAME_P_LOSS].append(
+            fit[SAME_P_LOSS][SIG_STEEP])
+        self[SIG_MID_SAME_P_LOSS].append(
+            fit[SAME_P_LOSS][SIG_MID])
+
+        self[SIG_STEEP_SAME_X0_GAIN].append(
+            fit[SAME_X0_GAIN][SIG_STEEP])
+        self[SIG_MID_SAME_X0_GAIN].append(
+            fit[SAME_X0_GAIN][SIG_MID])
+
+        self[SIG_STEEP_SAME_X0_LOSS].append(
+            fit[SAME_X0_LOSS][SIG_STEEP])
+        self[SIG_MID_SAME_X0_LOSS].append(
+            fit[SAME_X0_LOSS][SIG_MID])
+
+    def append_risk_sig_fit(self, risk_sig_fit):
+        fit = risk_sig_fit
+
+        self[SIG_STEEP_RISK_GAIN].append(
+            fit[GAIN][SIG_STEEP])
+        self[SIG_MID_RISK_GAIN].append(
+            fit[GAIN][SIG_MID])
+
+        self[SIG_STEEP_RISK_LOSS].append(
+            fit[LOSS][SIG_STEEP])
+        self[SIG_MID_RISK_LOSS].append(
+            fit[LOSS][SIG_MID])
 
 
 def create():

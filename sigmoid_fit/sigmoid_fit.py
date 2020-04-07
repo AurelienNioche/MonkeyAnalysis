@@ -2,6 +2,8 @@ import numpy as np
 from scipy.optimize import curve_fit
 from scipy.stats.distributions import t
 
+from parameters.parameters import SIG_MID, SIG_STEEP
+
 from utils.log import log
 
 NAME = "sigmoid_fit.sigmoid_fit"
@@ -30,7 +32,8 @@ def sigmoid_fit(x_data, y_data, f=sigmoid, n_points=50, return_p_opt=False,
     to_return = (x, y)
 
     if return_p_opt:
-        to_return += (p_opt, )
+        to_return += (
+            {SIG_MID: p_opt[0], SIG_STEEP: p_opt[1]}, )
 
     if make_stats:
         # Do stats about fit
