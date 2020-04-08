@@ -12,8 +12,8 @@ from parameters.parameters import \
 NAME = "plot.freq_risk"
 
 
-def _plot_condition(x, y, x_fit, y_fit, color, ax, label=None,
-                    line_width=3, point_size=100):
+def scatter_and_sigmoid(ax, x, y, x_fit, y_fit, color, label=None,
+                        line_width=3, point_size=100, alpha_scatter=0.5):
 
     if label is not None:
         label = label.capitalize()
@@ -21,12 +21,18 @@ def _plot_condition(x, y, x_fit, y_fit, color, ax, label=None,
     if x_fit is not None and y_fit is not None:
 
         ax.plot(x_fit, y_fit, color=color, linewidth=line_width, label=label)
-        ax.legend(loc='lower right')
 
-    ax.scatter(x, y, color=color, alpha=0.5, s=point_size)
+    ax.scatter(x, y, color=color, alpha=alpha_scatter, s=point_size)
 
 
-def plot(x, y, x_fit, y_fit, fit, ax,
+def add_text(ax, txt):
+    ax.text(0.05, 0.9, txt,
+            horizontalalignment='left',
+            verticalalignment='top',
+            transform=ax.transAxes)
+
+
+def plot(ax, data,
          axis_label_font_size=20,
          ticks_label_font_size=14):
 
@@ -35,8 +41,11 @@ def plot(x, y, x_fit, y_fit, fit, ax,
 
     for i, cd in enumerate(conditions):
 
-        _plot_condition(
-            x=x[cd], y=y[cd], x_fit=x_fit[cd], y_fit=y_fit[cd],
+        d = data[cd]
+
+        scatter_and_sigmoid(
+            x=d['x'], y=d['y'],
+            x_fit=d['fit']['x'], y_fit=d['fit']['y'],
             color=color[cd],
             ax=ax,
             label=cd
@@ -70,17 +79,16 @@ def plot(x, y, x_fit, y_fit, fit, ax,
 
     txt = \
         r"$F(x) = \dfrac{1}{1 + \exp(-k (x - x_0))}$" + "\n\n" \
-        + "$k^{gain}=" + f"{fit[GAIN][SIG_STEEP]:.2f}" + "$" + "\n"\
-        + "$x_0^{gain}=" + f"{fit[GAIN][SIG_MID]:.2f}" + "$" + "\n" \
-        + "$k^{loss}=" + f"{fit[LOSS][SIG_STEEP]:.2f}" + "$" + "\n" \
-        + "$x_0^{loss}=" + f"{fit[LOSS][SIG_MID]:.2f}" + "$" + "\n" \
+        + "$k^{gain}=" + f"{data[GAIN]['fit'][SIG_STEEP]:.2f}" + "$" + "\n"\
+        + "$x_0^{gain}=" + f"{data[GAIN]['fit'][SIG_MID]:.2f}" + "$" + "\n" \
+        + "$k^{loss}=" + f"{data[LOSS]['fit'][SIG_STEEP]:.2f}" + "$" + "\n" \
+        + "$x_0^{loss}=" + f"{data[LOSS]['fit'][SIG_MID]:.2f}" + "$" + "\n" \
         # for cond in ('gain', 'loss'):
     #     txt += r"$k_{" + f"{cond}" + "}=" + \
     #            f"{stats_slope[cond]['val']:.2f}\," \
     #            f"[{stats_slope[cond]['ic-']:.2f}, " \
     #            f"{stats_slope[cond]['ic+']:.2f}]" + "$\n"
 
-    ax.text(0.05, 0.9, txt,
-            horizontalalignment='left',
-            verticalalignment='top',
-            transform=ax.transAxes)
+    add_text(ax, txt)
+
+    ax.legend(loc='lower right')

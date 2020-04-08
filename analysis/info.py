@@ -5,7 +5,7 @@ from stimuli.models import Stimuli
 
 class Info:
 
-    def __init__(self, d):
+    def __init__(self, d, monkey):
 
         self._d = d
         self._lotteries = self._get_lotteries(d)
@@ -20,6 +20,8 @@ class Info:
         self.choose_right = np.mean(d.choice)
 
         self.choose_best = self._get_choose_best(d)
+
+        self.monkey = monkey
 
     @staticmethod
     def _get_lotteries(d):
@@ -114,5 +116,5 @@ class Info:
         return success / n_control
 
 
-def get(d):
-    return Info(d)
+def get(d, m):
+    return Info(d, m)

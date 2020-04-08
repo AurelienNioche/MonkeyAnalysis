@@ -150,7 +150,9 @@ def history_control(axes, hist_control_d,
         )
 
 
-def history_best_param(axes, fit, regression_param=None):
+def history_best_param(axes, data):
+
+    fit = data['fit']
 
     args = (
         ('pos_risk_aversion', 'neg_risk_aversion', (-1, 1), True, r"$\omega$"),
@@ -171,7 +173,8 @@ def history_best_param(axes, fit, regression_param=None):
             param_name=param_name
         )
 
-        if regression_param:
+        if 'regression' in data.keys():
+            regression_param = data['regression']
 
             for param, color in zip((pos_param, neg_param),
                                     (COLOR_GAIN, COLOR_LOSS)):

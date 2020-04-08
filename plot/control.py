@@ -9,7 +9,7 @@ from parameters.parameters import COLOR_GAIN, COLOR_LOSS
 NAME = "plot.control"
 
 
-def plot(control_d, ax):
+def plot(ax, control_d):
 
     n = len(control_d.keys())
 

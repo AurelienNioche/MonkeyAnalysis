@@ -141,5 +141,26 @@ class Summary:
             fit[LOSS][SIG_MID])
 
 
-def create():
-    return Summary()
+def create(info_data, control_data,
+           cpt_fit, control_sig_fit,
+           risk_sig_fit):
+
+    summary = Summary()
+    monkeys = sorted(info_data.keys())
+    for m in monkeys:
+        # Add monkey name
+        summary[MONKEY_NAME].append(m)
+
+        # Add number of trials
+        summary[N_TRIALS].append(info_data[m].n_trials)
+
+        # Add side bias
+        summary[CHOOSE_RIGHT].append(info_data[m].choose_right)
+
+        # Add median for each type of control
+        summary.append_performance_to_control(control_data[m])
+
+        # Add best-fit parameters
+        summary.append_cpt_fit(cpt_fit[m])
+        summary.append_control_sig_fit(control_sig_fit[m])
+        summary.append_risk_sig_fit(risk_sig_fit[m])

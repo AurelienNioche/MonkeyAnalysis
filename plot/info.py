@@ -1,6 +1,6 @@
-def fig_info(ax, info, monkey):
+def fig_info(ax, info):
 
-    t = f"{monkey}\n\n" \
+    t = f"{info.monkey}\n\n" \
         f"N lottery pairs = {info.n_lotteries}\n" \
         f"N total trials = {info.n_trials}\n" \
         f"N trials per lottery pair = {info.n_per_lottery_mean:.2f} " \

@@ -8,7 +8,7 @@ from parameters.parameters import COLOR_GAIN, COLOR_LOSS, GAIN, LOSS
 NAME = "plot.exemplary_case"
 
 
-def plot(exemplary_d, ax):
+def plot(ax, exemplary_d):
 
     axis_label_font_size = 14
     ticks_font_size = 14

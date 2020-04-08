@@ -135,6 +135,9 @@ def get_choose_risky_loss_or_gain_only(d, gain_only):
     means = []
     n_trials = []
 
+    log(
+        f"Stats for risk against exp value "
+        f"- {'gain' if gain_only else 'loss'}:", name=NAME)
     log('Pairs of lotteries used:', NAME)
 
     for i, alt in enumerate(alternatives):
@@ -169,5 +172,6 @@ def get_choose_risky_loss_or_gain_only(d, gain_only):
     log(f'Mean: {np.mean(n_trials):.2f}', NAME)
     log(f'Std: {np.std(n_trials):.2f}', NAME)
     log(f'Sum: {np.sum(n_trials)}\n', NAME)
+    print()
 
     return expected_values_differences, means

@@ -87,7 +87,7 @@ def _best_option_on_left(d, t, condition):
         raise Exception('Condition not understood.')
 
 
-def cluster_hit_by_control_cond(alternatives, control_types, hits):
+def sort_by_cond(alternatives, control_types, hits):
 
     sorted_data = {i: {} for i in CONTROL_CONDITIONS}
 
