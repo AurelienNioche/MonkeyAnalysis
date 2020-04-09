@@ -64,15 +64,16 @@ class Analysis:
         self.control_sig_fit = {}
 
         self.pdf = None
+        self.target_monkey = None
 
         self._pre_process_data(**kwargs)
 
     def _pre_process_data(self,
                           n_chunk=5, starting_point="2020-02-18",
-                          randomize_chunk_trials=False, force_fit=True,
-                          skip_exception=True):
+                          randomize_chunk_trials=False, force_fit=False,
+                          skip_exception=False):
 
-        monkeys = get_monkeys()
+        monkeys = get_monkeys()[:2]
         n_monkey = len(monkeys)
 
         black_list = []
@@ -167,34 +168,33 @@ class Analysis:
 
     def create_figure(self, plot_function, data, n_subplot=1):
 
-        if n_subplot == 1:
-            fig, axes = plt.subplots(
-                ncols=self.n_monkey,
-                figsize=(6 * self.n_monkey, 6))
-            if isinstance(axes, matplotlib.axes._axes.Axes):
-                for i, m in enumerate(self.monkeys):
-                    plot_function(axes, data[m])
-            else:
-                for i, m in enumerate(self.monkeys):
-                    plot_function(axes[i], data[m])
+        n_rows = n_subplot
+        n_cols = self.n_monkey if self.target_monkey is None else 1
+        fig, axes = plt.subplots(nrows=n_rows,
+                                 ncols=n_cols,
+                                 figsize=(6*n_cols, 6*n_rows))
+
+        if self.target_monkey is None and self.n_monkey > 1:
+            if len(axes.shape) > 1:
+                axes = axes.T
+            for i, m in enumerate(self.monkeys):
+                plot_function(axes[i], data[m])
 
         else:
-            fig, axes = plt.subplots(
-                ncols=self.n_monkey, nrows=n_subplot,
-                figsize=(6 * self.n_monkey, 6 * n_subplot))
-            if len(axes.shape) == 1:
-                for i, m in enumerate(self.monkeys):
-                    plot_function(axes[:], data[m])
-            else:
-                for i, m in enumerate(self.monkeys):
-                    plot_function(axes[:, i], data[m])
+            plot_function(axes, data[self.target_monkey])
 
         plt.tight_layout()
         self.pdf.savefig(fig)
+        plt.close(fig)
 
-    def create_pdf(self):
-        # A single pdf file for everything
-        self.pdf = PdfPages(os.path.join(FIG_FOLDER, "results.pdf"))
+    def create_pdf(self, monkey=None):
+
+        self.target_monkey = monkey
+
+        # Create the pdf
+        self.pdf = PdfPages(os.path.join(
+            FIG_FOLDER,
+            f"results{monkey if monkey is not None else''}.pdf"))
 
         # Fig: Info
         self.create_figure(
@@ -250,6 +250,7 @@ class Analysis:
             n_subplot=3)
 
         self.pdf.close()
+        self.target_monkey = None
 
     def create_summary(self):
 
@@ -266,6 +267,8 @@ def main():
     a = Analysis()
     a.create_pdf()
     a.create_summary()
+    for m in a.monkeys:
+        a.create_pdf(monkey=m)
 
 
 if __name__ == '__main__':

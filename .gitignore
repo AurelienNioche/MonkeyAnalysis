@@ -9,7 +9,9 @@ __pycache__/
 .DS_Store
 
 # xlsx
-data/*.xlsx
+data/
+!data/data_GH.xlsx
+!data/data.xlsx
 
 # Pickle files
 data/pickle/
