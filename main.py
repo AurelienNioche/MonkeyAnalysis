@@ -70,10 +70,10 @@ class Analysis:
 
     def _pre_process_data(self,
                           n_chunk=5, starting_point="2020-02-18",
-                          randomize_chunk_trials=False, force_fit=False,
-                          skip_exception=False):
+                          randomize_chunk_trials=False, force_fit=True,
+                          skip_exception=True):
 
-        monkeys = get_monkeys()[:2]
+        monkeys = get_monkeys()
         n_monkey = len(monkeys)
 
         black_list = []
