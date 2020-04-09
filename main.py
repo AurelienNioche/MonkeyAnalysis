@@ -87,8 +87,6 @@ class Analysis:
                 print()
                 print("-" * 60 + f" {m} " + "-" * 60 + "\n")
 
-                # Pre-process data --------------------------------
-
                 # Get the data
                 d = get_data(m, starting_point=starting_point)
                 self.data[m] = d
