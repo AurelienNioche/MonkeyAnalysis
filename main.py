@@ -8,7 +8,6 @@ application = get_wsgi_application()
 
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
-import matplotlib.axes._axes
 from parameters.parameters import FIG_FOLDER, CONTROL_CONDITIONS, GAIN, LOSS
 
 from experimental_data.get import get_data, get_monkeys

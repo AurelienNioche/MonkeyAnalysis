@@ -1,6 +1,6 @@
 import numpy as np
 
-from . gain_vs_loss import _gains_only, _losses_only
+from .tools import _losses_only, _gains_only
 from parameters.parameters import CONTROL_CONDITIONS, SAME_P_GAIN, \
     SAME_P_LOSS, \
     SAME_P_GAIN_VS_LOSS, SAME_X0_GAIN, SAME_X0_LOSS, LEFT, RIGHT

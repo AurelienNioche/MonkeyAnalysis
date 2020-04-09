@@ -2,10 +2,7 @@ import numpy as np
 
 from parameters.parameters import LEFT, RIGHT
 from utils.log import log
-from .tools import _expected_value
-
-from . gain_vs_loss import _gains_only, _losses_only
-
+from .tools import _expected_value, _losses_only, _gains_only
 
 NAME = "experimental_data.filter.risk"
 

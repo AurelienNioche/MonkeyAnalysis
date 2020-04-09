@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import scipy.stats
 
-from experimental_data.filter.gain_vs_loss import _gains_only, _losses_only
+from experimental_data.filter.tools import _losses_only, _gains_only
 from experimental_data.filter.risk import get_risky_safe_option, _choose_risky
 from parameters.parameters import LOSS, GAIN
 from utils.log import log
