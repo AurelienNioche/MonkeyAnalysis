@@ -162,17 +162,17 @@ class Analysis:
 
         for m in black_list:
             monkeys.remove(m)
-            self.data.pop(m)
-            self.info_data.pop(m)
-            self.control_data.pop(m)
-            self.exemplary_data.pop(m)
-            self.freq_risk_data.pop(m)
-            self.hist_best_param_data.pop(m)
-            self.hist_control_data.pop(m)
-            self.control_sigmoid_data.pop(m)
-            self.cpt_fit.pop(m)
-            self.risk_sig_fit.pop(m)
-            self.control_sig_fit.pop(m)
+            self.data.pop(m, None)
+            self.info_data.pop(m, None)
+            self.control_data.pop(m, None)
+            self.exemplary_data.pop(m, None)
+            self.freq_risk_data.pop(m, None)
+            self.hist_best_param_data.pop(m, None)
+            self.hist_control_data.pop(m, None)
+            self.control_sigmoid_data.pop(m, None)
+            self.cpt_fit.pop(m, None)
+            self.risk_sig_fit.pop(m, None)
+            self.control_sig_fit.pop(m, None)
 
         self.monkeys = monkeys
         self.n_monkey = len(monkeys)
