@@ -49,10 +49,10 @@ def export_as_xlsx():
 
 def import_data_xlsx(data_file='data.xlsx'):
 
-    ExperimentalData.objects.all().delete()
+    data_path = os.path.join(DATA_FOLDER, data_file)
 
-    log("Reading from xlsx...", end=" ", flush=True, name=NAME)
-    df = pd.read_excel(os.path.join(DATA_FOLDER, data_file), )
+    log(f"Reading from '{data_path}'...", end=" ", flush=True, name=NAME)
+    df = pd.read_excel(data_path)
     print("Done!")
 
     log("Preprocess the data...", end=" ", flush=True, name=NAME)
@@ -83,6 +83,7 @@ def import_data_xlsx(data_file='data.xlsx'):
             filtered_entries.append(entry_dic)
     print("Done!")
     log("Writing in db...", end=" ", flush=True, name=NAME)
+    ExperimentalData.objects.all().delete()
     ExperimentalData.objects.bulk_create(
         ExperimentalData(**val) for val in filtered_entries)
 

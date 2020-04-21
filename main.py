@@ -8,6 +8,10 @@ application = get_wsgi_application()
 
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
+import traceback
+import numpy as np
+import warnings
+
 from parameters.parameters import FIG_FOLDER, CONTROL_CONDITIONS, GAIN, LOSS
 
 from experimental_data.get import get_data, get_monkeys
@@ -32,10 +36,6 @@ from model.stats import stats_regression_best_values
 
 import analysis.summary
 import analysis.info
-
-import numpy as np
-
-import warnings
 
 np.seterr(all='raise')
 
@@ -148,10 +148,13 @@ class Analysis:
             except Exception as e:
                 if skip_exception:
                     m = monkeys[i]
+                    track = traceback.format_exc()
                     msg = \
-                        f"I encountered exeception '{e}' " \
-                        f"while trying to execute for monkey '{m}'." \
-                        "I will skip this monkey..."
+                        f"While trying to pre-process the data for " \
+                        f"monkey '{m}', " \
+                        f"I encountered an error. " \
+                        "I will skip this monkey. Here is the error:\n" \
+                        f'{track}'
                     warnings.warn(msg)
                     black_list.append(m)
                 else:
@@ -159,6 +162,17 @@ class Analysis:
 
         for m in black_list:
             monkeys.remove(m)
+            self.data.pop(m)
+            self.info_data.pop(m)
+            self.control_data.pop(m)
+            self.exemplary_data.pop(m)
+            self.freq_risk_data.pop(m)
+            self.hist_best_param_data.pop(m)
+            self.hist_control_data.pop(m)
+            self.control_sigmoid_data.pop(m)
+            self.cpt_fit.pop(m)
+            self.risk_sig_fit.pop(m)
+            self.control_sig_fit.pop(m)
 
         self.monkeys = monkeys
         self.n_monkey = len(monkeys)

@@ -83,8 +83,8 @@ def _run(monkey, starting_point, end_point):
 
 def get_monkeys():
 
-    return np.unique(ExperimentalData.objects.values_list("monkey",
-                                                          flat=True))
+    return list(np.unique(ExperimentalData.objects.values_list("monkey",
+                                                               flat=True)))
 
 
 def get_data(monkey, starting_point=None,
