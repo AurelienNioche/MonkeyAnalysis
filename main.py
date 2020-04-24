@@ -30,6 +30,8 @@ import plot.exemplary_case
 import plot.control_sigmoid
 import plot.info
 
+from utils.log import log
+
 import model.parameter_estimate
 from model.stats import stats_regression_best_values
 # from model.stats import stats_comparison_best_values
@@ -150,11 +152,13 @@ class Analysis:
                     m = monkeys[i]
                     track = traceback.format_exc()
                     msg = \
-                        f"While trying to pre-process the data for " \
+                        f"\nWhile trying to pre-process the data for " \
                         f"monkey '{m}', " \
                         f"I encountered an error. " \
-                        "I will skip this monkey. Here is the error:\n" \
-                        f'{track}'
+                        "\nHere is the error:\n\n" \
+                        f"{track}\n" \
+                        f"I will skip the monkey '{m}' " \
+                        f"from the rest of the analysis"
                     warnings.warn(msg)
                     black_list.append(m)
                 else:
@@ -202,10 +206,15 @@ class Analysis:
 
         self.target_monkey = monkey
 
-        # Create the pdf
-        self.pdf = PdfPages(os.path.join(
+        # Define the path
+        pdf_path = os.path.join(
             FIG_FOLDER,
-            f"results{monkey if monkey is not None else''}.pdf"))
+            f"results{monkey if monkey is not None else ''}.pdf")
+
+        log(f"Creating the figure '{pdf_path}'...", name=NAME)
+
+        # Create the pdf
+        self.pdf = PdfPages(pdf_path)
 
         # Fig: Info
         self.create_figure(
@@ -263,6 +272,8 @@ class Analysis:
         self.pdf.close()
         self.target_monkey = None
 
+        log(f"Figure '{pdf_path}' created.\n", name=NAME)
+
     def create_summary(self):
 
         analysis.summary.create(
@@ -276,8 +287,8 @@ class Analysis:
 def main():
 
     a = Analysis()
-    a.create_pdf()
     a.create_summary()
+    a.create_pdf()
     for m in a.monkeys:
         a.create_pdf(monkey=m)
 

@@ -49,8 +49,8 @@ def _get_cross_validation(d, monkey, randomize, n_chunk,
                                   (0.01, 1), (0, 5), (0, 5)),
                           init_guess=None,
                           method='evolutionary'):
-    print()
-    log(f'Getting fit for {monkey}...', NAME)
+
+    log(f'Getting the fit for {monkey}...', NAME)
     fit = {}
 
     alternatives, choose_risky = experimental_data.filter.risk.get_choose_risky(d)

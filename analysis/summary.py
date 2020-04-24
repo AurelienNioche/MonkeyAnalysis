@@ -28,6 +28,10 @@ from parameters.parameters import MODEL_PARAMETERS, \
     SIG_MID_RISK_GAIN, SIG_MID_RISK_LOSS, \
     GAIN, LOSS
 
+from utils.log import log
+
+NAME = 'analysis.summary'
+
 
 class Summary:
 
@@ -56,10 +60,10 @@ class Summary:
         self.summary[key] = value
 
     def export_as_xlsx(self, xls_name="summary.xlsx"):
-        os.makedirs(DATA_FOLDER, exist_ok=True)
 
-        workbook = xlsxwriter.Workbook(os.path.join(DATA_FOLDER,
-                                                    xls_name))
+        os.makedirs(DATA_FOLDER, exist_ok=True)
+        xls_path = os.path.join(DATA_FOLDER, xls_name)
+        workbook = xlsxwriter.Workbook(xls_path)
 
         # Write data
         worksheet = workbook.add_worksheet('data')
@@ -82,6 +86,8 @@ class Summary:
             worksheet.write(j, 1, DOC[c])
 
         workbook.close()
+
+        log(f"Summary exported in the file '{xls_path}'\n", name=NAME)
 
     @staticmethod
     def _format_column_name(c):
@@ -164,3 +170,5 @@ def create(info_data, control_data,
         summary.append_cpt_fit(cpt_fit[m])
         summary.append_control_sig_fit(control_sig_fit[m])
         summary.append_risk_sig_fit(risk_sig_fit[m])
+
+    summary.export_as_xlsx()
