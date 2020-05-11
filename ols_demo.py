@@ -6,9 +6,6 @@ import statsmodels.formula.api as smf
 from scipy import stats
 from matplotlib import pyplot as plt
 
-import pandas as pd
-from sklearn import preprocessing
-
 
 def main():
     prestige = sm.datasets.get_rdataset("Duncan", "carData", cache=True).data
@@ -34,6 +31,12 @@ def main():
     fig = plt.figure(figsize=(12, 8))
     fig = sm.graphics.plot_regress_exog(prestige_model, "education", fig=fig)
     plt.show()
+
+    print("linearity")
+    name = ['t value', 'p value']
+    test = sms.linear_harvey_collier(prestige_model)
+    for n, m in zip(name, test):
+        print(n, m)
 
 
 

@@ -73,9 +73,7 @@ def main():
     # print(r.summary())
     # print(f"R2={r_squared}")
 
-    mod = smf.ols(formula=formula, data=df)
-
-    res = mod.fit()
+    res = smf.ols(formula=formula, data=df).fit()
 
     print(res.summary())
 
@@ -123,7 +121,7 @@ def main():
 
     fig, ax = plt.subplots(figsize=(12, 8))
     ax.scatter(res.predict(), res.resid_pearson)
-    ax.set_xlabel("Fitted")
+    ax.set_xlabel("Predicted")
     ax.set_ylabel("Residuals (normalized)")
     plt.show()
 
