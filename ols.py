@@ -125,6 +125,12 @@ def main():
     ax.set_ylabel("Residuals (normalized)")
     plt.show()
 
+    fig, ax = plt.subplots(figsize=(12, 8))
+    ax.scatter(res.predict(), df["MDS"])
+    ax.set_xlabel("Predicted")
+    ax.set_ylabel("Observed")
+    plt.show()
+
     sns.distplot(res.resid, hist=False, kde=True,
                  color='darkblue',
                  hist_kws={'edgecolor': 'black'},
