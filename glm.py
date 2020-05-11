@@ -23,6 +23,9 @@ def main():
 
     print(df)
 
+    # Compute both correlation matrices
+    corr = np.corrcoef(df, rowvar=0)
+    print(np.linalg.det(corr))  # 0.988532159861
     # x = df.values  # returns a numpy array
     #
 
@@ -58,7 +61,10 @@ def main():
 
     print(res.summary())
 
-    print(res.normalized_cov_params)
+    #print(res.normalized_cov_params)
+
+    inf = res.get_influence()
+    print(inf.summary_frame())
 
 if __name__ == "__main__":
     main()
