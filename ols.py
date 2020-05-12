@@ -127,6 +127,7 @@ def main():
 
     fig, ax = plt.subplots(figsize=(12, 8))
     ax.scatter(res.predict(), df["MDS"])
+    ax.axhline(0)
     ax.set_xlabel("Predicted")
     ax.set_ylabel("Observed")
     plt.show()
