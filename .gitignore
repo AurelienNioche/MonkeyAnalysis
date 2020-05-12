@@ -12,6 +12,7 @@ __pycache__/
 data/
 !data/data_GH.xlsx
 !data/data.xlsx
+!data/summary_good.xlsx
 
 # Pickle files
 data/pickle/
@@ -28,3 +29,6 @@ data/results.db
 # Django migrations
 */migrations/*
 !*/*/__init__.py
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
