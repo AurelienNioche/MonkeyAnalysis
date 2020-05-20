@@ -1,10 +1,13 @@
 import os
 import xlsxwriter
 import numpy as np
+import warnings
 
 from parameters.parameters import DATA_FOLDER
 
-from parameters.parameters import MODEL_PARAMETERS, \
+from model.model import DecisionMakingModel
+
+from parameters.parameters import \
     CONTROL_CONDITIONS, CHOOSE_RIGHT, MONKEY_NAME, N_TRIALS, DOC, \
     CONTROL_SIG_PARAM, RISK_SIG_PARAM, \
     SIG_STEEP_SAME_P_GAIN_VS_LOSS, \
@@ -46,7 +49,7 @@ class Summary:
 
         col = [MONKEY_NAME, N_TRIALS, CHOOSE_RIGHT]
 
-        for cat in (CONTROL_CONDITIONS, MODEL_PARAMETERS,
+        for cat in (CONTROL_CONDITIONS, DecisionMakingModel.param_labels,
                     CONTROL_SIG_PARAM, RISK_SIG_PARAM):
             for cd in cat:
                 col.append(cd)
@@ -83,7 +86,10 @@ class Summary:
         for j, c in enumerate(self.columns):
             c_name = self._format_column_name(c)
             worksheet.write(j, 0, c_name)
-            worksheet.write(j, 1, DOC[c])
+            try:
+                worksheet.write(j, 1, DOC[c])
+            except KeyError:
+                warnings.warn(f"Missing doc for '{c}'")
 
         workbook.close()
 
@@ -100,7 +106,7 @@ class Summary:
             self[cd].append(median)
 
     def append_cpt_fit(self, cpt_fit):
-        for pr in MODEL_PARAMETERS:
+        for pr in DecisionMakingModel.param_labels:
             mean = np.mean(cpt_fit[pr])
             self[pr].append(mean)
 

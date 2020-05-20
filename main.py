@@ -103,7 +103,9 @@ class Analysis:
                 self.control_data[m] = \
                     experimental_data.filter.control.sort_by_cond(
                         alternatives=alternatives,
-                        control_types=control_types, hits=hits)
+                        control_types=control_types, hits=hits,
+                        verbose=False
+                    )
 
                 self.control_sigmoid_data[m] = \
                     experimental_data.filter.control_sigmoid.get(
@@ -115,10 +117,11 @@ class Analysis:
                      for cd in CONTROL_CONDITIONS}
 
                 self.exemplary_data[m] = \
-                    experimental_data.filter.exemplary.get(d)
+                    experimental_data.filter.exemplary.get(d, verbose=False)
 
                 self.freq_risk_data[m] = \
-                    experimental_data.filter.freq_risk.get(d)
+                    experimental_data.filter.freq_risk.get(d, verbose=False)
+
                 self.risk_sig_fit[m] = \
                     {cd: self.freq_risk_data[m][cd]['fit']
                      for cd in (GAIN, LOSS)}
@@ -220,32 +223,32 @@ class Analysis:
         self.create_figure(
             plot_function=plot.info.fig_info,
             data=self.info_data)
+        #
+        # # Fig: Control
+        # self.create_figure(
+        #     plot_function=plot.control.plot,
+        #     data=self.control_data)
+        #
+        # # Fig: Control sigmoid
+        # self.create_figure(
+        #     plot_function=plot.control_sigmoid.control_sigmoid,
+        #     data=self.control_sigmoid_data,
+        #     n_subplot=3)
+        #
+        # # Fig: Exemplary case
+        # self.create_figure(
+        #     plot_function=plot.exemplary_case.plot,
+        #     data=self.exemplary_data)
+        #
+        # # Fig: Freq risky choice against expected value
+        # self.create_figure(
+        #     plot_function=plot.freq_risk.plot,
+        #     data=self.freq_risk_data)
 
-        # Fig: Control
-        self.create_figure(
-            plot_function=plot.control.plot,
-            data=self.control_data)
-
-        # Fig: Control sigmoid
-        self.create_figure(
-            plot_function=plot.control_sigmoid.control_sigmoid,
-            data=self.control_sigmoid_data,
-            n_subplot=3)
-
-        # Fig: Exemplary case
-        self.create_figure(
-            plot_function=plot.exemplary_case.plot,
-            data=self.exemplary_data)
-
-        # Fig: Freq risky choice against expected value
-        self.create_figure(
-            plot_function=plot.freq_risk.plot,
-            data=self.freq_risk_data)
-
-        # Fig: Utility function
-        self.create_figure(
-            plot_function=plot.utility.plot,
-            data=self.cpt_fit)
+        # # Fig: Utility function
+        # self.create_figure(
+        #     plot_function=plot.utility.plot,
+        #     data=self.cpt_fit)
 
         # Fig: Probability distortion
         self.create_figure(
@@ -253,21 +256,21 @@ class Analysis:
             data=self.cpt_fit)
 
         # Fig: Precision
-        self.create_figure(
-            plot_function=plot.precision.plot,
-            data=self.cpt_fit)
+        # self.create_figure(
+        #     plot_function=plot.precision.plot,
+        #     data=self.cpt_fit)
 
-        # Fig: Control history
-        self.create_figure(
-            plot_function=plot.history.history_control,
-            data=self.hist_control_data,
-            n_subplot=len(CONTROL_CONDITIONS))
-
-        # Fig: Best param history
-        self.create_figure(
-            plot_function=plot.history.history_best_param,
-            data=self.hist_best_param_data,
-            n_subplot=3)
+        # # Fig: Control history
+        # self.create_figure(
+        #     plot_function=plot.history.history_control,
+        #     data=self.hist_control_data,
+        #     n_subplot=len(CONTROL_CONDITIONS))
+        #
+        # # Fig: Best param history
+        # self.create_figure(
+        #     plot_function=plot.history.history_best_param,
+        #     data=self.hist_best_param_data,
+        #     n_subplot=3)
 
         self.pdf.close()
         self.target_monkey = None
@@ -286,7 +289,7 @@ class Analysis:
 
 def main():
 
-    a = Analysis()
+    a = Analysis(skip_exception=True)
     a.create_summary()
     a.create_pdf()
     for m in a.monkeys:

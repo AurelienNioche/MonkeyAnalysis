@@ -5,8 +5,9 @@ import statsmodels.stats.multitest
 from sklearn.linear_model import LinearRegression
 from statsmodels import api as sm
 
-from parameters.parameters import MODEL_PARAMETERS
 from utils.log import log
+
+from model.model import DecisionMakingModel
 
 
 NAME = "model.stats"
@@ -74,7 +75,7 @@ def stats_regression_best_values(fit):
 
     fs, ps, ns, alphas, betas = [], [], [], [], []
 
-    for param in MODEL_PARAMETERS:
+    for param in DecisionMakingModel.param_labels:
 
         y = fit[param]
 
@@ -91,14 +92,14 @@ def stats_regression_best_values(fit):
 
     rgr_line_param = {}
 
-    for i, param in enumerate(MODEL_PARAMETERS):
+    for i, param in enumerate(DecisionMakingModel.param_labels):
         rgr_line_param[param] = \
             alphas[i], betas[i], p_corr[i] < 0.01
 
     log(f'Linear regression for parameter values over time: ', NAME)
 
     labels = [f"{param}"
-              for param in MODEL_PARAMETERS]
+              for param in DecisionMakingModel.param_labels]
 
     for label, f, p, p_c, n, alpha, beta \
             in zip(labels, fs, ps, p_corr, ns, alphas, betas):

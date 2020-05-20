@@ -45,54 +45,54 @@ def get_risky_safe_option(d, t):
     return risky, safe
 
 
-def get_choose_risky(d):
-
-    alternatives = []
-    choose_risky = []
-
-    n_trials = len(d.p.left)
-
-    for t in range(n_trials):
-
-        risky, safe = get_risky_safe_option(d=d, t=t)
-        if risky is None:
-            continue
-
-        alt = (
-            (getattr(d.p, risky)[t], getattr(d.x, risky)[t]),
-            (getattr(d.p, safe)[t], getattr(d.x, safe)[t]),
-        )
-
-        cr = _choose_risky(d, t, risky)
-
-        alternatives.append(alt)
-        choose_risky.append(cr)
-
-    return np.asarray(alternatives), np.asarray(choose_risky)
-
-
-def cluster_risky_choice_by_alternative(alternatives, choose_risky):
-
-    unique_alt = [(tuple(i[0]), tuple(i[1]))
-                  for i in np.unique(alternatives, axis=0)]
-    results = {i: [] for i in unique_alt}
-
-    alternatives = [(tuple(i[0]), tuple(i[1])) for i in alternatives]
-
-    for alt, cr in zip(alternatives, choose_risky):
-        results[alt].append(cr)
-
-    n = np.zeros(len(unique_alt), dtype=int)
-    k = np.zeros(len(unique_alt), dtype=int)
-
-    for i, alt in enumerate(unique_alt):
-        n[i] = len(results[alt])
-        k[i] = sum(results[alt])
-
-    return unique_alt, n, k
+# def get_choose_risky(d):
+#
+#     alternatives = []
+#     choose_risky = []
+#
+#     n_trials = len(d.p.left)
+#
+#     for t in range(n_trials):
+#
+#         risky, safe = get_risky_safe_option(d=d, t=t)
+#         if risky is None:
+#             continue
+#
+#         alt = (
+#             (getattr(d.p, risky)[t], getattr(d.x, risky)[t]),
+#             (getattr(d.p, safe)[t], getattr(d.x, safe)[t]),
+#         )
+#
+#         cr = _choose_risky(d, t, risky)
+#
+#         alternatives.append(alt)
+#         choose_risky.append(cr)
+#
+#     return np.asarray(alternatives), np.asarray(choose_risky)
 
 
-def get_choose_risky_loss_or_gain_only(d, gain_only):
+# def cluster_risky_choice_by_alternative(alternatives, choose_risky):
+#
+#     unique_alt = [(tuple(i[0]), tuple(i[1]))
+#                   for i in np.unique(alternatives, axis=0)]
+#     results = {i: [] for i in unique_alt}
+#
+#     alternatives = [(tuple(i[0]), tuple(i[1])) for i in alternatives]
+#
+#     for alt, cr in zip(alternatives, choose_risky):
+#         results[alt].append(cr)
+#
+#     n = np.zeros(len(unique_alt), dtype=int)
+#     k = np.zeros(len(unique_alt), dtype=int)
+#
+#     for i, alt in enumerate(unique_alt):
+#         n[i] = len(results[alt])
+#         k[i] = sum(results[alt])
+#
+#     return unique_alt, n, k
+
+
+def get_choose_risky_loss_or_gain_only(d, gain_only, verbose=True):
 
     results = {}
 
@@ -132,10 +132,11 @@ def get_choose_risky_loss_or_gain_only(d, gain_only):
     means = []
     n_trials = []
 
-    log(
-        f"Stats for risk against exp value "
-        f"- {'gain' if gain_only else 'loss'}:", name=NAME)
-    log('Pairs of lotteries used:', NAME)
+    if verbose:
+        log(
+            f"Stats for risk against exp value "
+            f"- {'gain' if gain_only else 'loss'}:", name=NAME)
+        log('Pairs of lotteries used:', NAME)
 
     for i, alt in enumerate(alternatives):
         delta = _expected_value(alt[0]) - _expected_value(alt[1])
@@ -147,7 +148,8 @@ def get_choose_risky_loss_or_gain_only(d, gain_only):
         n = len(results[alt])
 
         n_trials.append(n)
-        log(f'({i}) {alt} delta: {delta}, mean: {mean:.2f}, n: {n}', NAME)
+        if verbose:
+            log(f'({i}) {alt} delta: {delta}, mean: {mean:.2f}, n: {n}', NAME)
 
         # # -------------------- #
         #
@@ -161,14 +163,67 @@ def get_choose_risky_loss_or_gain_only(d, gain_only):
     # u, p = scipy.stats.mannwhitneyu(means, fake_means)
     # log(f'Different from random: u= {u:.02f}, p={p:.03f}', "Stats")
 
-    log(f'Number of pairs of lotteries for risky choices '
-        f'(gains only = {gain_only}): {len(n_trials)}', NAME)
-    log(f'Min: {np.min(n_trials)}', NAME)
-    log(f'Max: {np.max(n_trials)}', NAME)
-    log(f'Median: {np.median(n_trials):.2f}', NAME)
-    log(f'Mean: {np.mean(n_trials):.2f}', NAME)
-    log(f'Std: {np.std(n_trials):.2f}', NAME)
-    log(f'Sum: {np.sum(n_trials)}\n', NAME)
-    print()
+    if verbose:
+        log(f'Number of pairs of lotteries for risky choices '
+            f'(gains only = {gain_only}): {len(n_trials)}', NAME)
+        log(f'Min: {np.min(n_trials)}', NAME)
+        log(f'Max: {np.max(n_trials)}', NAME)
+        log(f'Median: {np.median(n_trials):.2f}', NAME)
+        log(f'Mean: {np.mean(n_trials):.2f}', NAME)
+        log(f'Std: {np.std(n_trials):.2f}', NAME)
+        log(f'Sum: {np.sum(n_trials)}\n', NAME)
+        print()
 
     return expected_values_differences, means
+
+
+def get_chunk(d, n_chunk, randomize):
+
+    p0 = []
+    p1 = []
+    x0 = []
+    x1 = []
+
+    n_trials = len(d.p.left)
+
+    for t in range(n_trials):
+        if _gains_only(d=d, t=t) \
+            and (_riskiest_option_on_left(d, t)
+                 or _riskiest_option_on_right(d, t)):
+
+            p0.append(d.p.left[t])
+            p1.append(d.p.right[t])
+            x0.append(d.x.left[t])
+            x1.append(d.x.right[t])
+
+    p0 = np.asarray(p0)
+    p1 = np.asarray(p1)
+    x0 = np.asarray(x0)
+    x1 = np.asarray(x1)
+
+    max_x = max(max(x0), max(x1))
+    assert max_x == 3
+    x0 = x0 / max_x
+    x1 = x1 / max_x
+
+    n_trials = len(x0)
+    reminder = n_trials % n_chunk
+
+    idx = np.arange(n_trials)
+    if randomize:
+        np.random.shuffle(idx)
+
+    if reminder > 0:
+        idx = idx[reminder:]
+
+    parts = np.split(idx, n_chunk)
+
+    log(f'Chunk using '
+        f'{"chronological" if not randomize else "randomized"} '
+        f'order', NAME)
+    log(f'N trials = {n_trials}', NAME)
+    log(f'N parts = {len(parts)} '
+        f'(n trials per part = {int(n_trials / n_chunk)}, '
+        f'reminder = {reminder})', NAME)
+
+    return p0, p1, x0, x1, parts

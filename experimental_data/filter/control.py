@@ -87,7 +87,7 @@ def _best_option_on_left(d, t, condition):
         raise Exception('Condition not understood.')
 
 
-def sort_by_cond(alternatives, control_types, hits):
+def sort_by_cond(alternatives, control_types, hits, verbose=True):
 
     sorted_data = {i: {} for i in CONTROL_CONDITIONS}
 
@@ -102,7 +102,8 @@ def sort_by_cond(alternatives, control_types, hits):
 
     for cond in sorted_data.keys():
 
-        log(f'Condition "{cond}"', NAME)
+        if verbose:
+            log(f'Condition "{cond}"', NAME)
 
         data = sorted_data[cond]
 
@@ -120,25 +121,28 @@ def sort_by_cond(alternatives, control_types, hits):
 
             means.append(mean)
 
-            log(f'{i} {alt}: mean {mean:.2f}, n {n}', NAME)
+            if verbose:
+                log(f'{i} {alt}: mean {mean:.2f}, n {n}', NAME)
 
         # ----------------------------------------- #
 
-        perc_75, perc_25 = np.percentile(means, [75, 25])
+        if verbose:
 
-        log(f'Number of pairs of lotteries: {len(n_trials)}', NAME)
+            perc_75, perc_25 = np.percentile(means, [75, 25])
 
-        log(f'The median of frequencies for {cond}: {np.median(means):.02f} '
-            f'(IQR = {perc_25:.02f} -- {perc_75:.02f})', NAME)
+            log(f'Number of pairs of lotteries: {len(n_trials)}', NAME)
 
-        log('Number of trials for a specific pair:', NAME)
+            log(f'The median of frequencies for {cond}: {np.median(means):.02f} '
+                f'(IQR = {perc_25:.02f} -- {perc_75:.02f})', NAME)
 
-        log(f'Min: {np.min(n_trials)}', NAME)
-        log(f'Max: {np.max(n_trials)}', NAME)
-        log(f'Median: {np.median(n_trials):.2f}', NAME)
-        log(f'Mean: {np.mean(n_trials):.2f}', NAME)
-        log(f'Std: {np.std(n_trials):.2f}', NAME)
-        log(f'Sum: {np.sum(n_trials)}\n', NAME)
+            log('Number of trials for a specific pair:', NAME)
+
+            log(f'Min: {np.min(n_trials)}', NAME)
+            log(f'Max: {np.max(n_trials)}', NAME)
+            log(f'Median: {np.median(n_trials):.2f}', NAME)
+            log(f'Mean: {np.mean(n_trials):.2f}', NAME)
+            log(f'Std: {np.std(n_trials):.2f}', NAME)
+            log(f'Sum: {np.sum(n_trials)}\n', NAME)
 
     return results
 

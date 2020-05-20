@@ -19,9 +19,10 @@ def _certain_option(d, t):
     return d.p.left[t] == 1. or d.p.right[t] == 1.
 
 
-def get(d):
+def get(d, verbose=True):
 
-    log('Getting data for exemplary case...', NAME)
+    if verbose:
+        log('Getting data for exemplary case...', NAME)
 
     sorted_data = {LOSS: {}, GAIN: {}, 'n_trials': 0}
 
@@ -76,11 +77,12 @@ def get(d):
     for c in conditions:
 
         pairs = list(sorted_data[c].keys())
-        log(f'For condition "{c}", '
-            f'I got {len(pairs)} pair(s) of lotteries ({pairs}).', NAME)
+
+        if verbose:
+            log(f'For condition "{c}", '
+                f'I got {len(pairs)} pair(s) of lotteries ({pairs}).', NAME)
 
         if len(pairs) != 1:
-
             log(
                 f'[{NAME}] Exemplary case: '
                 f'I expected one (and only one) pair of lotteries to meet '
@@ -94,7 +96,8 @@ def get(d):
         n = len(chosen)
         results[c] = mean
 
-        log(f'Observed freq is {mean:.2f} ({n} trials)', NAME)
+        if verbose:
+            log(f'Observed freq is {mean:.2f} ({n} trials)', NAME)
 
         # For Chi2
         n_hit = np.sum(chosen)
@@ -120,9 +123,11 @@ def get(d):
         df=1)
     p = p_value[0]
     chi = chi_squared_stat["count"]
-    log(f'Chi squared stat: {chi}', NAME)
-    log(f'Critical value: {crt}', NAME)
-    log(f'P value: {p}\n', NAME)
+
+    if verbose:
+        log(f'Chi squared stat: {chi}', NAME)
+        log(f'Critical value: {crt}', NAME)
+        log(f'P value: {p}\n', NAME)
 
     results["stats"] = {
         "val": chi,
