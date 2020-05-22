@@ -5,8 +5,6 @@ import warnings
 
 from parameters.parameters import DATA_FOLDER
 
-from model.model import DecisionMakingModel
-
 from parameters.parameters import \
     CONTROL_CONDITIONS, CHOOSE_RIGHT, MONKEY_NAME, N_TRIALS, DOC, \
     CONTROL_SIG_PARAM, RISK_SIG_PARAM, \
@@ -38,18 +36,20 @@ NAME = 'analysis.summary'
 
 class Summary:
 
-    def __init__(self):
+    def __init__(self, class_model):
+
+        self.class_model = class_model
+        self.xls_name = f"summary_{class_model.__name__}.xlsx"
 
         self.columns = self._get_columns()
 
         self.summary = {k: [] for k in self.columns}
 
-    @staticmethod
-    def _get_columns():
+    def _get_columns(self):
 
         col = [MONKEY_NAME, N_TRIALS, CHOOSE_RIGHT]
 
-        for cat in (CONTROL_CONDITIONS, DecisionMakingModel.param_labels,
+        for cat in (CONTROL_CONDITIONS, self.class_model.param_labels,
                     CONTROL_SIG_PARAM, RISK_SIG_PARAM):
             for cd in cat:
                 col.append(cd)
@@ -62,10 +62,10 @@ class Summary:
     def __setitem__(self, key, value):
         self.summary[key] = value
 
-    def export_as_xlsx(self, xls_name="summary.xlsx"):
+    def export_as_xlsx(self):
 
         os.makedirs(DATA_FOLDER, exist_ok=True)
-        xls_path = os.path.join(DATA_FOLDER, xls_name)
+        xls_path = os.path.join(DATA_FOLDER, self.xls_name)
         workbook = xlsxwriter.Workbook(xls_path)
 
         # Write data
@@ -106,7 +106,7 @@ class Summary:
             self[cd].append(median)
 
     def append_cpt_fit(self, cpt_fit):
-        for pr in DecisionMakingModel.param_labels:
+        for pr in self.class_model.param_labels:
             mean = np.mean(cpt_fit[pr])
             self[pr].append(mean)
 
@@ -155,9 +155,9 @@ class Summary:
 
 def create(info_data, control_data,
            cpt_fit, control_sig_fit,
-           risk_sig_fit):
+           risk_sig_fit, class_model):
 
-    summary = Summary()
+    summary = Summary(class_model=class_model)
     monkeys = sorted(info_data.keys())
     for m in monkeys:
         # Add monkey name

@@ -5,6 +5,7 @@ Produce the probability distortion figure
 import numpy as np
 
 from parameters.parameters import COLOR_LOSS, COLOR_GAIN
+from plot.freq_risk import add_text
 
 NAME = "plot.probability_distortion"
 
@@ -48,10 +49,12 @@ def plot(
             ax=ax)
 
     if show_average:
+        v = np.mean(fit["alpha"])
         _line(
-            param=np.mean(fit["alpha"]),
+            param=v,
             linewidth=3,
             ax=ax)
+        add_text(ax, r'$\alpha=' + f'{v:.2f}' + '$', fontsize=16)
 
     ax.set_xlabel('$p$', fontsize=label_font_size)
     ax.set_ylabel('$w(p)$', fontsize=label_font_size)

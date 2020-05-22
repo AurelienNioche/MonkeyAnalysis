@@ -25,7 +25,7 @@ def scatter_and_sigmoid(ax, x, y, x_fit, y_fit, color, label=None,
     ax.scatter(x, y, color=color, alpha=alpha_scatter, s=point_size)
 
 
-def add_text(ax, txt):
+def add_text(ax, txt, fontsize=10):
     ax.text(0.05, 0.9, txt,
             horizontalalignment='left',
             verticalalignment='top',

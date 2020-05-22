@@ -7,8 +7,6 @@ from statsmodels import api as sm
 
 from utils.log import log
 
-from model.model import DecisionMakingModel
-
 
 NAME = "model.stats"
 
@@ -71,11 +69,11 @@ def regression(x, y):
     return f, p, n, alpha, beta
 
 
-def stats_regression_best_values(fit):
+def stats_regression_best_values(fit, class_model):
 
     fs, ps, ns, alphas, betas = [], [], [], [], []
 
-    for param in DecisionMakingModel.param_labels:
+    for param in class_model.param_labels:
 
         y = fit[param]
 
@@ -92,14 +90,14 @@ def stats_regression_best_values(fit):
 
     rgr_line_param = {}
 
-    for i, param in enumerate(DecisionMakingModel.param_labels):
+    for i, param in enumerate(class_model.param_labels):
         rgr_line_param[param] = \
             alphas[i], betas[i], p_corr[i] < 0.01
 
     log(f'Linear regression for parameter values over time: ', NAME)
 
     labels = [f"{param}"
-              for param in DecisionMakingModel.param_labels]
+              for param in class_model.param_labels]
 
     for label, f, p, p_c, n, alpha, beta \
             in zip(labels, fs, ps, p_corr, ns, alphas, betas):

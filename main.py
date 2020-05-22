@@ -12,7 +12,8 @@ import traceback
 import numpy as np
 import warnings
 
-from parameters.parameters import FIG_FOLDER, CONTROL_CONDITIONS, GAIN, LOSS
+from parameters.parameters import \
+    FIG_FOLDER, CONTROL_CONDITIONS, GAIN, LOSS
 
 from experimental_data.get import get_data, get_monkeys
 import experimental_data.filter.control
@@ -29,11 +30,14 @@ import plot.freq_risk
 import plot.exemplary_case
 import plot.control_sigmoid
 import plot.info
+import plot.best_param_distrib
 
 from utils.log import log
 
 import model.parameter_estimate
 from model.stats import stats_regression_best_values
+from model.model import DMSciReports, DMEpsilon, DMNicolas, DMSoftmax, \
+    DMSoftmaxSideBias
 # from model.stats import stats_comparison_best_values
 
 import analysis.summary
@@ -46,7 +50,10 @@ NAME = "main"
 
 class Analysis:
 
-    def __init__(self, **kwargs):
+    def __init__(self, class_model, **kwargs):
+
+        self.class_model = class_model
+
         self.monkeys = None
         self.n_monkey = None
 
@@ -131,7 +138,9 @@ class Analysis:
                     monkey=m,
                     force=force_fit,
                     n_chunk=n_chunk,
-                    randomize=randomize_chunk_trials)
+                    randomize=randomize_chunk_trials,
+                    class_model=self.class_model,
+                )
 
                 #     # Stats for comparison of best parameter values
                 #     stats_comparison_best_values(fit, monkey=monkey)
@@ -140,7 +149,9 @@ class Analysis:
                 self.hist_best_param_data[m] = {
                     'fit': self.cpt_fit[m],
                     'regression':
-                        stats_regression_best_values(fit=self.cpt_fit[m])
+                        stats_regression_best_values(
+                            fit=self.cpt_fit[m],
+                            class_model=self.class_model)
                 }
 
                 # history of performance for control trials
@@ -212,7 +223,8 @@ class Analysis:
         # Define the path
         pdf_path = os.path.join(
             FIG_FOLDER,
-            f"results{monkey if monkey is not None else ''}.pdf")
+            f"results{monkey if monkey is not None else ''}_"
+            f"{self.class_model.__name__}.pdf")
 
         log(f"Creating the figure '{pdf_path}'...", name=NAME)
 
@@ -284,16 +296,36 @@ class Analysis:
             control_data=self.control_data,
             cpt_fit=self.cpt_fit,
             control_sig_fit=self.control_sig_fit,
-            risk_sig_fit=self.risk_sig_fit)
+            risk_sig_fit=self.risk_sig_fit,
+            class_model=self.class_model
+        )
+
+    def create_best_param_distrib(self):
+
+        # Define the path
+        fig_path = os.path.join(
+            FIG_FOLDER,
+            f"best_param_distrib_{self.class_model.__name__}.pdf")
+
+        log(f"Creating the figure '{fig_path}'...", name=NAME)
+
+        plot.best_param_distrib.plot(self.cpt_fit, fig_path=fig_path,
+                                     param_labels=self.class_model.param_labels)
 
 
 def main():
 
-    a = Analysis(skip_exception=True)
-    a.create_summary()
-    a.create_pdf()
-    for m in a.monkeys:
-        a.create_pdf(monkey=m)
+    for class_model in (DMSciReports, DMEpsilon, DMNicolas, DMSoftmax,
+                        DMSoftmaxSideBias):
+        a = Analysis(class_model=class_model,
+                     force_fit=True,
+                     skip_exception=True)
+        a.create_summary()
+        a.create_pdf()
+        for m in a.monkeys:
+            a.create_pdf(monkey=m)
+
+        a.create_best_param_distrib()
 
 
 if __name__ == '__main__':
