@@ -1,9 +1,8 @@
 import numpy as np
 
 from .tools import _losses_only, _gains_only
-from parameters.parameters import CONTROL_CONDITIONS, SAME_P_GAIN, \
-    SAME_P_LOSS, \
-    SAME_P_GAIN_VS_LOSS, SAME_X0_GAIN, SAME_X0_LOSS, LEFT, RIGHT
+from parameters.parameters import CONTROL_CONDITIONS, SAME_P, \
+    SAME_X, LEFT, RIGHT
 from utils.log import log
 
 NAME = "experimental_data.filter.control"
@@ -12,26 +11,15 @@ NAME = "experimental_data.filter.control"
 def _type_of_control(d, t):
     type_of_control = None
 
-    if _fixed_p(d, t):
+    if _fixed_p(d=d, t=t):
 
         if _gains_only(d, t):
-            type_of_control = SAME_P_GAIN
-
-        elif _losses_only(d, t):
-            type_of_control = SAME_P_LOSS
-
-        else:
-            type_of_control = SAME_P_GAIN_VS_LOSS
+            type_of_control = SAME_P
 
     elif _fixed_x(d, t):
 
         if _gains_only(d, t):
-            type_of_control = SAME_X0_GAIN
-
-        elif _losses_only(d, t):
-            type_of_control = SAME_X0_LOSS
-        else:
-            raise ValueError('Control type not recognized')
+            type_of_control = SAME_X
 
     return type_of_control
 
@@ -71,20 +59,14 @@ def _fixed_x(d, t):
 
 
 def _best_option_on_left(d, t, condition):
-    if condition in \
-            (SAME_P_GAIN_VS_LOSS,
-             SAME_P_LOSS,
-             SAME_P_GAIN):
+    if condition == SAME_P:
         return d.x.left[t] > d.x.right[t]
 
-    elif condition == SAME_X0_LOSS:
-        return d.p.left[t] < d.p.right[t]
-
-    elif condition == SAME_X0_GAIN:
+    elif condition == SAME_X:
         return d.p.left[t] > d.p.right[t]
 
     else:
-        raise Exception('Condition not understood.')
+        return None
 
 
 def sort_by_cond(alternatives, control_types, hits, verbose=True):
@@ -178,7 +160,8 @@ def get_control(d):
     return alternatives, alternatives_sided, control_types, hits, choose_right
 
 
-def control_history_sort_data(alternatives, control_types, hits, n_chunk):
+def control_history_sort_data(alternatives, control_types, hits,
+                              n_chunk, n_trials_per_chunk):
 
     # Pre-sort data
     sorted_data = {i: {} for i in CONTROL_CONDITIONS}

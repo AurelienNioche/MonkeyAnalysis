@@ -1,26 +1,25 @@
 import numpy as np
 
-from parameters.parameters import \
-    COLOR_LOSS, COLOR_GAIN, CONTROL_CONDITIONS
+from parameters.parameters import CONTROL_CONDITIONS, LABELS_CONTROL
 
 NAME = "plot.history"
 
 
 def _plot_history_best_param(
-        pos_param, neg_param, ax, y_lim, param_name, show_mid_line=False,
+        param, ax, y_lim, param_name, mid_line=None,
         axis_label_font_size=20,
         ticks_label_font_size=14,
+        color='C0',
         point_size=100):
 
-    x_data = np.arange(len(pos_param)) + 1
-    y_data_gain = pos_param
-    y_data_loss = neg_param
+    x_data = np.arange(len(param)) + 1
+    y_data = param
 
-    ax.scatter(x_data, y_data_gain, color=COLOR_GAIN, alpha=0.5, s=point_size)
-    ax.scatter(x_data, y_data_loss, color=COLOR_LOSS, alpha=0.5, s=point_size)
+    ax.scatter(x_data, y_data, color=color, alpha=0.5, s=point_size)
 
-    if show_mid_line:
-        ax.axhline(0, alpha=0.5, linewidth=1, color='black', linestyle='--',
+    if mid_line is not None:
+        ax.axhline(mid_line, alpha=0.5, linewidth=1, color='black',
+                   linestyle='--',
                    zorder=-10)
 
     ax.set_xlim((0.5, len(x_data)+0.5))
@@ -112,38 +111,18 @@ def _plot_history_control(results, color, ax, last=False,
     ax.set_title(title, fontsize=fontsize+1)
 
 
-def history_control(axes, hist_control_d,
-                    labels=("Loss vs gains", "Diff. $x +$, same $p$",
-                            "Diff. $x -$, same $p$",
-                            "Diff. $p$, same $x +$", "Diff. $p$, same $x -$"),
-                    colors=("black", COLOR_GAIN, COLOR_LOSS, COLOR_GAIN,
-                            COLOR_LOSS)):
+def history_control(axes, hist_control_d):
 
     n_cond = len(CONTROL_CONDITIONS)
 
-    # fig, axes = plt.subplots(nrows=n_cond,
-    #                          figsize=(12, 10), dpi=200)
-
-    # log(f"Stats for success to control trials over time "
-    #     f"(fig: '{FIG_HISTORY_CONTROL}') - {monkey}",
-    #     NAME)
-
-    # alternatives, control_types, hits = \
-    #     experimental_data.filter.control.get_control(d)
-    #
-    # control_d = control_history_sort_data(alternatives, control_types,
-    #                                       hits, n_chunk=n_chunk)
-
     for i, cond in enumerate(CONTROL_CONDITIONS):
 
-        color = colors[i]
-        title = labels[i]
+        title = LABELS_CONTROL[cond]
 
         last = i == n_cond-1
 
         _plot_history_control(
             results=hist_control_d[cond],
-            color=color,
             ax=axes[i],
             last=last,
             title=title,
@@ -155,42 +134,38 @@ def history_best_param(axes, data):
     fit = data['fit']
 
     args = (
-        ('pos_risk_aversion', 'neg_risk_aversion', (-1, 1), True, r"$\omega$"),
-        ('pos_distortion', 'neg_distortion', (0, 1), False, r"$\alpha$"),
-        ('pos_precision', 'neg_precision', (0, 5), False, r"$\lambda$")
+        ('risk_aversion', (-1, 1), 0.0, r"$\omega$"),
+        ('distortion', (0, 2), 1.0, r"$\alpha$"),
+        ('precision', (0, 5), False, r"$\lambda$")
     )
 
     for i, arg in enumerate(args):
 
-        pos_param, neg_param, y_lim, show_mid_line, param_name = arg
+        pr, y_lim, mid_line, param_name = arg
 
         _plot_history_best_param(
             ax=axes[i],
-            pos_param=fit[pos_param],
-            neg_param=fit[neg_param],
+            param=fit[pr],
             y_lim=y_lim,
-            show_mid_line=show_mid_line,
+            mid_line=mid_line,
             param_name=param_name
         )
 
         if 'regression' in data.keys():
             regression_param = data['regression']
 
-            for param, color in zip((pos_param, neg_param),
-                                    (COLOR_GAIN, COLOR_LOSS)):
+            alpha, beta, relevant = regression_param[pr]
 
-                alpha, beta, relevant = regression_param[param]
+            n = len(fit[pr])
+            x = np.arange(1, n+1)
+            y = alpha + beta * x
 
-                n = len(fit[param])
-                x = np.arange(1, n+1)
-                y = alpha + beta * x
-
-                # print(alpha, beta, relevant)
-                if relevant:
-                    line_style = "-"
-                    alpha = 1
-                else:
-                    line_style = ":"
-                    alpha = 0.4
-                axes[i].plot(x, y, color=color, linestyle=line_style,
-                             alpha=alpha)
+            # print(alpha, beta, relevant)
+            if relevant:
+                line_style = "-"
+                alpha = 1
+            else:
+                line_style = ":"
+                alpha = 0.4
+            axes[i].plot(x, y, linestyle=line_style,
+                         alpha=alpha)

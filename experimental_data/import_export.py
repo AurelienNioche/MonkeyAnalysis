@@ -16,6 +16,8 @@ from utils.log import log
 
 NAME = "experimental_data.import_export"
 
+BULK_LIMIT = 10000
+
 
 def export_as_xlsx():
 
@@ -47,48 +49,71 @@ def export_as_xlsx():
     workbook.close()
 
 
-def import_data_xlsx(data_file='data.xlsx'):
+def import_data_xlsx(data_files, starting_dates,):
 
-    data_path = os.path.join(DATA_FOLDER, data_file)
-
-    log(f"Reading from '{data_path}'...", end=" ", flush=True, name=NAME)
-    df = pd.read_excel(data_path)
+    log("Deleting previous entries...", end=" ", flush=True, name=NAME)
+    ExperimentalData.objects.all().delete()
     print("Done!")
-
-    log("Preprocess the data...", end=" ", flush=True, name=NAME)
-    entries = df.to_dict('records')
 
     filtered_entries = []
+    counter = 0
 
-    for i, entry_dic in enumerate(entries):
-        # if 'nan' in entry_dic.values():
-        #     raise ValueError
-        error = False
-        for k, v in entry_dic.items():
-            if str(v) == '':
-                error = True
-            elif type(v) in (float, int) and np.isnan(v):
-                error = True
+    for data_file, starting_date in zip(data_files, starting_dates):
 
-            if error:
-                msg = f"I will ignore line {i+1} / id={entry_dic['id']} (missing data or wrong format for column '{k}')"
-                warnings.warn(msg)
-                break
-        if error is False:
-            date_string = entry_dic['date']
-            date_string = date_string.replace('None', '')
-            entry_dic['date'] = \
-                datetime.strptime(date_string, DATE_FORMAT) \
-                .astimezone(pytz.UTC)
-            filtered_entries.append(entry_dic)
-    print("Done!")
-    log("Writing in db...", end=" ", flush=True, name=NAME)
-    ExperimentalData.objects.all().delete()
-    ExperimentalData.objects.bulk_create(
-        ExperimentalData(**val) for val in filtered_entries)
+        data_path = os.path.join(DATA_FOLDER, data_file)
 
-    print("Done!")
+        log(f"Reading from '{data_path}'...", end=" ", flush=True, name=NAME)
+        df = pd.read_excel(data_path)
+        print("Done!")
+        entries = df.to_dict('records')
 
+        log("Preprocessing and writing the data...", end=" ", flush=True, name=NAME)
+
+        for i, entry_dic in enumerate(entries):
+            # if 'nan' in entry_dic.values():
+            #     raise ValueError
+            error = False
+            for k, v in entry_dic.items():
+                if str(v) == '':
+                    error = True
+                elif type(v) in (float, int) and np.isnan(v):
+                    error = True
+
+                if error:
+                    msg = f"I will ignore line {i+1} / id={entry_dic['id']} (missing data or wrong format for column '{k}')"
+                    warnings.warn(msg)
+                    break
+
+            if error is False:
+                date_string = entry_dic['date']
+                date_string = date_string.replace('None', '').replace('_', '-')
+                date = \
+                    datetime.strptime(date_string, DATE_FORMAT) \
+                    .astimezone(pytz.UTC)
+
+                st_date = datetime.strptime(starting_date, DATE_FORMAT) \
+                    .astimezone(pytz.UTC)
+
+                if date < st_date:
+                    continue
+
+                entry_dic['date'] = date
+
+                entry_dic.pop("id", None)
+
+                filtered_entries.append(entry_dic)
+                counter += 1
+                if counter > BULK_LIMIT:
+                    ExperimentalData.objects.bulk_create(
+                        ExperimentalData(**val) for val in filtered_entries)
+                    counter = 0
+                    filtered_entries = []
+
+        ExperimentalData.objects.bulk_create(
+            ExperimentalData(**val) for val in filtered_entries)
+        filtered_entries = []
+        counter = 0
+        print("Done!")
 
 
 # def get_table_class(table_name):

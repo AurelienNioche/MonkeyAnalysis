@@ -9,15 +9,12 @@ application = get_wsgi_application()
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 import traceback
-import numpy as np
 import warnings
 
-from parameters.parameters import \
-    FIG_FOLDER, CONTROL_CONDITIONS, GAIN, LOSS
+from parameters.parameters import FIG_FOLDER, CONTROL_CONDITIONS
 
 from experimental_data.get import get_data, get_monkeys
 import experimental_data.filter.control
-import experimental_data.filter.exemplary
 import experimental_data.filter.freq_risk
 import experimental_data.filter.control_sigmoid
 
@@ -27,7 +24,6 @@ import plot.probability_distortion
 import plot.utility
 import plot.control
 import plot.freq_risk
-import plot.exemplary_case
 import plot.control_sigmoid
 import plot.info
 import plot.best_param_distrib
@@ -36,14 +32,14 @@ from utils.log import log
 
 import model.parameter_estimate
 from model.stats import stats_regression_best_values
-from model.model import DMSciReports, DMEpsilon, DMNicolas, DMSoftmax, \
-    DMSoftmaxSideBias
+from model.model import DMSciReports
+# DMEpsilon, DMNicolas, DMSoftmax, DMSoftmaxSideBias
 # from model.stats import stats_comparison_best_values
 
 import analysis.summary
 import analysis.info
 
-np.seterr(all='raise')
+# np.seterr(all='raise')
 
 NAME = "main"
 
@@ -77,11 +73,15 @@ class Analysis:
         self._pre_process_data(**kwargs)
 
     def _pre_process_data(self,
-                          n_chunk=5, starting_point="2020-02-18",
+                          method,
+                          n_trials_per_chunk=None,
+                          n_chunk=None,
                           randomize_chunk_trials=False, force_fit=True,
-                          skip_exception=True):
+                          skip_exception=True,
+                          monkeys=None):
 
-        monkeys = get_monkeys()
+        if monkeys is None:
+            monkeys = get_monkeys()
         n_monkey = len(monkeys)
 
         black_list = []
@@ -96,7 +96,7 @@ class Analysis:
                 print("-" * 60 + f" {m} " + "-" * 60 + "\n")
 
                 # Get the data
-                d = get_data(m, starting_point=starting_point)
+                d = get_data(m)
                 self.data[m] = d
 
                 # Sort the data, run fit, etc.
@@ -123,23 +123,20 @@ class Analysis:
                     {cd: self.control_sigmoid_data[m][cd]['fit']
                      for cd in CONTROL_CONDITIONS}
 
-                self.exemplary_data[m] = \
-                    experimental_data.filter.exemplary.get(d, verbose=False)
-
                 self.freq_risk_data[m] = \
                     experimental_data.filter.freq_risk.get(d, verbose=False)
 
-                self.risk_sig_fit[m] = \
-                    {cd: self.freq_risk_data[m][cd]['fit']
-                     for cd in (GAIN, LOSS)}
+                self.risk_sig_fit[m] = self.freq_risk_data[m]['fit']
 
                 self.cpt_fit[m] = model.parameter_estimate.run(
                     d,
                     monkey=m,
                     force=force_fit,
+                    n_trials_per_chunk=n_trials_per_chunk,
                     n_chunk=n_chunk,
                     randomize=randomize_chunk_trials,
                     class_model=self.class_model,
+                    method=method,
                 )
 
                 #     # Stats for comparison of best parameter values
@@ -154,12 +151,14 @@ class Analysis:
                             class_model=self.class_model)
                 }
 
-                # history of performance for control trials
-                self.hist_control_data[m] = \
-                    experimental_data.filter.control.control_history_sort_data(
-                        alternatives=alternatives,
-                        control_types=control_types,
-                        hits=hits, n_chunk=n_chunk)
+                # # history of performance for control trials
+                # self.hist_control_data[m] = \
+                #     experimental_data.filter.control.control_history_sort_data(
+                #         alternatives=alternatives,
+                #         control_types=control_types,
+                #         hits=hits, n_chunk=n_chunk,
+                #         n_trials_per_chunk=n_trials_per_chunk,
+                #     )
 
             except Exception as e:
                 if skip_exception:
@@ -235,32 +234,27 @@ class Analysis:
         self.create_figure(
             plot_function=plot.info.fig_info,
             data=self.info_data)
-        #
-        # # Fig: Control
-        # self.create_figure(
-        #     plot_function=plot.control.plot,
-        #     data=self.control_data)
-        #
-        # # Fig: Control sigmoid
-        # self.create_figure(
-        #     plot_function=plot.control_sigmoid.control_sigmoid,
-        #     data=self.control_sigmoid_data,
-        #     n_subplot=3)
-        #
-        # # Fig: Exemplary case
-        # self.create_figure(
-        #     plot_function=plot.exemplary_case.plot,
-        #     data=self.exemplary_data)
-        #
-        # # Fig: Freq risky choice against expected value
-        # self.create_figure(
-        #     plot_function=plot.freq_risk.plot,
-        #     data=self.freq_risk_data)
 
-        # # Fig: Utility function
-        # self.create_figure(
-        #     plot_function=plot.utility.plot,
-        #     data=self.cpt_fit)
+        # Fig: Control
+        self.create_figure(
+            plot_function=plot.control.plot,
+            data=self.control_data)
+
+        # Fig: Control sigmoid
+        self.create_figure(
+            plot_function=plot.control_sigmoid.control_sigmoid,
+            data=self.control_sigmoid_data,
+            n_subplot=len(CONTROL_CONDITIONS))
+
+        # Fig: Freq risky choice against expected value
+        self.create_figure(
+            plot_function=plot.freq_risk.plot,
+            data=self.freq_risk_data)
+
+        # Fig: Utility function
+        self.create_figure(
+            plot_function=plot.utility.plot,
+            data=self.cpt_fit)
 
         # Fig: Probability distortion
         self.create_figure(
@@ -268,21 +262,21 @@ class Analysis:
             data=self.cpt_fit)
 
         # Fig: Precision
-        # self.create_figure(
-        #     plot_function=plot.precision.plot,
-        #     data=self.cpt_fit)
+        self.create_figure(
+            plot_function=plot.precision.plot,
+            data=self.cpt_fit)
 
         # # Fig: Control history
         # self.create_figure(
         #     plot_function=plot.history.history_control,
         #     data=self.hist_control_data,
         #     n_subplot=len(CONTROL_CONDITIONS))
-        #
-        # # Fig: Best param history
-        # self.create_figure(
-        #     plot_function=plot.history.history_best_param,
-        #     data=self.hist_best_param_data,
-        #     n_subplot=3)
+
+        # Fig: Best param history
+        self.create_figure(
+            plot_function=plot.history.history_best_param,
+            data=self.hist_best_param_data,
+            n_subplot=3)
 
         self.pdf.close()
         self.target_monkey = None
@@ -315,17 +309,23 @@ class Analysis:
 
 def main():
 
-    for class_model in (DMSciReports, DMEpsilon, DMNicolas, DMSoftmax,
-                        DMSoftmaxSideBias):
-        a = Analysis(class_model=class_model,
-                     force_fit=True,
-                     skip_exception=True)
-        a.create_summary()
-        a.create_pdf()
-        for m in a.monkeys:
-            a.create_pdf(monkey=m)
+    # for class_model in (DMSciReports, DMEpsilon, DMNicolas, DMSoftmax,
+    #                     DMSoftmaxSideBias):
 
-        a.create_best_param_distrib()
+    class_model = DMSciReports
+    a = Analysis(
+        monkeys=('Havane', 'Gladys'),
+        class_model=class_model,
+        n_trials_per_chunk=200,
+        method='SLSQP',
+        force_fit=False,
+        skip_exception=True)
+    a.create_summary()
+    a.create_pdf()
+    for m in a.monkeys:
+        a.create_pdf(monkey=m)
+
+    a.create_best_param_distrib()
 
 
 if __name__ == '__main__':

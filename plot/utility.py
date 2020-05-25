@@ -7,29 +7,14 @@ import numpy as np
 NAME = "plot.utility"
 
 
-def u(m, pos_risk_aversion, neg_risk_aversion):
-
-    assert -1 < pos_risk_aversion < 1
-    assert -1 < neg_risk_aversion < 1
-
-    if m > 0:
-        return m ** (1 - pos_risk_aversion)  # / (1 - positive_risk_aversion)
-
-    elif m < 0:
-        return - np.abs(m) ** (1 + neg_risk_aversion)
-
-    else:
-        return 0
-
-
-def _line(pos_risk_aversion, neg_risk_aversion, ax, alpha=1.0,
-          linewidth=3, color="black", linestyle="-",
+def _line(risk_aversion, class_model, ax, alpha=1.0,
+          linewidth=3, color="C0", linestyle="-",
           reward_max=1,
-          reward_min=-1,
+          reward_min=0,
           n_points=1000):
 
     x = np.linspace(reward_min, reward_max, n_points)
-    y = [u(i, pos_risk_aversion, neg_risk_aversion) for i in x]
+    y = [class_model.u(x=i, risk_aversion=risk_aversion) for i in x]
 
     ax.plot(x, y, color=color, linewidth=linewidth, alpha=alpha,
             linestyle=linestyle)
@@ -41,20 +26,20 @@ def plot(ax, fit, show_average=True, alpha_chunk=0.5,
     #
     # fig, ax = plt.subplots(figsize=(6, 5), dpi=200)
 
-    pra = fit['pos_risk_aversion']
-    nra = fit['neg_risk_aversion']
+    pr = fit['risk_aversion']
+    class_model = fit['class_model']
 
-    for j in range(len(fit['pos_risk_aversion'])):
+    for j in range(len(pr)):
         _line(
-            pos_risk_aversion=pra[j],
-            neg_risk_aversion=nra[j],
+            class_model=class_model,
+            risk_aversion=pr[j],
             ax=ax, linewidth=1, alpha=alpha_chunk,
         )
 
     if show_average:
         _line(
-            pos_risk_aversion=np.mean(pra),
-            neg_risk_aversion=np.mean(nra),
+            risk_aversion=np.mean(pr),
+            class_model=class_model,
             ax=ax
         )
 
@@ -65,20 +50,19 @@ def plot(ax, fit, show_average=True, alpha_chunk=0.5,
     ax.spines['bottom'].set_position(('data', 0))
     ax.spines['top'].set_color('none')
 
-    ax.set_ylim(-1, 1)
-    ax.set_xlim(-1, 1)
+    ax.set_ylim(0, 1)
+    ax.set_xlim(0, 1)
 
-    ax.set_xlabel("$x$", rotation=0, position=(0.9, None),
-                  fontsize=axis_label_font_size)
-    ax.set_ylabel("$u(x)$", rotation=0, position=(None, 0.9),
-                  fontsize=axis_label_font_size)
+    ax.plot((0, 1), (0, 1), alpha=0.5, linewidth=1, color='black',
+            linestyle='--', zorder=-10)
+
+    ax.set_xlabel("$x$", fontsize=axis_label_font_size)
+    ax.set_ylabel("$u(x)$", fontsize=axis_label_font_size)
 
     ax.tick_params(axis='both', which='major', labelsize=ticks_label_font_size)
     ax.tick_params(axis='both', which='minor', labelsize=ticks_label_font_size)
 
-    ax.set_xticks([-1, 1])
-    ax.set_yticks([-1, 1])
+    ax.set_xticks([0, 1])
+    ax.set_yticks([0, 1])
 
     ax.set_aspect(1)
-
-    # save_fig(fig_type=FIG_UTILITY, fig=fig, pdf=pdf, monkey=monkey)

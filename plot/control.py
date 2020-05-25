@@ -3,21 +3,18 @@ Produce the control figures
 """
 
 import numpy as np
-
-from parameters.parameters import COLOR_GAIN, COLOR_LOSS
+from parameters.parameters import CONTROL_CONDITIONS, LABELS_CONTROL
 
 NAME = "plot.control"
 
 
 def plot(ax, control_d):
 
-    n = len(control_d.keys())
+    n = len(CONTROL_CONDITIONS)
 
-    tick_labels = [
-        "Loss\nvs\ngains", "Diff. $x +$\nSame $p$", "Diff. $x -$\nSame $p$",
-        "Diff. $p$\nSame $x +$", "Diff. $p$\nSame $x -$"]
+    tick_labels = [LABELS_CONTROL[cd] for cd in CONTROL_CONDITIONS]
+    colors = ['C0' for _ in range(n)]
 
-    colors = ["black", COLOR_GAIN, COLOR_LOSS, COLOR_GAIN, COLOR_LOSS]
     positions = list(range(n))
 
     x_scatter = []
@@ -26,7 +23,7 @@ def plot(ax, control_d):
 
     values_box_plot = []
 
-    for i, cond in enumerate(control_d.keys()):
+    for i, cond in enumerate(CONTROL_CONDITIONS):
 
         values_box_plot.append([])
 

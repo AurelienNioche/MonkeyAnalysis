@@ -6,28 +6,8 @@ import warnings
 from parameters.parameters import DATA_FOLDER
 
 from parameters.parameters import \
-    CONTROL_CONDITIONS, CHOOSE_RIGHT, MONKEY_NAME, N_TRIALS, DOC, \
-    CONTROL_SIG_PARAM, RISK_SIG_PARAM, \
-    SIG_STEEP_SAME_P_GAIN_VS_LOSS, \
-    SIG_STEEP_SAME_P_GAIN, \
-    SIG_STEEP_SAME_P_LOSS, \
-    SIG_STEEP_SAME_X0_GAIN, \
-    SIG_STEEP_SAME_X0_LOSS, \
-    SIG_MID_SAME_P_GAIN_VS_LOSS, \
-    SIG_MID_SAME_P_GAIN, \
-    SIG_MID_SAME_P_LOSS, \
-    SIG_MID_SAME_X0_GAIN, \
-    SIG_MID_SAME_X0_LOSS, \
-    SAME_P_GAIN_VS_LOSS, \
-    SAME_P_GAIN, \
-    SAME_P_LOSS, \
-    SAME_X0_GAIN, \
-    SAME_X0_LOSS, \
-    SIG_STEEP, \
-    SIG_MID, \
-    SIG_STEEP_RISK_GAIN, SIG_STEEP_RISK_LOSS, \
-    SIG_MID_RISK_GAIN, SIG_MID_RISK_LOSS, \
-    GAIN, LOSS
+    CONTROL_CONDITIONS, CHOOSE_RIGHT, MONKEY_NAME, N_TRIALS, SIG_STEEP, \
+    SIG_MID, SAME_P, SAME_X
 
 from utils.log import log
 
@@ -36,45 +16,70 @@ NAME = 'analysis.summary'
 
 class Summary:
 
+    XLS_NAME = "summary.xlsx"
+
     def __init__(self, class_model):
 
         self.class_model = class_model
-        self.xls_name = f"summary_{class_model.__name__}.xlsx"
 
-        self.columns = self._get_columns()
+        self.content = {}
 
-        self.summary = {k: [] for k in self.columns}
-
-    def _get_columns(self):
-
-        col = [MONKEY_NAME, N_TRIALS, CHOOSE_RIGHT]
-
-        for cat in (CONTROL_CONDITIONS, self.class_model.param_labels,
-                    CONTROL_SIG_PARAM, RISK_SIG_PARAM):
-            for cd in cat:
-                col.append(cd)
-
-        return col
+        self.doc = {
+            MONKEY_NAME: "Name of the monkey",
+            N_TRIALS: "Total number of trials",
+            CHOOSE_RIGHT: "Frequency with which the monkey "
+                          "chooses the target on the right side",
+            "risk_aversion": "Best-fit parameter value "
+                             "describing the risk aversion",
+            "distortion": "Best-fit parameter value "
+                          "describing the probability distortion",
+            "precision": "Best-fit parameter value "
+                         "describing the precision",
+            SAME_P: "Median of the frequencies with which "
+                         "the monkey chooses the best target "
+                         "for a specific alternative "
+                         "such that: "
+                         "(i) a best option exists, "
+                         "(ii) probabilities of non-zero outputs are the same, "
+                         "(iii) the non-zero outputs are different "
+                         "(iv) the possible outputs are only zero and positive rewards",
+            SAME_X: "Median of the frequencies with which "
+                          "the monkey chooses the best target "
+                          "for a specific alternative "
+                          "such that: "
+                          "(i) a best option exists, "
+                          "(ii) probabilities of non-zero outputs are different, "
+                          "(iii) the non-zero outputs are the same "
+                          "(iv) the possible outputs are only zero and positive rewards",
+            SIG_STEEP: "Best-fit parameter value for the steepness of the curve for the 'same p - gain vs loss' control trials",
+            SIG_MID: "Best-fit parameter value for the midpoint of the curve for the 'same p - gain vs loss'control trials",
+        }
 
     def __getitem__(self, item):
-        return self.summary[item]
+        try:
+            return self.content[item]
+        except KeyError:
+            self.content[item] = []
+            return self.content[item]
 
     def __setitem__(self, key, value):
-        self.summary[key] = value
+        self.content[key] = value
 
     def export_as_xlsx(self):
 
         os.makedirs(DATA_FOLDER, exist_ok=True)
-        xls_path = os.path.join(DATA_FOLDER, self.xls_name)
+        xls_path = os.path.join(DATA_FOLDER, self.XLS_NAME)
         workbook = xlsxwriter.Workbook(xls_path)
+
+        columns = self.content.keys()
 
         # Write data
         worksheet = workbook.add_worksheet('data')
-        for j, c in enumerate(self.columns):
+        for j, c in enumerate(columns):
             c_name = self._format_column_name(c)
             worksheet.write(0, j, c_name)
 
-        for j, col_name in enumerate(self.columns):
+        for j, col_name in enumerate(columns):
 
             data_col = self[col_name]
             for i, d in enumerate(data_col):
@@ -83,11 +88,11 @@ class Summary:
 
         # Write doc
         worksheet = workbook.add_worksheet('doc')
-        for j, c in enumerate(self.columns):
+        for j, c in enumerate(columns):
             c_name = self._format_column_name(c)
             worksheet.write(j, 0, c_name)
             try:
-                worksheet.write(j, 1, DOC[c])
+                worksheet.write(j, 1, self.doc[c])
             except KeyError:
                 warnings.warn(f"Missing doc for '{c}'")
 
@@ -113,44 +118,13 @@ class Summary:
     def append_control_sig_fit(self, control_sig_fit):
 
         fit = control_sig_fit
-
-        self[SIG_STEEP_SAME_P_GAIN_VS_LOSS].append(
-            fit[SAME_P_GAIN_VS_LOSS][SIG_STEEP])
-        self[SIG_MID_SAME_P_GAIN_VS_LOSS].append(
-            fit[SAME_P_GAIN_VS_LOSS][SIG_MID])
-
-        self[SIG_STEEP_SAME_P_GAIN].append(
-            fit[SAME_P_GAIN][SIG_STEEP])
-        self[SIG_MID_SAME_P_GAIN].append(
-            fit[SAME_P_GAIN][SIG_MID])
-
-        self[SIG_STEEP_SAME_P_LOSS].append(
-            fit[SAME_P_LOSS][SIG_STEEP])
-        self[SIG_MID_SAME_P_LOSS].append(
-            fit[SAME_P_LOSS][SIG_MID])
-
-        self[SIG_STEEP_SAME_X0_GAIN].append(
-            fit[SAME_X0_GAIN][SIG_STEEP])
-        self[SIG_MID_SAME_X0_GAIN].append(
-            fit[SAME_X0_GAIN][SIG_MID])
-
-        self[SIG_STEEP_SAME_X0_LOSS].append(
-            fit[SAME_X0_LOSS][SIG_STEEP])
-        self[SIG_MID_SAME_X0_LOSS].append(
-            fit[SAME_X0_LOSS][SIG_MID])
+        for cd in CONTROL_CONDITIONS:
+            for pr in (SIG_MID, SIG_STEEP):
+                self[f"{cd}_{pr}"].append(fit[cd][pr])
 
     def append_risk_sig_fit(self, risk_sig_fit):
-        fit = risk_sig_fit
-
-        self[SIG_STEEP_RISK_GAIN].append(
-            fit[GAIN][SIG_STEEP])
-        self[SIG_MID_RISK_GAIN].append(
-            fit[GAIN][SIG_MID])
-
-        self[SIG_STEEP_RISK_LOSS].append(
-            fit[LOSS][SIG_STEEP])
-        self[SIG_MID_RISK_LOSS].append(
-            fit[LOSS][SIG_MID])
+        for pr in (SIG_MID, SIG_STEEP):
+            self[f"risk_{pr}"].append(risk_sig_fit[pr])
 
 
 def create(info_data, control_data,
@@ -158,6 +132,7 @@ def create(info_data, control_data,
            risk_sig_fit, class_model):
 
     summary = Summary(class_model=class_model)
+
     monkeys = sorted(info_data.keys())
     for m in monkeys:
         # Add monkey name

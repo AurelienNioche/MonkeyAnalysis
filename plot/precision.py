@@ -4,55 +4,31 @@ Produce the precision figure
 
 import numpy as np
 
-from parameters.parameters import COLOR_GAIN, COLOR_LOSS
-from model import model
+from plot.freq_risk import add_text
 
 NAME = "plot.precision"
 
 
-def _line(neg_precision, pos_precision, neg_risk_aversion, pos_risk_aversion,
-          neg_distortion, pos_distortion,
-          ax, alpha=1, linewidth=3):
+def _line(class_model,
+          ax, color='C0', alpha=1, linewidth=3, **kwargs):
 
     n_points = 1000
 
-    p0, m0 = 0.25, 3
-    p1, m1 = 1., 2
+    p0 = 0.5
+    p1, x1 = 1., 0.5
 
-    x = np.linspace(0.1, 1.99, n_points)
+    x0_list = np.linspace(0.501, 1.00, n_points)
+    y = np.zeros(len(x0_list))
 
-    y_loss = np.zeros(len(x))
-    y_gain = np.zeros(len(x))
+    dm = class_model([kwargs[k] for k in class_model.param_labels])
 
-    for i, delta in enumerate(x):
+    for i, x0 in enumerate(x0_list):
 
-        new_m1 = m1 - delta
+        # print("p0", p0, "p1", p1, "x0", x0, "x1", x1)
+        # print("Precision", kwargs["precision"])
+        y[i] = dm.p_c0(p0=p0, x0=x0, p1=p1, x1=x1)
 
-        y_gain[i] = model.get_p_multi(
-            p0=p0, m0=m0, p1=p1, m1=new_m1,
-            neg_distortion=neg_distortion, pos_distortion=pos_distortion,
-            neg_risk_aversion=neg_risk_aversion,
-            pos_risk_aversion=pos_risk_aversion,
-            neg_precision=neg_precision, pos_precision=pos_precision
-        )
-
-    p0, m0 = 0.25, -3
-    p1, m1 = 1., -0.1
-
-    for i, delta in enumerate(x):
-
-        new_m1 = m1 - delta
-
-        y_loss[i] = model.get_p_multi(
-            p0=p0, m0=m0, p1=p1, m1=new_m1,
-            neg_distortion=neg_distortion, pos_distortion=pos_distortion,
-            neg_risk_aversion=neg_risk_aversion,
-            pos_risk_aversion=pos_risk_aversion,
-            neg_precision=neg_precision, pos_precision=pos_precision
-        )
-
-    ax.plot(x, y_gain, color=COLOR_GAIN, linewidth=linewidth, alpha=alpha)
-    ax.plot(x, y_loss, color=COLOR_LOSS, linewidth=linewidth, alpha=alpha)
+    ax.plot(x0_list, y, color=color, linewidth=linewidth, alpha=alpha)
 
 
 def plot(ax, fit, show_average=True,
@@ -61,47 +37,34 @@ def plot(ax, fit, show_average=True,
 
     alpha_chunk = 0.5 if show_average else 1
 
-    # log(f"Creating figure '{FIG_PRECISION}' for monkey {monkey}...", NAME)
-
-    # fig, ax = plt.subplots(figsize=(6, 5), dpi=200)
-
-    pra, nra, pdi, ndi, ppr, npr = \
-        fit['pos_risk_aversion'], \
-        fit['neg_risk_aversion'], \
-        fit['pos_distortion'], \
-        fit['neg_distortion'], \
-        fit['pos_precision'], \
-        fit['neg_precision']
-
-    for j in range(len(pra)):
+    for j in range(len(fit['risk_aversion'])):
 
         _line(
-            neg_risk_aversion=nra[j],
-            pos_risk_aversion=pra[j],
-            neg_distortion=ndi[j],
-            pos_distortion=pdi[j],
-            neg_precision=npr[j],
-            pos_precision=ppr[j],
+            risk_aversion=fit['risk_aversion'][j],
+            distortion=fit['distortion'][j],
+            precision=fit['precision'][j],
             ax=ax,
             linewidth=1,
-            alpha=alpha_chunk
+            alpha=alpha_chunk,
+            class_model=fit['class_model']
         )
 
     if show_average:
+        v = np.mean(fit['precision'])
         _line(
-            neg_risk_aversion=np.mean(nra),
-            pos_risk_aversion=np.mean(pra),
-            neg_distortion=np.mean(ndi),
-            pos_distortion=np.mean(pdi),
-            neg_precision=np.mean(npr),
-            pos_precision=np.mean(ppr),
+            risk_aversion=np.mean(fit['risk_aversion']),
+            distortion=np.mean(fit['distortion']),
+            precision=v,
+            class_model=fit['class_model'],
             ax=ax
         )
 
-    ax.set_xticks([0, 1, 2])
+        add_text(ax, r'$\lambda=' + f'{v:.2f}' + '$')
+
+    # ax.set_xticks([0, 1, 2])
     ax.set_yticks([0, 0.5, 1])
 
-    ax.set_xlim(-0.01, 2.01)
+    # ax.set_xlim(0.0, 2.01)
     ax.set_ylim(-0.01, 1.01)
 
     ax.tick_params(axis='both', labelsize=ticks_label_size)
@@ -111,8 +74,5 @@ def plot(ax, fit, show_average=True,
     ax.yaxis.set_ticks_position('left')
     ax.spines['top'].set_color('none')
 
-    ax.set_xlabel("$|x_{Risky} - x_{Safe}|$", fontsize=axis_label_font_size)
+    ax.set_xlabel("$x_{risky}$", fontsize=axis_label_font_size)
     ax.set_ylabel("P(Choose risky option)", fontsize=axis_label_font_size)
-    #
-    # save_fig(fig_type=FIG_PRECISION, fig=fig,
-    #          pdf=pdf, monkey=monkey)
