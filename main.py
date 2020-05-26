@@ -14,7 +14,8 @@ from matplotlib.backends.backend_pdf import PdfPages
 import traceback
 import warnings
 
-import plot.history
+import plot.history_best_param
+import plot.history_control
 import plot.precision
 import plot.probability_distortion
 import plot.utility
@@ -33,7 +34,7 @@ from analysis.model.model import DMSciReports
 from analysis.parameters.parameters import CONTROL_CONDITIONS
 from analysis.data_preprocessing \
     import get_control_data, get_control_sigmoid_data, \
-    get_freq_risk_data, get_info_data
+    get_freq_risk_data, get_info_data, get_control_history_data
 
 from analysis.model.parameter_estimate import get_parameter_estimate
 
@@ -97,6 +98,8 @@ class Analysis:
                           method,
                           n_trials_per_chunk=None,
                           n_chunk=None,
+                          n_trials_per_chunk_control=None,
+                          n_chunk_control=None,
                           randomize_chunk_trials=False, force_fit=True,
                           skip_exception=True,
                           monkeys=None):
@@ -137,12 +140,8 @@ class Analysis:
                     n_chunk=n_chunk,
                     randomize=randomize_chunk_trials,
                     class_model=self.class_model,
-                    method=method,
-                )
-                #
-                # #     # Stats for comparison of best parameter values
-                # #     stats_comparison_best_values(fit, monkey=monkey)
-                #
+                    method=method)
+
                 # Stats for comparison of best parameter values
                 self.hist_best_param_data[m] = {
                     'fit': self.cpt_fit[m],
@@ -152,14 +151,12 @@ class Analysis:
                             class_model=self.class_model)
                 }
 
-                # # history of performance for control trials
-                # self.hist_control_data[m] = \
-                #     experimental_data.filter.control.control_history_sort_data(
-                #         alternatives=alternatives,
-                #         control_types=control_types,
-                #         hits=hits, n_chunk=n_chunk,
-                #         n_trials_per_chunk=n_trials_per_chunk,
-                #     )
+                # history of performance for control trials
+                self.hist_control_data[m] = \
+                    get_control_history_data(
+                        monkey=m,
+                        n_trials_per_chunk=n_trials_per_chunk_control,
+                        n_chunk=n_chunk_control)
                 print()
 
             except Exception as e:
@@ -270,15 +267,15 @@ class Analysis:
 
         # Fig: Best param history
         self.create_figure(
-            plot_function=plot.history.history_best_param,
+            plot_function=plot.history_best_param.plot,
             data=self.hist_best_param_data,
             n_subplot=len(self.class_model.param_labels))
 
-        # # Fig: Control history
-        # self.create_figure(
-        #     plot_function=plot.history.history_control,
-        #     data=self.hist_control_data,
-        #     n_subplot=len(CONTROL_CONDITIONS))
+        # Fig: Control history
+        self.create_figure(
+            plot_function=plot.history_control.plot,
+            data=self.hist_control_data,
+            n_subplot=len(CONTROL_CONDITIONS))
 
         self.pdf.close()
         self.target_monkey = None
@@ -320,8 +317,9 @@ def main():
         monkeys=None, # ('Havane', 'Gladys'),
         class_model=class_model,
         n_trials_per_chunk=200,
+        n_trials_per_chunk_control=500,
         method='SLSQP',
-        force_fit=True,
+        force_fit=False,
         skip_exception=True)
     a.create_summary()
     a.create_pdf()
