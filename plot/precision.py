@@ -9,26 +9,19 @@ from plot.freq_risk import add_text
 NAME = "plot.precision"
 
 
-def _line(class_model,
+def _line(class_model, pairs, x,
           ax, color='C0', alpha=1, linewidth=3, **kwargs):
-
-    n_points = 1000
-
-    p0 = 0.5
-    p1, x1 = 1., 0.5
-
-    x0_list = np.linspace(0.501, 1.00, n_points)
-    y = np.zeros(len(x0_list))
 
     dm = class_model([kwargs[k] for k in class_model.param_labels])
 
-    for i, x0 in enumerate(x0_list):
+    y = np.zeros(len(pairs))
+    for i, p in enumerate(pairs):
 
         # print("p0", p0, "p1", p1, "x0", x0, "x1", x1)
         # print("Precision", kwargs["precision"])
-        y[i] = dm.p_c0(p0=p0, x0=x0, p1=p1, x1=x1)
+        y[i] = dm.p_c0(**p)
 
-    ax.plot(x0_list, y, color=color, linewidth=linewidth, alpha=alpha)
+    ax.plot(x, y, color=color, linewidth=linewidth, alpha=alpha)
 
 
 def plot(ax, fit, show_average=True,
@@ -37,9 +30,28 @@ def plot(ax, fit, show_average=True,
 
     alpha_chunk = 0.5 if show_average else 1
 
+    n_points = 1000
+
+    p0 = 0.5
+    p1, x1 = 1., 0.25
+
+    x0_equal_ev = x1 * (1/p0)
+
+    x0_list = np.linspace(x1+0.01, 1.00, n_points)
+
+    x = x0_list/x1
+
+    pairs = []
+
+    for i, x0 in enumerate(x0_list):
+
+        pairs.append({"p0": p0, "x0": x0, "p1": p1, "x1": x1})
+
     for j in range(len(fit['risk_aversion'])):
 
         _line(
+            x=x,
+            pairs=pairs,
             risk_aversion=fit['risk_aversion'][j],
             distortion=fit['distortion'][j],
             precision=fit['precision'][j],
@@ -52,6 +64,8 @@ def plot(ax, fit, show_average=True,
     if show_average:
         v = np.mean(fit['precision'])
         _line(
+            x=x,
+            pairs=pairs,
             risk_aversion=np.mean(fit['risk_aversion']),
             distortion=np.mean(fit['distortion']),
             precision=v,
@@ -73,6 +87,12 @@ def plot(ax, fit, show_average=True,
     ax.xaxis.set_ticks_position('bottom')
     ax.yaxis.set_ticks_position('left')
     ax.spines['top'].set_color('none')
+
+    ax.axhline(0.5, alpha=0.5, linewidth=1, color='black',
+               linestyle='--', zorder=-10)
+
+    ax.axvline(x0_equal_ev/x1, alpha=0.5, linewidth=1, color='black',
+               linestyle='--', zorder=-10)
 
     ax.set_xlabel("$x_{risky}$", fontsize=axis_label_font_size)
     ax.set_ylabel("P(Choose risky option)", fontsize=axis_label_font_size)

@@ -4,41 +4,20 @@ import os
 import scipy.stats
 import scipy.optimize
 
-import experimental_data.filter
-from experimental_data.filter.risk import _gains_only, _riskiest_option_on_left, _riskiest_option_on_right
-import experimental_data.filter.risk
-from parameters.parameters import BACKUP_FOLDER
-from utils.log import log
+from analysis.parameters.parameters import BACKUP_FOLDER
+from data_interface.models import Data
 
 
-NAME = 'model.parameter_estimate'
+def _get_chunk(monkey, randomize=False, n_chunk=None, n_trials_per_chunk=None):
 
+    entries = Data.objects.filter(monkey=monkey, is_risky=True)
 
-def _get_chunk(d, randomize=False, n_chunk=None, n_trials_per_chunk=None):
-
-    data = []
-
-    total_n = len(d.p.left)
-
-    for t in range(total_n):
-
-        if _gains_only(d=d, t=t) \
-            and (_riskiest_option_on_left(d, t)
-                 or _riskiest_option_on_right(d, t)):
-
-            data.append({
-                'p0': d.p.left[t],
-                'p1': d.p.right[t],
-                'x0': d.x.left[t],
-                'x1': d.x.right[t],
-                'c': d.choice[t]
-            })
-
-    data = np.array(data)
+    data = np.array(entries.values('p0', 'x0', 'p1', 'x1', 'c').order_by("id"))
     n = len(data)
 
     # Normalize amounts
-    max_x = max(max(d.x.left), max(d.x.right))
+    max_x = max(max(entries.values_list('x0', flat=True)),
+                max(entries.values_list('x1', flat=True)))
     assert max_x == 3
 
     for i in range(n):
@@ -62,21 +41,21 @@ def _get_chunk(d, randomize=False, n_chunk=None, n_trials_per_chunk=None):
 
     parts = np.split(idx, n_chunk)
 
-    log(f'Chunk using '
-        f'{"chronological" if not randomize else "randomized"} '
-        f'order', NAME)
-    log(f'N trials = {n-remainder}', NAME)
-    log(f'N parts = {len(parts)} '
-        f'(n trials per part = {int((n-remainder) / n_chunk)}, '
-        f'remainder = {remainder})', NAME)
+    print(f'Chunk using '
+          f'{"chronological" if not randomize else "randomized"} '
+          f'order')
+    print(f'N trials = {n-remainder}')
+    print(f'N parts = {len(parts)} '
+          f'(n trials per part = {int((n-remainder) / n_chunk)}, '
+          f'remainder = {remainder})')
 
     return data, parts, n-remainder
 
 
-def _get_cross_validation(d, monkey, randomize, n_chunk, class_model,
+def _get_cross_validation(monkey, randomize, n_chunk, class_model,
                           n_trials_per_chunk, method):
 
-    log(f'Getting the fit for {monkey}...', NAME)
+    print(f'Getting the fit for {monkey}...')
     fit = {
         k: [] for k in class_model.param_labels
     }
@@ -84,9 +63,10 @@ def _get_cross_validation(d, monkey, randomize, n_chunk, class_model,
     fit['LLS'] = []
 
     data, parts, n_trial = _get_chunk(
-            d=d, n_chunk=n_chunk,
-            n_trials_per_chunk=n_trials_per_chunk,
-            randomize=randomize)
+        monkey=monkey,
+        n_chunk=n_chunk,
+        n_trials_per_chunk=n_trials_per_chunk,
+        randomize=randomize)
 
     for p in parts:
         args = (data[p], )
@@ -114,7 +94,7 @@ def _get_cross_validation(d, monkey, randomize, n_chunk, class_model,
     return fit
 
 
-def _pickle_load(d, monkey, force, randomize, n_chunk, n_trials_per_chunk,
+def _pickle_load(monkey, force, randomize, n_chunk, n_trials_per_chunk,
                  class_model, method):
 
     randomize_str = "random_order" if randomize else "chronological_order"
@@ -125,7 +105,7 @@ def _pickle_load(d, monkey, force, randomize, n_chunk, n_trials_per_chunk,
 
     if not os.path.exists(fit_path) or force:
 
-        fit = _get_cross_validation(d, monkey=monkey,
+        fit = _get_cross_validation(monkey=monkey,
                                     n_trials_per_chunk=n_trials_per_chunk,
                                     randomize=randomize, n_chunk=n_chunk,
                                     class_model=class_model,
@@ -142,10 +122,11 @@ def _pickle_load(d, monkey, force, randomize, n_chunk, n_trials_per_chunk,
     return fit
 
 
-def run(d, monkey, randomize, class_model, method, force=False,
+def get_parameter_estimate(
+        monkey, randomize, class_model, method, force=False,
         n_chunk=None, n_trials_per_chunk=None):
 
-    fit = _pickle_load(d=d, monkey=monkey,
+    fit = _pickle_load(monkey=monkey,
                        randomize=randomize,
                        n_chunk=n_chunk,
                        n_trials_per_chunk=n_trials_per_chunk,
@@ -153,10 +134,10 @@ def run(d, monkey, randomize, class_model, method, force=False,
                        method=method,
                        force=force)
 
-    log(f'Results fit: {monkey}', NAME)
+    print(f'Results fit: {monkey}')
     for label in class_model.param_labels + ['LLS', ]:
-        log(f'{label} = {np.mean(fit[label]):.2f} '
-            f'(+/-{np.std(fit[label]):.2f} SD)', NAME)
+        print(f'{label} = {np.mean(fit[label]):.2f} '
+            f'(+/-{np.std(fit[label]):.2f} SD)')
     print()
 
     return fit

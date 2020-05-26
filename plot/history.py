@@ -1,6 +1,6 @@
 import numpy as np
 
-from parameters.parameters import CONTROL_CONDITIONS, LABELS_CONTROL
+from analysis.parameters.parameters import CONTROL_CONDITIONS, LABELS_CONTROL
 
 NAME = "plot.history"
 

@@ -11,44 +11,44 @@ from utils.log import log
 NAME = "model.stats"
 
 
-def stats_comparison_best_values(fit, monkey):
-
-    us = []
-    ps = []
-
-    pra = fit['pos_risk_aversion']
-    nra = fit['neg_risk_aversion']
-    pdi = fit['pos_distortion']
-    ndi = fit['neg_distortion']
-    ppr = fit['pos_precision']
-    npr = fit['neg_precision']
-
-    to_compare = [
-        (pra, nra),
-        (pdi, ndi),
-        (ppr, npr)
-    ]
-
-    for x1, x2 in to_compare:
-        try:
-            u, p = scipy.stats.mannwhitneyu(x1, x2)
-        except ValueError:
-            u, p = None, np.inf
-        ps.append(p)
-        us.append(u)
-
-    valid, p_corr, alpha_c_sidak, alpha_c_bonf = \
-        statsmodels.stats.multitest.multipletests(pvals=ps, alpha=0.01,
-                                                  method="b")
-
-    labels = [f"{monkey} - {param}"
-              for param in ("risk aversion", "distortion", "precision")]
-
-    log("Comparison parameter values (Mann–Whitney U test)", name=NAME)
-    for label, u, p, p_c in zip(labels, us, ps, p_corr):
-        log(f'{label}: '
-            f'u = {u}, p = {p:.3f}, p_c = {p_c:.3f}', name=NAME)
-    print()
+# def stats_comparison_best_values(fit, monkey):
+#
+#     us = []
+#     ps = []
+#
+#     pra = fit['pos_risk_aversion']
+#     nra = fit['neg_risk_aversion']
+#     pdi = fit['pos_distortion']
+#     ndi = fit['neg_distortion']
+#     ppr = fit['pos_precision']
+#     npr = fit['neg_precision']
+#
+#     to_compare = [
+#         (pra, nra),
+#         (pdi, ndi),
+#         (ppr, npr)
+#     ]
+#
+#     for x1, x2 in to_compare:
+#         try:
+#             u, p = scipy.stats.mannwhitneyu(x1, x2)
+#         except ValueError:
+#             u, p = None, np.inf
+#         ps.append(p)
+#         us.append(u)
+#
+#     valid, p_corr, alpha_c_sidak, alpha_c_bonf = \
+#         statsmodels.stats.multitest.multipletests(pvals=ps, alpha=0.01,
+#                                                   method="b")
+#
+#     labels = [f"{monkey} - {param}"
+#               for param in ("risk aversion", "distortion", "precision")]
+#
+#     log("Comparison parameter values (Mann–Whitney U test)", name=NAME)
+#     for label, u, p, p_c in zip(labels, us, ps, p_corr):
+#         log(f'{label}: '
+#             f'u = {u}, p = {p:.3f}, p_c = {p_c:.3f}', name=NAME)
+#     print()
 
 
 def regression(x, y):

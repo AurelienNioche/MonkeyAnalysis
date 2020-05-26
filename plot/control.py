@@ -3,7 +3,10 @@ Produce the control figures
 """
 
 import numpy as np
-from parameters.parameters import CONTROL_CONDITIONS, LABELS_CONTROL
+
+from analysis.parameters.parameters import CONTROL_CONDITIONS, \
+    LABELS_CONTROL
+
 
 NAME = "plot.control"
 
@@ -27,7 +30,7 @@ def plot(ax, control_d):
 
         values_box_plot.append([])
 
-        for v in control_d[cond].values():
+        for v in control_d[cond]:
             # For box plot
             values_box_plot[-1].append(v)
 

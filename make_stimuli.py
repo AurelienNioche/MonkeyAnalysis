@@ -16,7 +16,7 @@ from stimuli.import_export import import_stimuli_xlsx
 class StimuliGenerator:
 
     XLS_NAME = "stimuli.xlsx"
-    XLS_FOLDER = "data"
+    XLS_FOLDER = os.path.join("data", "export_xlsx")
 
     GAUGE_MAX = 6
     X_MAX = 3

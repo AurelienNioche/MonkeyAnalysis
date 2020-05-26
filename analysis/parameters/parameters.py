@@ -5,18 +5,18 @@ NAME = "parameters.parameters"
 
 DATE_FORMAT = '%Y-%m-%d'
 
-DATA_FOLDER = 'data'
-log(f"The data folder is: {os.path.abspath(DATA_FOLDER)}\n",
-    NAME)
+# DATA_FOLDER = 'data'
+# log(f"The data folder is: {os.path.abspath(DATA_FOLDER)}\n",
+#     NAME)
 
 FIG_FOLDER = 'fig'
 log(f"The figure folder is: {os.path.abspath(FIG_FOLDER)}\n",
     NAME)
 
-BACKUP_FOLDER = os.path.join(DATA_FOLDER, 'pickle')
+BACKUP_FOLDER = os.path.join('data', 'pickle')
 
 # Create folders
-for folder in FIG_FOLDER, DATA_FOLDER, BACKUP_FOLDER:
+for folder in FIG_FOLDER, BACKUP_FOLDER:
     os.makedirs(folder, exist_ok=True)
 
 SAME_P = 'same p'

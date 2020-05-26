@@ -80,27 +80,16 @@ class DMSciReports(DecisionMakingModel):
         """
 
         omega = self.omega(p0=p0, p1=p1, x0=x0, x1=x1)
-        # print("omega", omega)
-        # print("precision", self.precision)
-        # print("risk aversion", self.risk_aversion)
+
         a = np.exp(self.precision*omega)
         b = np.exp(self.precision*self.risk_aversion)
         return a / (a+b)
-
-    def p_choice(self, p0, x0, p1, x1, c):
-
-        p_c0 = self.p_c0(p0=p0, x0=x0, p1=x1, c=c)
-
-        if c == 1:
-            return 1 - p_c0
-        else:
-            return p_c0
 
     def p_c0(self, p0, x0, p1, x1):
 
         assert x0 > 0 and x1 > 0
         lo_0_riskiest = p0 < p1 and x0 > x1
-        lo_1_riskiest = p0 > p1 and x1 < x0
+        lo_1_riskiest = p0 > p1 and x0 < x1
 
         dist_p0 = self.w(p0)
         dist_p1 = self.w(p1)
@@ -116,6 +105,15 @@ class DMSciReports(DecisionMakingModel):
             raise ValueError("One lottery should be riskier than the other")
 
         return p_choose_0
+
+    def p_choice(self, p0, x0, p1, x1, c):
+
+        p_c0 = self.p_c0(p0=p0, x0=x0, p1=p1, x1=x1)
+
+        if c == 1:
+            return 1 - p_c0
+        else:
+            return p_c0
 
     @staticmethod
     def u(x, risk_aversion):

@@ -2,7 +2,7 @@
 Produce the control sigmoid figures
 """
 
-from parameters.parameters import \
+from analysis.parameters.parameters import \
     CONTROL_CONDITIONS, LABELS_CONTROL, \
     SIG_STEEP, \
     SIG_MID

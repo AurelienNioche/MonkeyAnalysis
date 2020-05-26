@@ -2,7 +2,7 @@ import numpy as np
 from scipy.optimize import curve_fit
 # from scipy.stats.distributions import t
 
-from parameters.parameters import SIG_MID, SIG_STEEP
+from analysis.parameters.parameters import SIG_MID, SIG_STEEP
 
 NAME = "sigmoid_fit.sigmoid_fit"
 

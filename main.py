@@ -6,17 +6,13 @@ from django.core.wsgi import get_wsgi_application
 
 application = get_wsgi_application()
 
+from data_interface.models import Data
+
+import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 import traceback
 import warnings
-
-from parameters.parameters import FIG_FOLDER, CONTROL_CONDITIONS
-
-from experimental_data.get import get_data, get_monkeys
-import experimental_data.filter.control
-import experimental_data.filter.freq_risk
-import experimental_data.filter.control_sigmoid
 
 import plot.history
 import plot.precision
@@ -28,20 +24,45 @@ import plot.control_sigmoid
 import plot.info
 import plot.best_param_distrib
 
-from utils.log import log
-
-import model.parameter_estimate
-from model.stats import stats_regression_best_values
-from model.model import DMSciReports
+import analysis.model.parameter_estimate
+from analysis.model.stats import stats_regression_best_values
+from analysis.model.model import DMSciReports
 # DMEpsilon, DMNicolas, DMSoftmax, DMSoftmaxSideBias
 # from model.stats import stats_comparison_best_values
 
+from analysis.parameters.parameters import CONTROL_CONDITIONS
+from analysis.data_preprocessing \
+    import get_control_data, get_control_sigmoid_data, \
+    get_freq_risk_data, get_info_data
+
+from analysis.model.parameter_estimate import get_parameter_estimate
+
 import analysis.summary
-import analysis.info
+import analysis.data_preprocessing.info
+
+from analysis.parameters.parameters import FIG_FOLDER
 
 # np.seterr(all='raise')
 
 NAME = "main"
+
+
+LIMIT_N_TRIAL = 2000
+
+
+def get_monkeys():
+    monkeys = list(np.unique(Data.objects.values_list("monkey")))
+    for m in monkeys:
+        n_trial = Data.objects.filter(monkey=m).count()
+        if n_trial < LIMIT_N_TRIAL:
+            print(f"Monkey '{m}' has only {n_trial} trials, "
+                  f"it will not be included in the analysis")
+            monkeys.remove(m)
+    return monkeys
+
+
+def get_n_trial(monkey):
+    return Data.objects.filter(monkey=monkey).count()
 
 
 class Analysis:
@@ -95,41 +116,21 @@ class Analysis:
                 print()
                 print("-" * 60 + f" {m} " + "-" * 60 + "\n")
 
-                # Get the data
-                d = get_data(m)
-                self.data[m] = d
-
                 # Sort the data, run fit, etc.
-                self.info_data[m] = analysis.info.get(d=d, m=m)
+                self.info_data[m] = get_info_data(monkey=m)
 
-                alternatives, alternatives_sided, \
-                    control_types, \
-                    hits, choose_right = \
-                    experimental_data.filter.control.get_control(d)
-
-                self.control_data[m] = \
-                    experimental_data.filter.control.sort_by_cond(
-                        alternatives=alternatives,
-                        control_types=control_types, hits=hits,
-                        verbose=False
-                    )
+                self.control_data[m] = get_control_data(monkey=m)
 
                 self.control_sigmoid_data[m] = \
-                    experimental_data.filter.control_sigmoid.get(
-                        alternatives_sided=alternatives_sided,
-                        control_types=control_types, choose_right=choose_right
-                    )
+                    get_control_sigmoid_data(monkey=m)
                 self.control_sig_fit[m] = \
                     {cd: self.control_sigmoid_data[m][cd]['fit']
                      for cd in CONTROL_CONDITIONS}
 
-                self.freq_risk_data[m] = \
-                    experimental_data.filter.freq_risk.get(d, verbose=False)
-
+                self.freq_risk_data[m] = get_freq_risk_data(monkey=m)
                 self.risk_sig_fit[m] = self.freq_risk_data[m]['fit']
 
-                self.cpt_fit[m] = model.parameter_estimate.run(
-                    d,
+                self.cpt_fit[m] = get_parameter_estimate(
                     monkey=m,
                     force=force_fit,
                     n_trials_per_chunk=n_trials_per_chunk,
@@ -138,10 +139,10 @@ class Analysis:
                     class_model=self.class_model,
                     method=method,
                 )
-
-                #     # Stats for comparison of best parameter values
-                #     stats_comparison_best_values(fit, monkey=monkey)
-
+                #
+                # #     # Stats for comparison of best parameter values
+                # #     stats_comparison_best_values(fit, monkey=monkey)
+                #
                 # Stats for comparison of best parameter values
                 self.hist_best_param_data[m] = {
                     'fit': self.cpt_fit[m],
@@ -159,6 +160,7 @@ class Analysis:
                 #         hits=hits, n_chunk=n_chunk,
                 #         n_trials_per_chunk=n_trials_per_chunk,
                 #     )
+                print()
 
             except Exception as e:
                 if skip_exception:
@@ -225,7 +227,7 @@ class Analysis:
             f"results{monkey if monkey is not None else ''}_"
             f"{self.class_model.__name__}.pdf")
 
-        log(f"Creating the figure '{pdf_path}'...", name=NAME)
+        print(f"Creating the figure '{pdf_path}'...")
 
         # Create the pdf
         self.pdf = PdfPages(pdf_path)
@@ -266,33 +268,34 @@ class Analysis:
             plot_function=plot.precision.plot,
             data=self.cpt_fit)
 
+        # Fig: Best param history
+        self.create_figure(
+            plot_function=plot.history.history_best_param,
+            data=self.hist_best_param_data,
+            n_subplot=len(self.class_model.param_labels))
+
         # # Fig: Control history
         # self.create_figure(
         #     plot_function=plot.history.history_control,
         #     data=self.hist_control_data,
         #     n_subplot=len(CONTROL_CONDITIONS))
 
-        # Fig: Best param history
-        self.create_figure(
-            plot_function=plot.history.history_best_param,
-            data=self.hist_best_param_data,
-            n_subplot=3)
-
         self.pdf.close()
         self.target_monkey = None
 
-        log(f"Figure '{pdf_path}' created.\n", name=NAME)
+        print(f"Figure '{pdf_path}' created.\n")
 
     def create_summary(self):
-
-        analysis.summary.create(
-            info_data=self.info_data,
-            control_data=self.control_data,
-            cpt_fit=self.cpt_fit,
-            control_sig_fit=self.control_sig_fit,
-            risk_sig_fit=self.risk_sig_fit,
-            class_model=self.class_model
-        )
+        pass
+        #
+        # analysis.summary.create(
+        #     info_data=self.info_data,
+        #     control_data=self.control_data,
+        #     cpt_fit=self.cpt_fit,
+        #     control_sig_fit=self.control_sig_fit,
+        #     risk_sig_fit=self.risk_sig_fit,
+        #     class_model=self.class_model
+        # )
 
     def create_best_param_distrib(self):
 
@@ -301,7 +304,7 @@ class Analysis:
             FIG_FOLDER,
             f"best_param_distrib_{self.class_model.__name__}.pdf")
 
-        log(f"Creating the figure '{fig_path}'...", name=NAME)
+        print(f"Creating the figure '{fig_path}'...")
 
         plot.best_param_distrib.plot(self.cpt_fit, fig_path=fig_path,
                                      param_labels=self.class_model.param_labels)
@@ -314,11 +317,11 @@ def main():
 
     class_model = DMSciReports
     a = Analysis(
-        monkeys=('Havane', 'Gladys'),
+        monkeys=None, # ('Havane', 'Gladys'),
         class_model=class_model,
         n_trials_per_chunk=200,
         method='SLSQP',
-        force_fit=False,
+        force_fit=True,
         skip_exception=True)
     a.create_summary()
     a.create_pdf()

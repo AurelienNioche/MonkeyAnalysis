@@ -5,7 +5,7 @@ between expected values,
 i.e. the certainty-risk trade-off figure
 """
 
-from parameters.parameters import SIG_STEEP, SIG_MID
+from analysis.parameters.parameters import SIG_STEEP, SIG_MID
 
 NAME = "plot.freq_risk"
 

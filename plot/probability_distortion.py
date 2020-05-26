@@ -27,10 +27,7 @@ def _line(param, ax, linewidth=3, alpha=1, color='C0'):
     #         linewidth=linewidth, alpha=alpha)
 
 
-def plot(
-        ax, fit, show_average=True,
-        label_font_size=20,
-        ticks_label_size=14):
+def plot(ax, fit, show_average=True, label_font_size=20, ticks_label_size=14):
 
     alpha_chunk = 0.5 if show_average else 1
 

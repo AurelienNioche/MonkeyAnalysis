@@ -5,7 +5,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE",
 from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
 
-from experimental_data.import_export import import_data_xlsx
+from data_interface.import_export import import_data_xlsx
 
 
 if __name__ == "__main__":

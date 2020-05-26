@@ -32,7 +32,7 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     'stimuli.apps.StimuliConfig',
-    'experimental_data.apps.ExperimentalDataConfig',
+    'data_interface.apps.DataConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

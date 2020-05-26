@@ -9,13 +9,13 @@ __pycache__/
 .DS_Store
 
 # xlsx
-data/
-!data/data_GH.xlsx
-!data/data.xlsx
-!data/summary_good.xlsx
+data_raw/
+!data_raw/data_GH.xlsx
+!data_raw/data.xlsx
+!data_raw/summary_good.xlsx
 
 # Pickle files
-data/pickle/
+data_raw/pickle/
 
 # Fig
 fig*/
@@ -32,3 +32,8 @@ data/results.db
 
 # Jupyter Notebooks
 .ipynb_checkpoints/
+
+/data/*
+!data/source/data.xlsx
+!data/source/summary_good.xlsx
+!data/source/data_GH.xlsx
