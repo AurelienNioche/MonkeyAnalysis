@@ -25,23 +25,17 @@ import plot.control_sigmoid
 import plot.info
 import plot.best_param_distrib
 
-import analysis.model.parameter_estimate
 from analysis.model.stats import stats_regression_best_values
 from analysis.model.model import DMSciReports
-# DMEpsilon, DMNicolas, DMSoftmax, DMSoftmaxSideBias
-# from model.stats import stats_comparison_best_values
 
-from analysis.parameters.parameters import CONTROL_CONDITIONS
+from parameters.parameters import CONTROL_CONDITIONS, FIG_FOLDER
 from analysis.data_preprocessing \
     import get_control_data, get_control_sigmoid_data, \
-    get_freq_risk_data, get_info_data, get_control_history_data
+    get_freq_risk_data, get_info_data, get_control_history_data, \
+    get_control_stats
 
 from analysis.model.parameter_estimate import get_parameter_estimate
-
-import analysis.summary
-import analysis.data_preprocessing.info
-
-from analysis.parameters.parameters import FIG_FOLDER
+from analysis.summary import summary
 
 # np.seterr(all='raise')
 
@@ -79,6 +73,7 @@ class Analysis:
 
         self.info_data = {}
         self.control_data = {}
+        self.control_stats = {}
         self.exemplary_data = {}
         self.freq_risk_data = {}
         self.hist_best_param_data = {}
@@ -123,6 +118,7 @@ class Analysis:
                 self.info_data[m] = get_info_data(monkey=m)
 
                 self.control_data[m] = get_control_data(monkey=m)
+                self.control_stats[m] = get_control_stats(self.control_data[m])
 
                 self.control_sigmoid_data[m] = \
                     get_control_sigmoid_data(monkey=m)
@@ -241,7 +237,7 @@ class Analysis:
 
         # Fig: Control sigmoid
         self.create_figure(
-            plot_function=plot.control_sigmoid.control_sigmoid,
+            plot_function=plot.control_sigmoid.plot,
             data=self.control_sigmoid_data,
             n_subplot=len(CONTROL_CONDITIONS))
 
@@ -283,16 +279,14 @@ class Analysis:
         print(f"Figure '{pdf_path}' created.\n")
 
     def create_summary(self):
-        pass
-        #
-        # analysis.summary.create(
-        #     info_data=self.info_data,
-        #     control_data=self.control_data,
-        #     cpt_fit=self.cpt_fit,
-        #     control_sig_fit=self.control_sig_fit,
-        #     risk_sig_fit=self.risk_sig_fit,
-        #     class_model=self.class_model
-        # )
+        summary.create(
+            info_data=self.info_data,
+            control_data=self.control_data,
+            cpt_fit=self.cpt_fit,
+            control_sig_fit=self.control_sig_fit,
+            risk_sig_fit=self.risk_sig_fit,
+            class_model=self.class_model
+        )
 
     def create_best_param_distrib(self):
 
@@ -314,7 +308,7 @@ def main():
 
     class_model = DMSciReports
     a = Analysis(
-        monkeys=None, # ('Havane', 'Gladys'),
+        monkeys=None,  # ('Havane', 'Gladys'),
         class_model=class_model,
         n_trials_per_chunk=200,
         n_trials_per_chunk_control=500,

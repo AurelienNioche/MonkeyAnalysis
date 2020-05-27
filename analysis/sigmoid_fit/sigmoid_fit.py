@@ -1,10 +1,12 @@
 import numpy as np
 from scipy.optimize import curve_fit
-# from scipy.stats.distributions import t
+from scipy.stats.distributions import t
 
-from analysis.parameters.parameters import SIG_MID, SIG_STEEP
 
-NAME = "sigmoid_fit.sigmoid_fit"
+from parameters.parameters import SIG_MID, SIG_STEEP
+
+
+PARAM_LABELS = 'x0', 'k'
 
 
 def sigmoid(x, x0, k):
@@ -27,58 +29,40 @@ def sigmoid_fit(x, y, n_points=100, max_eval=10000):
         SIG_STEEP: p_opt[1]
     }
 
-    # if return_p_opt:
-    #     to_return += (
-    #         {SIG_MID: p_opt[0], SIG_STEEP: p_opt[1]}, )
 
-    # if make_stats:
-    #     # Do stats about fit
-    #     stats_r = stats(y=y_data, p_cov=p_cov, p_opt=p_opt)
-    #
-    #     to_return += (stats_r,)
+def stats(y, p_opt, p_cov, alpha=0.05):
 
-    # return to_return
+    """
+    For explanations on this, see:
+    https://www.mathworks.com/help/curvefit/confidence-and-prediction-bounds.html
+    http://kitchingroup.cheme.cmu.edu/blog/2013/02/12/Nonlinear-curve-fitting-with-parameter-confidence-intervals/
+    """
 
+    # Compute p err -------------------------
+    try:
+        p_err = np.sqrt(np.diag(p_cov))
+    except FloatingPointError:
+        d = np.diag(p_cov)
+        d.setflags(write=True)
+        d[d < 0] = 0
+        p_err = np.sqrt(d)
 
-# def sigmoid_one_param(x, theta):
-#     # Activation function used to map any real value between 0 and 1
-#     return 1 / (1 + np.exp(-theta * x))
+    # Compute t -----------------------------
+    n = len(y)  # number of data points
+    p = len(p_opt)  # number of parameters
 
-# def stats(y, p_opt, p_cov, alpha=0.01):
-#     # 95% confidence interval = 100*(1-alpha)
-#
-#     n = len(y)  # number of data points
-#     p = len(p_opt)  # number of parameters
-#
-#     # print(n, p)
-#
-#     dof = max(0, n - p)  # number of degrees of freedom
-#
-#     # student-t value for the dof and confidence level
-#     tval = t.ppf(1.0 - alpha / 2., dof)
-#
-#     log(f"Stats for the sigmoid fit:",
-#         name=NAME)
-#     # log(f"student-t value: {tval:.2f}", name=NAME)
-#
-#     try:
-#         p_err = np.sqrt(np.diag(p_cov))
-#     except FloatingPointError:
-#         print(np.diag(p_cov))
-#         d = np.diag(p_cov)
-#         d.setflags(write=True)
-#         d[d < 0] = 0
-#         p_err = np.sqrt(d)
-#
-#     r = []
-#
-#     for i, p, std in zip(range(n), p_opt, p_err):
-#
-#         me = std * tval
-#         log(f'p{i}: {p:.2f} [{p - me:.2f}  {p + me:.2f}]', name=NAME)
-#         r.append(
-#             {"val": p, "ic-": p - me, "ic+": p + me}
-#         )
-#     print()
-#
-#     return r
+    dof = max(0, n - p)  # number of degrees of freedom
+
+    #  Inverse of Student's t cumulative distribution function
+    tval = t.ppf(1.0 - alpha / 2., dof)
+
+    # Compute ci ---------------------------
+    r = []
+    for i, (pr, std) in enumerate(zip(p_opt, p_err)):
+
+        ci = std * tval
+        print(f'{PARAM_LABELS[i]}: {pr:.2f} [{pr - ci:.2f}  {pr + ci:.2f}]')
+        r.append({"v": p, "ci": (p - ci, p + ci)})
+    print()
+
+    return r

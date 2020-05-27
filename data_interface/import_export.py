@@ -8,13 +8,12 @@ import pytz
 import xlsxwriter
 
 from data_interface.models import Data
+from parameters.parameters import SOURCE_FOLDER, EXPORT_FOLDER
 
 
 class Importer:
 
     BULK_LIMIT = 10000
-    SOURCE_FOLDER = os.path.join('data', 'source')
-    EXPORT_FOLDER = os.path.join('data', 'export_xlsx')
     DATE_FORMAT = '%Y-%m-%d'
 
     def __init__(self, data_files, starting_dates):
@@ -42,7 +41,7 @@ class Importer:
 
     def _import_data_file(self, data_file, starting_date):
 
-        data_path = os.path.join(self.SOURCE_FOLDER, data_file)
+        data_path = os.path.join(SOURCE_FOLDER, data_file)
 
         print(f"Reading from '{data_path}'...", end=" ", flush=True)
         df = pd.read_excel(data_path)
@@ -169,8 +168,8 @@ class Importer:
     @classmethod
     def export_as_xlsx(cls, file_name='formatted_data.xlsx'):
 
-        os.makedirs(cls.EXPORT_FOLDER, exist_ok=True)
-        file_path = os.path.join(cls.EXPORT_FOLDER, file_name)
+        os.makedirs(EXPORT_FOLDER, exist_ok=True)
+        file_path = os.path.join(EXPORT_FOLDER, file_name)
 
         workbook = xlsxwriter.Workbook(file_path, {'remove_timezone': True})
         worksheet = workbook.add_worksheet()

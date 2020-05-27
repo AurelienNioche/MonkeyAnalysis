@@ -1,11 +1,9 @@
 import os
-
 import pandas as pd
 
 from . models import Stimuli
 
-
-DATA_FOLDER = "data"
+from parameters.parameters import EXPORT_FOLDER
 
 
 def import_stimuli_xlsx(data_file='stimuli.xlsx'):
@@ -13,7 +11,7 @@ def import_stimuli_xlsx(data_file='stimuli.xlsx'):
     Stimuli.objects.all().delete()
 
     print("Reading from xlsx...", end=" ", flush=True)
-    df = pd.read_excel(os.path.join(DATA_FOLDER, data_file), )
+    df = pd.read_excel(os.path.join(EXPORT_FOLDER, data_file), )
     print("Done!")
 
     print("Writing in db...", end=" ", flush=True)

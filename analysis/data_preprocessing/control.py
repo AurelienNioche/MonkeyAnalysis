@@ -1,7 +1,8 @@
 import numpy as np
 
-from analysis.parameters.parameters import CONTROL_CONDITIONS, SAME_P, SAME_X
+from parameters.parameters import CONTROL_CONDITIONS, SAME_P, SAME_X
 from data_interface.models import Data
+from analysis.stats.stats import iqr
 
 
 def get_control_data(monkey):
@@ -35,3 +36,18 @@ def get_control_data(monkey):
     print("Done!")
 
     return data
+
+
+def get_control_stats(data):
+
+    res = {}
+    for cd in CONTROL_CONDITIONS:
+        median, _iqr = iqr(data[cd])
+        res[cd] = {
+            'median': median,
+            'iqr': _iqr,
+        }
+
+        print(f"Condition '{cd}': n={len(data[cd])}, median={median:.2f}, "
+              f"IQR = [{_iqr[0]:.2f}, {_iqr[1]:.2f}], "
+              f"0.5 in IQR = {_iqr[0] <= 0.5 <= _iqr[1]}")

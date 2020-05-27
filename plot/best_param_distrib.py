@@ -2,8 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def plot_scatter_metric(data, ax, y_label, x_tick_label, title,
-                        color='C0', dot_size=20):
+def _scatter_metric(data, ax, y_label, x_tick_label, title,
+                    color='C0', dot_size=20):
 
     # For scatter
     x_scatter = np.random.uniform(-0.05, 0.05, size=len(data))
@@ -45,12 +45,12 @@ def plot(fit, param_labels, fig_path):
         data = [np.mean(fit[k][param_name])
                 for k in fit.keys()]
 
-        plot_scatter_metric(ax=ax, data=data,
-                            title=title,
-                            y_label="Value",
-                            x_tick_label=param_name,
-                            color=colors[i],
-                            dot_size=40)
+        _scatter_metric(ax=ax, data=data,
+                        title=title,
+                        y_label="Value",
+                        x_tick_label=param_name,
+                        color=colors[i],
+                        dot_size=40)
     plt.tight_layout()
     plt.savefig(fig_path)
 

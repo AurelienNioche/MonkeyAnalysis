@@ -1,6 +1,6 @@
 import numpy as np
 
-from analysis.parameters.parameters import CONTROL_CONDITIONS, SAME_P, SAME_X
+from parameters.parameters import CONTROL_CONDITIONS, SAME_P, SAME_X
 from data_interface.models import Data
 
 

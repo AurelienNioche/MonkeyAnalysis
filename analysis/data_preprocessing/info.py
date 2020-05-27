@@ -9,6 +9,8 @@ class Info:
 
         self.monkey = monkey
 
+        self.text = self._create_text()
+
     def control(self):
 
         entries = Data.objects.filter(monkey=self.monkey, is_control=True)
@@ -33,7 +35,7 @@ class Info:
         n_pairs = len(np.unique(entries.values_list('pair_id')))
         return n_right, n_trials, n_pairs
 
-    def text(self):
+    def _create_text(self):
 
         n_success, n_trials_control, n_pairs_control = self.control()
         n_risky, n_trials_risky, n_pairs_risky = self.risk()
@@ -48,6 +50,6 @@ class Info:
 def get_info_data(monkey):
 
     print("Getting the info data...", end=' ', flush=True)
-    info = Info(monkey).text()
+    info = Info(monkey)
     print("Done!")
     return info

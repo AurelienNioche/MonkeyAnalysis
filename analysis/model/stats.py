@@ -1,72 +1,17 @@
 import numpy as np
-import scipy.stats
 import statsmodels.stats
 import statsmodels.stats.multitest
-from sklearn.linear_model import LinearRegression
 from statsmodels import api as sm
-
-from utils.log import log
-
-
-NAME = "model.stats"
-
-
-# def stats_comparison_best_values(fit, monkey):
-#
-#     us = []
-#     ps = []
-#
-#     pra = fit['pos_risk_aversion']
-#     nra = fit['neg_risk_aversion']
-#     pdi = fit['pos_distortion']
-#     ndi = fit['neg_distortion']
-#     ppr = fit['pos_precision']
-#     npr = fit['neg_precision']
-#
-#     to_compare = [
-#         (pra, nra),
-#         (pdi, ndi),
-#         (ppr, npr)
-#     ]
-#
-#     for x1, x2 in to_compare:
-#         try:
-#             u, p = scipy.stats.mannwhitneyu(x1, x2)
-#         except ValueError:
-#             u, p = None, np.inf
-#         ps.append(p)
-#         us.append(u)
-#
-#     valid, p_corr, alpha_c_sidak, alpha_c_bonf = \
-#         statsmodels.stats.multitest.multipletests(pvals=ps, alpha=0.01,
-#                                                   method="b")
-#
-#     labels = [f"{monkey} - {param}"
-#               for param in ("risk aversion", "distortion", "precision")]
-#
-#     log("Comparison parameter values (Mann–Whitney U test)", name=NAME)
-#     for label, u, p, p_c in zip(labels, us, ps, p_corr):
-#         log(f'{label}: '
-#             f'u = {u}, p = {p:.3f}, p_c = {p_c:.3f}', name=NAME)
-#     print()
 
 
 def regression(x, y):
 
-    reg = LinearRegression()
-    reg.fit(np.array(x).reshape(-1, 1), np.array(y).reshape(-1, 1))
-    # print("The linear model is: Y = {:.5} + {:.5}X"
-    # .format(reg.intercept_[0], reg.coef_[0][0]))
-    # predictions = reg.predict(np.array(x).reshape(-1, 1))
-
-    alpha, beta = reg.intercept_[0], reg.coef_[0][0]
-
-    x_2 = sm.add_constant(x)
-    est = sm.OLS(y, x_2).fit()   # print(est.summary())
-    f, p = est.fvalue, est.f_pvalue   # print(f"F={est.fvalue:.3f},
-    # p={est.f_pvalue:.3f}, n={len(y)}")
+    X = sm.add_constant(x)
+    res = sm.OLS(y, X).fit()   # print(res.summary())
+    f, p = res.fvalue, res.f_pvalue
+    intercept, beta = res.params
     n = len(y)
-    return f, p, n, alpha, beta
+    return f, p, n, intercept, beta
 
 
 def stats_regression_best_values(fit, class_model):
@@ -94,17 +39,16 @@ def stats_regression_best_values(fit, class_model):
         rgr_line_param[param] = \
             alphas[i], betas[i], p_corr[i] < 0.01
 
-    log(f'Linear regression for parameter values over time: ', NAME)
+    print(f'Linear regression for best-fit parameter value over time: ')
 
     labels = [f"{param}"
               for param in class_model.param_labels]
 
     for label, f, p, p_c, n, alpha, beta \
             in zip(labels, fs, ps, p_corr, ns, alphas, betas):
-        log(f'{label}: '
-            f'F = {f:.3f}, p = {p:.3f}, p_c = {p_c:.3f}, n={n}'
-            f', alpha = {alpha:.2f}, beta = {beta:.2f}',
-            name=NAME)
+        print(f'{label}: '
+              f'F = {f:.3f}, p = {p:.3f}, p_c = {p_c:.3f}, n={n}'
+              f', alpha = {alpha:.2f}, beta = {beta:.2f}')
     print()
     return rgr_line_param
 

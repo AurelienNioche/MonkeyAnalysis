@@ -1,20 +1,17 @@
-"""
-Produce the control sigmoid figures
-"""
-
-from analysis.parameters.parameters import \
+from parameters.parameters import \
     CONTROL_CONDITIONS, LABELS_CONTROL, \
     SIG_STEEP, \
     SIG_MID
 
-from plot.freq_risk import scatter_and_sigmoid, add_text
-
-NAME = "plot.control"
+from plot.tools.tools import scatter_and_sigmoid, add_text
 
 
-def control_sigmoid(axes, data,
-                    axis_label_font_size=20,
-                    ticks_label_font_size=14):
+def plot(axes, data,
+         axis_label_font_size=20,
+         ticks_label_font_size=14):
+    """
+    Produce the control sigmoid figures
+    """
 
     x_label = "$EV_{right} - EV_{left}$"
     y_label = "F(Choose right)"

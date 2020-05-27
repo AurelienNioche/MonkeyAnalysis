@@ -1,10 +1,6 @@
-"""
-Produce the utility function figure
-"""
-
 import numpy as np
 
-NAME = "plot.utility"
+from plot.tools.tools import add_text
 
 
 def _line(risk_aversion, class_model, ax, alpha=1.0,
@@ -23,8 +19,9 @@ def _line(risk_aversion, class_model, ax, alpha=1.0,
 def plot(ax, fit, show_average=True, alpha_chunk=0.5,
          axis_label_font_size=20,
          ticks_label_font_size=12):
-    #
-    # fig, ax = plt.subplots(figsize=(6, 5), dpi=200)
+    """
+    Produce the utility function figure
+    """
 
     pr = fit['risk_aversion']
     class_model = fit['class_model']
@@ -37,11 +34,13 @@ def plot(ax, fit, show_average=True, alpha_chunk=0.5,
         )
 
     if show_average:
+        v = np.mean(pr)
         _line(
-            risk_aversion=np.mean(pr),
+            risk_aversion=v,
             class_model=class_model,
             ax=ax
         )
+        add_text(ax, r'$\omega=' + f'{v:.2f}' + '$')
 
     ax.spines['left'].set_position(('data', 0))
     ax.spines['right'].set_color('none')

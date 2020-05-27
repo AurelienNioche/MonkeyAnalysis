@@ -11,12 +11,12 @@ import numpy as np
 import xlsxwriter
 
 from stimuli.import_export import import_stimuli_xlsx
+from parameters.parameters import EXPORT_FOLDER
 
 
 class StimuliGenerator:
 
     XLS_NAME = "stimuli.xlsx"
-    XLS_FOLDER = os.path.join("data", "export_xlsx")
 
     GAUGE_MAX = 6
     X_MAX = 3
@@ -36,8 +36,7 @@ class StimuliGenerator:
     def _create_xls(cls):
 
         # Create a workbook and add a worksheet.
-        os.makedirs(cls.XLS_FOLDER, exist_ok=True)
-        workbook = xlsxwriter.Workbook(os.path.join(cls.XLS_FOLDER,
+        workbook = xlsxwriter.Workbook(os.path.join(EXPORT_FOLDER,
                                                     cls.XLS_NAME))
         worksheet = workbook.add_worksheet()
 

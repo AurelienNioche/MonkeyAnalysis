@@ -1,59 +1,24 @@
 import os
 import xlsxwriter
 import numpy as np
-import warnings
 
-from parameters.parameters import DATA_FOLDER
+from parameters.parameters import EXPORT_FOLDER, \
+    CONTROL_CONDITIONS, SIG_STEEP, \
+    SIG_MID
 
-from parameters.parameters import \
-    CONTROL_CONDITIONS, CHOOSE_RIGHT, MONKEY_NAME, N_TRIALS, SIG_STEEP, \
-    SIG_MID, SAME_P, SAME_X
-
-from utils.log import log
-
-NAME = 'analysis.summary'
+from . doc import DOC
 
 
 class Summary:
 
     XLS_NAME = "summary.xlsx"
+    MONKEY_NAME = "monkey"
 
     def __init__(self, class_model):
 
         self.class_model = class_model
 
         self.content = {}
-
-        self.doc = {
-            MONKEY_NAME: "Name of the monkey",
-            N_TRIALS: "Total number of trials",
-            CHOOSE_RIGHT: "Frequency with which the monkey "
-                          "chooses the target on the right side",
-            "risk_aversion": "Best-fit parameter value "
-                             "describing the risk aversion",
-            "distortion": "Best-fit parameter value "
-                          "describing the probability distortion",
-            "precision": "Best-fit parameter value "
-                         "describing the precision",
-            SAME_P: "Median of the frequencies with which "
-                         "the monkey chooses the best target "
-                         "for a specific alternative "
-                         "such that: "
-                         "(i) a best option exists, "
-                         "(ii) probabilities of non-zero outputs are the same, "
-                         "(iii) the non-zero outputs are different "
-                         "(iv) the possible outputs are only zero and positive rewards",
-            SAME_X: "Median of the frequencies with which "
-                          "the monkey chooses the best target "
-                          "for a specific alternative "
-                          "such that: "
-                          "(i) a best option exists, "
-                          "(ii) probabilities of non-zero outputs are different, "
-                          "(iii) the non-zero outputs are the same "
-                          "(iv) the possible outputs are only zero and positive rewards",
-            SIG_STEEP: "Best-fit parameter value for the steepness of the curve for the 'same p - gain vs loss' control trials",
-            SIG_MID: "Best-fit parameter value for the midpoint of the curve for the 'same p - gain vs loss'control trials",
-        }
 
     def __getitem__(self, item):
         try:
@@ -67,8 +32,7 @@ class Summary:
 
     def export_as_xlsx(self):
 
-        os.makedirs(DATA_FOLDER, exist_ok=True)
-        xls_path = os.path.join(DATA_FOLDER, self.XLS_NAME)
+        xls_path = os.path.join(EXPORT_FOLDER, self.XLS_NAME)
         workbook = xlsxwriter.Workbook(xls_path)
 
         columns = self.content.keys()
@@ -88,17 +52,14 @@ class Summary:
 
         # Write doc
         worksheet = workbook.add_worksheet('doc')
-        for j, c in enumerate(columns):
+        for j, c in enumerate(DOC.keys()):
             c_name = self._format_column_name(c)
             worksheet.write(j, 0, c_name)
-            try:
-                worksheet.write(j, 1, self.doc[c])
-            except KeyError:
-                warnings.warn(f"Missing doc for '{c}'")
+            worksheet.write(j, 1, DOC[c])
 
         workbook.close()
 
-        log(f"Summary exported in the file '{xls_path}'\n", name=NAME)
+        print(f"Summary exported in the file '{xls_path}'\n")
 
     @staticmethod
     def _format_column_name(c):
@@ -107,7 +68,7 @@ class Summary:
     def append_performance_to_control(self, control_d):
 
         for cd in CONTROL_CONDITIONS:
-            median = np.median(list(control_d[cd].values()))
+            median = np.median(control_d[cd])
             self[cd].append(median)
 
     def append_cpt_fit(self, cpt_fit):
@@ -135,14 +96,9 @@ def create(info_data, control_data,
 
     monkeys = sorted(info_data.keys())
     for m in monkeys:
+
         # Add monkey name
-        summary[MONKEY_NAME].append(m)
-
-        # Add number of trials
-        summary[N_TRIALS].append(info_data[m].n_trials)
-
-        # Add side bias
-        summary[CHOOSE_RIGHT].append(info_data[m].choose_right)
+        summary[Summary.MONKEY_NAME].append(m)
 
         # Add median for each type of control
         summary.append_performance_to_control(control_data[m])

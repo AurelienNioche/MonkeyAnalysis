@@ -1,10 +1,6 @@
-"""
-Produce the precision figure
-"""
-
 import numpy as np
 
-from plot.freq_risk import add_text
+from plot.tools.tools import add_text
 
 NAME = "plot.precision"
 
@@ -16,9 +12,6 @@ def _line(class_model, pairs, x,
 
     y = np.zeros(len(pairs))
     for i, p in enumerate(pairs):
-
-        # print("p0", p0, "p1", p1, "x0", x0, "x1", x1)
-        # print("Precision", kwargs["precision"])
         y[i] = dm.p_c0(**p)
 
     ax.plot(x, y, color=color, linewidth=linewidth, alpha=alpha)
@@ -27,6 +20,9 @@ def _line(class_model, pairs, x,
 def plot(ax, fit, show_average=True,
          axis_label_font_size=20,
          ticks_label_size=14):
+    """
+    Produce the precision figure
+    """
 
     alpha_chunk = 0.5 if show_average else 1
 
@@ -94,5 +90,5 @@ def plot(ax, fit, show_average=True,
     ax.axvline(x0_equal_ev/x1, alpha=0.5, linewidth=1, color='black',
                linestyle='--', zorder=-10)
 
-    ax.set_xlabel("$x_{risky}$", fontsize=axis_label_font_size)
+    ax.set_xlabel(r"$\frac{x_{risky}}{x_{safe}}$", fontsize=axis_label_font_size)
     ax.set_ylabel("P(Choose risky option)", fontsize=axis_label_font_size)

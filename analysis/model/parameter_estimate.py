@@ -4,7 +4,7 @@ import os
 import scipy.stats
 import scipy.optimize
 
-from analysis.parameters.parameters import BACKUP_FOLDER
+from parameters.parameters import BACKUP_FOLDER
 from data_interface.models import Data
 
 

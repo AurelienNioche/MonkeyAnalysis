@@ -1,13 +1,10 @@
 import numpy as np
 
-from analysis.parameters.parameters import CONTROL_CONDITIONS, LABELS_CONTROL
+from parameters.parameters import CONTROL_CONDITIONS, LABELS_CONTROL
 
 
 def _plot_history_control(results, ax, color='C0', last=False,
                           ylabel="Success rate", title="Title", fontsize=10):
-    """
-    Called by 'control history'
-    """
 
     # exemplary_d is a list (n=number of boxplot) of list (n=number of datapoints)
     n = len(results)

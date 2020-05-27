@@ -78,7 +78,7 @@ WSGI_APPLICATION = 'MonkeyAnalysis.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join('data', 'results.db'),
+        'NAME': os.path.join('data', 'db', 'results.db'),
     }
 }
 

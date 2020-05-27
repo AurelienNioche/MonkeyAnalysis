@@ -62,8 +62,7 @@ def plot(axes, data):
             param=fit[pr],
             y_lim=y_lim,
             mid_line=mid_line,
-            param_name=param_name
-        )
+            param_name=param_name)
 
         if 'regression' in data.keys():
             regression_param = data['regression']
