@@ -130,6 +130,7 @@ class AgentSoftmax(DMSciReports):
         p = np.zeros(2)
         p[0] = expit((v[0] - v[1])/self.precision)
         p[1] = 1 - p[0]
+        return p
 
     def p(self, p0, x0, p1, x1):
 

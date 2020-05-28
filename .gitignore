@@ -24,7 +24,7 @@ fig*/
 venv/
 
 # Db
-data/results.db
+!data/db/dummy
 
 # Django migrations
 */migrations/*
