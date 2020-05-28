@@ -24,9 +24,11 @@ import plot.freq_risk
 import plot.control_sigmoid
 import plot.info
 import plot.best_param_distrib
+import plot.LLS_BIC_distrib
 
 from analysis.model.stats import stats_regression_best_values
-from analysis.model.model import DMSciReports
+from analysis.model.model \
+    import DMSciReports, AgentSoftmax, AgentSide, AgentSideAdditive
 
 from parameters.parameters import CONTROL_CONDITIONS, FIG_FOLDER
 from analysis.data_preprocessing \
@@ -288,7 +290,7 @@ class Analysis:
             class_model=self.class_model
         )
 
-    def create_best_param_distrib(self):
+    def create_best_param_distrib_and_lls_distrib(self):
 
         # Define the path
         fig_path = os.path.join(
@@ -300,27 +302,47 @@ class Analysis:
         plot.best_param_distrib.plot(self.cpt_fit, fig_path=fig_path,
                                      param_labels=self.class_model.param_labels)
 
+        fig_path_lls = os.path.join(
+            FIG_FOLDER,
+            f"LLS_distrib_{self.class_model.__name__}.pdf")
+
+        fig_path_bic = os.path.join(
+            FIG_FOLDER,
+            f"BIC_distrib_{self.class_model.__name__}.pdf")
+
+        print(f"Creating the figure '{fig_path_lls}'...")
+        print(f"Creating the figure '{fig_path_bic}'...")
+        plot.LLS_BIC_distrib.plot(self.cpt_fit, fig_path_lls=fig_path_lls,
+                                  fig_path_bic=fig_path_bic)
+
 
 def main():
 
     # for class_model in (DMSciReports, DMEpsilon, DMNicolas, DMSoftmax,
     #                     DMSoftmaxSideBias):
 
-    class_model = DMSciReports
-    a = Analysis(
-        monkeys=None,  # ('Havane', 'Gladys'),
-        class_model=class_model,
-        n_trials_per_chunk=200,
-        n_trials_per_chunk_control=500,
-        method='SLSQP',
-        force_fit=False,
-        skip_exception=True)
-    a.create_summary()
-    a.create_pdf()
-    for m in a.monkeys:
-        a.create_pdf(monkey=m)
+    for class_model in (AgentSideAdditive, AgentSide,
+                        AgentSoftmax, DMSciReports):
 
-    a.create_best_param_distrib()
+        print("*" * 150)
+        print(f"Using model '{class_model.__name__}'")
+        print("*" * 150)
+        print()
+        a = Analysis(
+            monkeys=None,  # ('Havane', 'Gladys'),
+            class_model=class_model,
+            n_trials_per_chunk=200,
+            n_trials_per_chunk_control=500,
+            method='SLSQP',
+            force_fit=True,
+            skip_exception=True)
+        a.create_summary()
+        a.create_pdf()
+        for m in a.monkeys:
+            a.create_pdf(monkey=m)
+
+        a.create_best_param_distrib_and_lls_distrib()
+        print()
 
 
 if __name__ == '__main__':

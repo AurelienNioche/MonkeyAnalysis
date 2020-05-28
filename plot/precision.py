@@ -2,74 +2,82 @@ import numpy as np
 
 from plot.tools.tools import add_text
 
-NAME = "plot.precision"
 
-
-def _line(class_model, pairs, x,
-          ax, color='C0', alpha=1, linewidth=3, **kwargs):
-
-    dm = class_model([kwargs[k] for k in class_model.param_labels])
-
-    y = np.zeros(len(pairs))
-    for i, p in enumerate(pairs):
-        y[i] = dm.p_c0(**p)
-
-    ax.plot(x, y, color=color, linewidth=linewidth, alpha=alpha)
-
-
-def plot(ax, fit, show_average=True,
-         axis_label_font_size=20,
-         ticks_label_size=14):
+def plot(ax, fit, axis_label_font_size=20, ticks_label_size=14):
     """
     Produce the precision figure
     """
 
-    alpha_chunk = 0.5 if show_average else 1
-
     n_points = 1000
 
-    p0 = 0.5
-    p1, x1 = 1., 0.25
+    v_mean = np.mean(fit['precision'])
 
-    x0_equal_ev = x1 * (1/p0)
+    n_chunk = len(fit['risk_aversion'])
 
-    x0_list = np.linspace(x1+0.01, 1.00, n_points)
+    class_model = fit['class_model']
+    if class_model.__name__ == "DMSciReports":
 
-    x = x0_list/x1
+        p0 = 0.5
+        p1, x1 = 1., 0.25
 
-    pairs = []
+        x0_equal_ev = x1 * (1 / p0)
 
-    for i, x0 in enumerate(x0_list):
+        x0_list = np.linspace(x1 + 0.01, 1.00, n_points)
 
-        pairs.append({"p0": p0, "x0": x0, "p1": p1, "x1": x1})
+        x = x0_list / x1
 
-    for j in range(len(fit['risk_aversion'])):
+        pairs = []
 
-        _line(
-            x=x,
-            pairs=pairs,
-            risk_aversion=fit['risk_aversion'][j],
-            distortion=fit['distortion'][j],
-            precision=fit['precision'][j],
-            ax=ax,
-            linewidth=1,
-            alpha=alpha_chunk,
-            class_model=fit['class_model']
-        )
+        for i, x0 in enumerate(x0_list):
+            pairs.append({"p0": p0, "x0": x0, "p1": p1, "x1": x1})
 
-    if show_average:
-        v = np.mean(fit['precision'])
-        _line(
-            x=x,
-            pairs=pairs,
-            risk_aversion=np.mean(fit['risk_aversion']),
-            distortion=np.mean(fit['distortion']),
-            precision=v,
-            class_model=fit['class_model'],
-            ax=ax
-        )
+        y = np.zeros((n_chunk, len(x)))
 
-        add_text(ax, r'$\lambda=' + f'{v:.2f}' + '$')
+        for i_c in range(n_chunk):
+
+            dm = class_model([fit[k][i_c] for k in class_model.param_labels])
+
+            for i_p, p in enumerate(pairs):
+                y[i_c, i_p] = dm.p_choice(c=0, **p)
+
+        dm = class_model([np.mean(fit[k]) for k in class_model.param_labels])
+        y_mean = np.zeros(len(x))
+        for i_p, p in enumerate(pairs):
+            y_mean[i_p] = dm.p_choice(c=0, **p)
+
+        ax.axvline(x0_equal_ev / x1, alpha=0.5, linewidth=1, color='black',
+                   linestyle='--', zorder=-10)
+
+        x_label = r"$\frac{x_{risky}}{x_{safe}}$"
+        y_label = "P(Choose risky option)"
+
+    elif class_model.__name__ in ("AgentSoftmax", "AgentSide",
+                                  "AgentSideAdditive"):
+
+        x = np.linspace(-1, 1, n_points)
+        y = np.zeros((n_chunk, len(x)))
+        for i_c in range(n_chunk):
+            v = fit['precision'][i_c]
+            y[i_c] = 1 / (1 + np.exp(-x/v))
+
+        y_mean = 1 / (1 + np.exp(-x/v_mean))
+
+        ax.axvline(0, alpha=0.5, linewidth=1, color='black',
+                   linestyle='--', zorder=-10)
+
+        x_label = r"$SEU(L_{1}) - SEU(L_{2})$"
+        y_label = "$P(Choose L_{1})$"
+
+    else:
+        raise ValueError
+
+    for i_c in range(n_chunk):
+        ax.plot(x, y[i_c], color='C0', linewidth=1, alpha=0.5)
+
+    # show_average
+    ax.plot(x, y_mean, color='C0', linewidth=3, alpha=1)
+
+    add_text(ax, r'$\lambda=' + f'{v_mean:.2f}' + '$')
 
     # ax.set_xticks([0, 1, 2])
     ax.set_yticks([0, 0.5, 1])
@@ -87,8 +95,5 @@ def plot(ax, fit, show_average=True,
     ax.axhline(0.5, alpha=0.5, linewidth=1, color='black',
                linestyle='--', zorder=-10)
 
-    ax.axvline(x0_equal_ev/x1, alpha=0.5, linewidth=1, color='black',
-               linestyle='--', zorder=-10)
-
-    ax.set_xlabel(r"$\frac{x_{risky}}{x_{safe}}$", fontsize=axis_label_font_size)
-    ax.set_ylabel("P(Choose risky option)", fontsize=axis_label_font_size)
+    ax.set_xlabel(x_label, fontsize=axis_label_font_size)
+    ax.set_ylabel(y_label, fontsize=axis_label_font_size)

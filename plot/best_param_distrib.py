@@ -1,31 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-
-def _scatter_metric(data, ax, y_label, x_tick_label, title,
-                    color='C0', dot_size=20):
-
-    # For scatter
-    x_scatter = np.random.uniform(-0.05, 0.05, size=len(data))
-
-    # Plot the scatter
-    ax.scatter(x_scatter, data, c=color, s=dot_size,
-               alpha=0.2, linewidth=0.0, zorder=1)
-
-    # Plot the boxplot
-    bp = ax.boxplot(data, positions=[0, ],
-                    labels=[x_tick_label, ], showfliers=False, zorder=2)
-
-    # Set the color of the boxplot
-    for e in ['boxes', 'caps', 'whiskers', 'medians']:
-        for b in bp[e]:
-            b.set(color='black')
-
-    # Set the label of the y axis
-    ax.set_ylabel(y_label)
-
-    # Set the title
-    ax.set_title(title)
+from plot.tools.tools import scatter_boxplot
 
 
 def plot(fit, param_labels, fig_path):
@@ -42,10 +18,11 @@ def plot(fit, param_labels, fig_path):
         ax = axes[i]
         param_name = param_labels[i]
         title = f"Distribution of best-fit values for {param_name}"
-        data = [np.mean(fit[k][param_name])
-                for k in fit.keys()]
+        data = [np.mean(fit[k][param_name]) for k in fit.keys()]
+        err = [np.std(fit[k][param_name]) for k in fit.keys()]
 
-        _scatter_metric(ax=ax, data=data,
+        scatter_boxplot(ax=ax, data=data,
+                        err=err,
                         title=title,
                         y_label="Value",
                         x_tick_label=param_name,

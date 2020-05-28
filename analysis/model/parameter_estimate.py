@@ -61,6 +61,7 @@ def _get_cross_validation(monkey, randomize, n_chunk, class_model,
     }
 
     fit['LLS'] = []
+    fit["BIC"] = []
 
     data, parts, n_trial = _get_chunk(
         monkey=monkey,
@@ -88,6 +89,12 @@ def _get_cross_validation(monkey, randomize, n_chunk, class_model,
             fit[k].append(v)
 
         fit['LLS'].append(lls)
+
+        # \mathrm{BIC} = k\ln(n) - 2\ln({\widehat{L}})
+        k = len(class_model.param_labels)
+        n = len(p)
+        bic = k * np.log(n) - 2*lls
+        fit['BIC'].append(bic)
 
     fit['n_trial'] = n_trial
     fit['class_model'] = class_model
@@ -135,9 +142,9 @@ def get_parameter_estimate(
                        force=force)
 
     print(f'Results fit: {monkey}')
-    for label in class_model.param_labels + ['LLS', ]:
+    for label in class_model.param_labels + ['LLS', 'BIC']:
         print(f'{label} = {np.mean(fit[label]):.2f} '
-            f'(+/-{np.std(fit[label]):.2f} SD)')
+              f'(+/-{np.std(fit[label]):.2f} SD)')
     print()
 
     return fit

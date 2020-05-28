@@ -4,10 +4,6 @@ from abc import abstractmethod
 EPS = np.finfo(float).eps
 
 
-def prelec(p, alpha):
-    return np.exp(-(-np.log(p)) ** alpha)
-
-
 class DecisionMakingModel:
 
     param_labels = None
@@ -49,8 +45,9 @@ class DMSciReports(DecisionMakingModel):
         self.distortion, self.precision, self.risk_aversion = param
         super().__init__(param)
 
-    def w(self, p):
-        return prelec(p, self.distortion)
+    @classmethod
+    def pi(cls, p, alpha):
+        return np.exp(-(-np.log(p)) ** alpha)
 
     @staticmethod
     def omega(p0, x0, p1, x1):
@@ -85,36 +82,99 @@ class DMSciReports(DecisionMakingModel):
         b = np.exp(self.precision*self.risk_aversion)
         return a / (a+b)
 
-    def p_c0(self, p0, x0, p1, x1):
+    def p(self, p0, x0, p1, x1):
 
         assert x0 > 0 and x1 > 0
         lo_0_riskiest = p0 < p1 and x0 > x1
         lo_1_riskiest = p0 > p1 and x0 < x1
 
-        dist_p0 = self.w(p0)
-        dist_p1 = self.w(p1)
+        dist_p0 = self.pi(p0, self.distortion)
+        dist_p1 = self.pi(p1, self.distortion)
 
         p_choose_risk = self.rho(p0=dist_p0, x0=x0,
                                  p1=dist_p1, x1=x1)
 
+        p = np.zeros(2)
         if lo_0_riskiest:
-            p_choose_0 = p_choose_risk
+            p[:] = p_choose_risk, 1 - p_choose_risk
         elif lo_1_riskiest:
-            p_choose_0 = 1 - p_choose_risk
+            p[:] = 1 - p_choose_risk, p_choose_risk
         else:
             raise ValueError("One lottery should be riskier than the other")
 
-        return p_choose_0
+        return p
 
     def p_choice(self, p0, x0, p1, x1, c):
 
-        p_c0 = self.p_c0(p0=p0, x0=x0, p1=p1, x1=x1)
-
-        if c == 1:
-            return 1 - p_c0
-        else:
-            return p_c0
+        p = self.p(p0=p0, x0=x0, p1=p1, x1=x1)
+        return p[c]
 
     @staticmethod
     def u(x, risk_aversion):
         return x ** (1-risk_aversion)
+
+
+class AgentSoftmax(DMSciReports):
+
+    param_labels = ['distortion', 'precision', 'risk_aversion']
+    bounds = [(0.2, 1.8), (0.1, 10.0), (-0.99, 0.99)]
+    init_guess = (1.00, 1.00, 0.00)
+
+    def softmax(self, v):
+        try:
+            p = np.exp(v/self.precision) / np.sum(np.exp(v/self.precision))
+        except FloatingPointError as e:
+            p = np.array([1, 0]) if v[0] > v[1] else np.array([0, 1])
+        return p
+
+    def p(self, p0, x0, p1, x1):
+        np.seterr(all="raise")
+
+        v = np.zeros(2)
+        v[0] = self.pi(p0, self.distortion) * self.u(x0, self.risk_aversion)
+        v[1] = self.pi(p1, self.distortion) * self.u(x1, self.risk_aversion)
+        return self.softmax(v)
+
+
+class AgentSide(AgentSoftmax):
+
+    param_labels = ['distortion', 'precision', 'risk_aversion', 'side_bias']
+    bounds = [(0.2, 1.8), (0.1, 10.0), (-0.99, 0.99), (-1.0, 1.0)]
+    init_guess = (1.00, 1.00, 0.00, 0.50)
+
+    def __init__(self, param):
+
+        self.distortion, self.precision, self.risk_aversion, \
+            self.side_bias = param
+
+    def p(self, p0, x0, p1, x1):
+        np.seterr(all="raise")
+
+        v = np.zeros(2)
+        v[0] = self.pi(p0, self.distortion) * self.u(x0, self.risk_aversion) \
+            * (1+max(0, -self.side_bias))
+        v[1] = self.pi(p1, self.distortion) * self.u(x1, self.risk_aversion) \
+            * (1+max(0, +self.side_bias))
+        return self.softmax(v)
+
+
+class AgentSideAdditive(AgentSoftmax):
+
+    param_labels = ['distortion', 'precision', 'risk_aversion', 'side_bias']
+    bounds = [(0.2, 1.8), (0.1, 10.0), (-0.99, 0.99), (-10.0, 10.0)]
+    init_guess = (1.00, 1.00, 0.00, 0.50)
+
+    def __init__(self, param):
+
+        self.distortion, self.precision, self.risk_aversion, \
+            self.side_bias = param
+
+    def p(self, p0, x0, p1, x1):
+        np.seterr(all="raise")
+
+        v = np.zeros(2)
+        v[0] = self.pi(p0, self.distortion) * self.u(x0, self.risk_aversion) \
+            + max(0, -self.side_bias)
+        v[1] = self.pi(p1, self.distortion) * self.u(x1, self.risk_aversion) \
+            + max(0, +self.side_bias)
+        return self.softmax(v)

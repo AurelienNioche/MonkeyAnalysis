@@ -50,4 +50,4 @@ def get_control_stats(data):
 
         print(f"Condition '{cd}': n={len(data[cd])}, median={median:.2f}, "
               f"IQR = [{_iqr[0]:.2f}, {_iqr[1]:.2f}], "
-              f"0.5 in IQR = {_iqr[0] <= 0.5 <= _iqr[1]}")
+              f"IQR comprises values <= 0.5 = {_iqr[0] <=0.5}")
