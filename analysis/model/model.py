@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.special import expit
 from abc import abstractmethod
 
 EPS = np.finfo(float).eps
@@ -121,14 +122,16 @@ class AgentSoftmax(DMSciReports):
     init_guess = (1.00, 1.00, 0.00)
 
     def softmax(self, v):
-        try:
-            p = np.exp(v/self.precision) / np.sum(np.exp(v/self.precision))
-        except FloatingPointError as e:
-            p = np.array([1, 0]) if v[0] > v[1] else np.array([0, 1])
-        return p
+        # try:
+        #     p = np.exp(v/self.precision) / np.sum(np.exp(v/self.precision))
+        # except FloatingPointError as e:
+        #     p = np.array([1, 0]) if v[0] > v[1] else np.array([0, 1])
+        # return p
+        p = np.zeros(2)
+        p[0] = expit((v[0] - v[1])/self.precision)
+        p[1] = 1 - p[0]
 
     def p(self, p0, x0, p1, x1):
-        np.seterr(all="raise")
 
         v = np.zeros(2)
         v[0] = self.pi(p0, self.distortion) * self.u(x0, self.risk_aversion)
