@@ -8,6 +8,7 @@ class Info:
     def __init__(self, monkey):
 
         self.monkey = monkey
+        self.prop_right = None
 
         self.text = self._create_text()
 
@@ -33,6 +34,7 @@ class Info:
         n_trials = entries.count()
         n_right = entries.filter(c=1).count()
         n_pairs = len(np.unique(entries.values_list('pair_id')))
+        self.prop_right = n_right/n_trials
         return n_right, n_trials, n_pairs
 
     def _create_text(self):

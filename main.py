@@ -49,12 +49,22 @@ LIMIT_N_TRIAL = 2000
 
 def get_monkeys():
     monkeys = list(np.unique(Data.objects.values_list("monkey")))
+    black_list = []
     for m in monkeys:
-        n_trial = Data.objects.filter(monkey=m).count()
+        entries = Data.objects.filter(monkey=m)
+        n_trial = entries.count()
         if n_trial < LIMIT_N_TRIAL:
             print(f"Monkey '{m}' has only {n_trial} trials, "
                   f"it will not be included in the analysis")
             monkeys.remove(m)
+            black_list.append(m)
+
+        n_right = entries.filter(c=1).count()
+        prop_right = n_right/n_trial
+        if not 0.25 <= prop_right <= 0.75:
+            print(f"Monkey '{m}' choose the right option {prop_right*200:.2f}% of the time, "
+                  f"it will not be included in the analysis")
+
     return monkeys
 
 
@@ -118,6 +128,10 @@ class Analysis:
 
                 # Sort the data, run fit, etc.
                 self.info_data[m] = get_info_data(monkey=m)
+                if not 0.25 <= self.info_data[m].prop_right <= 0.75:
+                    print(f"Monkey '{m}' will be discarded as he chooses right with p={self.info_data[m].prop_right}")
+                    black_list.append(m)
+                    continue
 
                 self.control_data[m] = get_control_data(monkey=m)
                 self.control_stats[m] = get_control_stats(self.control_data[m])
