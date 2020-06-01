@@ -3,42 +3,50 @@ import numpy as np
 from plot.tools.tools import add_text
 
 
-def pi(p, distortion):
-    """Probability distortion"""
+# def pi(p, distortion):
+#     """Probability distortion"""
+#
+#     return np.exp(-(-np.log(p)) ** distortion) if p > 0 else 0
 
-    return np.exp(-(-np.log(p)) ** distortion) if p > 0 else 0
 
-
-def _line(param, ax, linewidth=3, alpha=1, color='C0', n_points=1000):
+def _line(param, ax,
+          class_model,
+          linewidth=3, alpha=1, color='C0', n_points=1000):
 
     x = np.linspace(0, 1, n_points)
 
-    ax.plot(x, [pi(i, param) for i in x], color=color,
+    ax.plot(x, [class_model.pi(i, param) for i in x], color=color,
             linewidth=linewidth, alpha=alpha)
 
 
-def plot(ax, fit, show_average=True, label_font_size=20, ticks_label_size=14):
+def plot(ax, data,
+         show_average=True, label_font_size=20, ticks_label_size=14):
     """
     Produce the probability distortion figure
     """
 
+    fit_distortion = data["distortion"]
+    class_model = data["class_model"]
+
     alpha_chunk = 0.5 if show_average else 1
 
-    for j in range(len(fit["distortion"])):
+    for j in range(len(fit_distortion)):
 
         _line(
-            param=fit["distortion"][j],
+            class_model=class_model,
+            param=fit_distortion[j],
             alpha=alpha_chunk,
             linewidth=1,
             ax=ax)
 
-    if show_average:
-        v = np.mean(fit["distortion"])
-        _line(
-            param=v,
-            linewidth=3,
-            ax=ax)
-        add_text(ax, r'$\alpha=' + f'{v:.2f}' + '$')
+    v_mean = np.mean(fit_distortion)
+    v_std = np.std(fit_distortion)
+    _line(
+        class_model=class_model,
+        param=v_mean,
+        linewidth=3,
+        ax=ax)
+    add_text(ax, r'$\alpha=' + f'{v_mean:.2f}\pm{v_std:.2f}' + '$')
 
     ax.set_xlabel('$p$', fontsize=label_font_size)
     ax.set_ylabel('$w(p)$', fontsize=label_font_size)

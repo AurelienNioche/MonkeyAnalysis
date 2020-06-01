@@ -3,18 +3,19 @@ import numpy as np
 from plot.tools.tools import add_text
 
 
-def plot(ax, fit, axis_label_font_size=20, ticks_label_size=14):
+def plot(ax, data, axis_label_font_size=20, ticks_label_size=14):
     """
     Produce the precision figure
     """
 
     n_points = 1000
 
-    v_mean = np.mean(fit['precision'])
+    v_mean = np.mean(data['precision'])
+    v_std = np.std(data['precision'])
 
-    n_chunk = len(fit['risk_aversion'])
+    n_chunk = len(data['precision'])
 
-    class_model = fit['class_model']
+    class_model = data['class_model']
     if class_model.__name__ == "DMSciReports":
 
         p0 = 0.5
@@ -35,12 +36,12 @@ def plot(ax, fit, axis_label_font_size=20, ticks_label_size=14):
 
         for i_c in range(n_chunk):
 
-            dm = class_model([fit[k][i_c] for k in class_model.param_labels])
+            dm = class_model([data[k][i_c] for k in class_model.param_labels])
 
             for i_p, p in enumerate(pairs):
                 y[i_c, i_p] = dm.p_choice(c=0, **p)
 
-        dm = class_model([np.mean(fit[k]) for k in class_model.param_labels])
+        dm = class_model([np.mean(data[k]) for k in class_model.param_labels])
         y_mean = np.zeros(len(x))
         for i_p, p in enumerate(pairs):
             y_mean[i_p] = dm.p_choice(c=0, **p)
@@ -54,13 +55,16 @@ def plot(ax, fit, axis_label_font_size=20, ticks_label_size=14):
     elif class_model.__name__ in ("AgentSoftmax", "AgentSide",
                                   "AgentSideAdditive"):
 
+        fit_precision = data['precision']
+
         x = np.linspace(-1, 1, n_points)
         y = np.zeros((n_chunk, len(x)))
         for i_c in range(n_chunk):
-            v = fit['precision'][i_c]
-            y[i_c] = 1 / (1 + np.exp(-x/v))
+            v = fit_precision[i_c]
+            y[i_c] = class_model.softmax(x, v)
 
-        y_mean = 1 / (1 + np.exp(-x/v_mean))
+        y_mean = np.zeros(len(x))
+        y_mean[:] = class_model.softmax(x, v_mean)
 
         ax.axvline(0, alpha=0.5, linewidth=1, color='black',
                    linestyle='--', zorder=-10)
@@ -77,7 +81,7 @@ def plot(ax, fit, axis_label_font_size=20, ticks_label_size=14):
     # show_average
     ax.plot(x, y_mean, color='C0', linewidth=3, alpha=1)
 
-    add_text(ax, r'$\lambda=' + f'{v_mean:.2f}' + '$')
+    add_text(ax, r'$\lambda=' + f'{v_mean:.2f}\pm{v_std:.2f}' + '$')
 
     # ax.set_xticks([0, 1, 2])
     ax.set_yticks([0, 0.5, 1])

@@ -48,7 +48,16 @@ class DMSciReports(DecisionMakingModel):
 
     @classmethod
     def pi(cls, p, alpha):
-        return np.exp(-(-np.log(p)) ** alpha)
+        if isinstance(p, np.ndarray):
+            to_return = np.zeros(p.shape)
+            unq_zero = p != 0
+            to_return[unq_zero] = np.exp(-(-np.log(p)) ** alpha)
+            return to_return
+        else:
+            if p == 0:
+                return 0
+            else:
+                return np.exp(-(-np.log(p)) ** alpha)
 
     @staticmethod
     def omega(p0, x0, p1, x1):
@@ -121,23 +130,18 @@ class AgentSoftmax(DMSciReports):
     bounds = [(0.2, 1.8), (0.1, 10.0), (-0.99, 0.99)]
     init_guess = (1.00, 1.00, 0.00)
 
-    def softmax(self, v):
-        # try:
-        #     p = np.exp(v/self.precision) / np.sum(np.exp(v/self.precision))
-        # except FloatingPointError as e:
-        #     p = np.array([1, 0]) if v[0] > v[1] else np.array([0, 1])
-        # return p
-        p = np.zeros(2)
-        p[0] = expit((v[0] - v[1])/self.precision)
-        p[1] = 1 - p[0]
-        return p
+    @classmethod
+    def softmax(cls, v, precision):
+        return expit(v/precision)
 
     def p(self, p0, x0, p1, x1):
 
-        v = np.zeros(2)
-        v[0] = self.pi(p0, self.distortion) * self.u(x0, self.risk_aversion)
-        v[1] = self.pi(p1, self.distortion) * self.u(x1, self.risk_aversion)
-        return self.softmax(v)
+        v0 = self.pi(p0, self.distortion) * self.u(x0, self.risk_aversion)
+        v1 = self.pi(p1, self.distortion) * self.u(x1, self.risk_aversion)
+        p = np.zeros(2)
+        p[0] = self.softmax(v0-v1, self.precision)
+        p[1] = 1 - p[0]
+        return p
 
 
 class AgentSide(AgentSoftmax):
@@ -154,12 +158,14 @@ class AgentSide(AgentSoftmax):
     def p(self, p0, x0, p1, x1):
         np.seterr(all="raise")
 
-        v = np.zeros(2)
-        v[0] = self.pi(p0, self.distortion) * self.u(x0, self.risk_aversion) \
+        v0 = self.pi(p0, self.distortion) * self.u(x0, self.risk_aversion) \
             * (1+max(0, -self.side_bias))
-        v[1] = self.pi(p1, self.distortion) * self.u(x1, self.risk_aversion) \
+        v1 = self.pi(p1, self.distortion) * self.u(x1, self.risk_aversion) \
             * (1+max(0, +self.side_bias))
-        return self.softmax(v)
+        p = np.zeros(2)
+        p[0] = self.softmax(v0-v1, self.precision)
+        p[1] = 1 - p[0]
+        return p
 
 
 class AgentSideAdditive(AgentSoftmax):
@@ -176,9 +182,11 @@ class AgentSideAdditive(AgentSoftmax):
     def p(self, p0, x0, p1, x1):
         np.seterr(all="raise")
 
-        v = np.zeros(2)
-        v[0] = self.pi(p0, self.distortion) * self.u(x0, self.risk_aversion) \
+        v0 = self.pi(p0, self.distortion) * self.u(x0, self.risk_aversion) \
             + max(0, -self.side_bias)
-        v[1] = self.pi(p1, self.distortion) * self.u(x1, self.risk_aversion) \
+        v1 = self.pi(p1, self.distortion) * self.u(x1, self.risk_aversion) \
             + max(0, +self.side_bias)
-        return self.softmax(v)
+        p = np.zeros(2)
+        p[0] = self.softmax(v0-v1, self.precision)
+        p[1] = 1 - p[0]
+        return p

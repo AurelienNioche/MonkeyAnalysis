@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 import traceback
 import warnings
+import pickle
 
 import plot.history_best_param
 import plot.history_control
@@ -30,7 +31,8 @@ from analysis.model.stats import stats_regression_best_values
 from analysis.model.model \
     import DMSciReports, AgentSoftmax, AgentSide, AgentSideAdditive
 
-from parameters.parameters import CONTROL_CONDITIONS, FIG_FOLDER
+from parameters.parameters import CONTROL_CONDITIONS, \
+    FIG_FOLDER, BACKUP_FOLDER
 from analysis.data_preprocessing \
     import get_control_data, get_control_sigmoid_data, \
     get_freq_risk_data, get_info_data, get_control_history_data, \
@@ -41,41 +43,10 @@ from analysis.summary import summary
 
 # np.seterr(all='raise')
 
-NAME = "main"
-
-
-LIMIT_N_TRIAL = 2000
-
-
-def get_monkeys():
-
-    monkeys = list(np.unique(Data.objects.values_list("monkey")))
-    # black_list = []
-    for m in monkeys:
-        entries = Data.objects.filter(monkey=m)
-        n_trial = entries.count()
-        if n_trial < LIMIT_N_TRIAL:
-            print(f"Monkey '{m}' has only {n_trial} trials, "
-                  f"it will not be included in the analysis")
-            monkeys.remove(m)
-            # black_list.append(m)
-
-        n_right = entries.filter(c=1).count()
-        prop_right = n_right/n_trial
-        if not 0.25 <= prop_right <= 0.75:
-            print(f"Monkey '{m}' choose the right option {prop_right*100:.2f}% of the time, "
-                  f"it will not be included in the analysis")
-            monkeys.remove(m)
-            # black_list.append(m)
-
-    return monkeys
-
-
-def get_n_trial(monkey):
-    return Data.objects.filter(monkey=monkey).count()
-
 
 class Analysis:
+
+    LIMIT_N_TRIAL = 2000
 
     def __init__(self, class_model, **kwargs):
 
@@ -84,12 +55,9 @@ class Analysis:
         self.monkeys = None
         self.n_monkey = None
 
-        self.data = {}
-
         self.info_data = {}
         self.control_data = {}
         self.control_stats = {}
-        self.exemplary_data = {}
         self.freq_risk_data = {}
         self.hist_best_param_data = {}
         self.hist_control_data = {}
@@ -99,10 +67,42 @@ class Analysis:
         self.risk_sig_fit = {}
         self.control_sig_fit = {}
 
-        self.pdf = None
-        self.target_monkey = None
-
         self._pre_process_data(**kwargs)
+
+    @classmethod
+    def get_monkeys(cls):
+
+        monkeys = list(np.unique(Data.objects.values_list("monkey")))
+        print(monkeys)
+        # black_list = []
+        selected_monkeys = []
+        for m in monkeys:
+            keep = True
+            entries = Data.objects.filter(monkey=m)
+            n_trial = entries.count()
+            if n_trial < cls.LIMIT_N_TRIAL:
+                print(f"Monkey '{m}' has only {n_trial} trials, "
+                      f"it will not be included in the analysis")
+                keep = False
+                # black_list.append(m)
+
+            n_right = entries.filter(c=1).count()
+            prop_right = n_right / n_trial
+            if not 0.15 <= prop_right <= 0.85:
+                print(
+                    f"Monkey '{m}' choose the right option {prop_right * 100:.2f}% of the time, "
+                    f"it will not be included in the analysis")
+                keep = False
+                # black_list.append(m)
+
+            if keep:
+                selected_monkeys.append(m)
+
+        return selected_monkeys
+
+    @classmethod
+    def get_n_trial(cls, monkey):
+        return Data.objects.filter(monkey=monkey).count()
 
     def _pre_process_data(self,
                           method,
@@ -115,7 +115,7 @@ class Analysis:
                           monkeys=None):
 
         if monkeys is None:
-            monkeys = get_monkeys()
+            monkeys = self.get_monkeys()
         n_monkey = len(monkeys)
 
         black_list = []
@@ -193,10 +193,8 @@ class Analysis:
 
         for m in black_list:
             monkeys.remove(m)
-            self.data.pop(m, None)
             self.info_data.pop(m, None)
             self.control_data.pop(m, None)
-            self.exemplary_data.pop(m, None)
             self.freq_risk_data.pop(m, None)
             self.hist_best_param_data.pop(m, None)
             self.hist_control_data.pop(m, None)
@@ -208,18 +206,28 @@ class Analysis:
         self.monkeys = monkeys
         self.n_monkey = len(monkeys)
 
+
+class Plot:
+
+    def __init__(self, analysis):
+
+        self.a = analysis
+
+        self.pdf = None
+        self.target_monkey = None
+
     def create_figure(self, plot_function, data, n_subplot=1):
 
         n_rows = n_subplot
-        n_cols = self.n_monkey if self.target_monkey is None else 1
+        n_cols = self.a.n_monkey if self.target_monkey is None else 1
         fig, axes = plt.subplots(nrows=n_rows,
                                  ncols=n_cols,
                                  figsize=(6*n_cols, 6*n_rows))
 
-        if self.target_monkey is None and self.n_monkey > 1:
+        if self.target_monkey is None and self.a.n_monkey > 1:
             if len(axes.shape) > 1:
                 axes = axes.T
-            for i, m in enumerate(self.monkeys):
+            for i, m in enumerate(self.a.monkeys):
                 plot_function(axes[i], data[m])
 
         else:
@@ -237,7 +245,7 @@ class Analysis:
         pdf_path = os.path.join(
             FIG_FOLDER,
             f"results{monkey if monkey is not None else ''}_"
-            f"{self.class_model.__name__}.pdf")
+            f"{self.a.class_model.__name__}.pdf")
 
         print(f"Creating the figure '{pdf_path}'...")
 
@@ -247,49 +255,49 @@ class Analysis:
         # Fig: Info
         self.create_figure(
             plot_function=plot.info.fig_info,
-            data=self.info_data)
+            data=self.a.info_data)
 
         # Fig: Control
         self.create_figure(
             plot_function=plot.control.plot,
-            data=self.control_data)
+            data=self.a.control_data)
 
         # Fig: Control sigmoid
         self.create_figure(
             plot_function=plot.control_sigmoid.plot,
-            data=self.control_sigmoid_data,
+            data=self.a.control_sigmoid_data,
             n_subplot=len(CONTROL_CONDITIONS))
 
         # Fig: Freq risky choice against expected value
         self.create_figure(
             plot_function=plot.freq_risk.plot,
-            data=self.freq_risk_data)
+            data=self.a.freq_risk_data)
 
         # Fig: Utility function
         self.create_figure(
             plot_function=plot.utility.plot,
-            data=self.cpt_fit)
+            data=self.a.cpt_fit)
 
         # Fig: Probability distortion
         self.create_figure(
             plot_function=plot.probability_distortion.plot,
-            data=self.cpt_fit)
+            data=self.a.cpt_fit)
 
         # Fig: Precision
         self.create_figure(
             plot_function=plot.precision.plot,
-            data=self.cpt_fit)
+            data=self.a.cpt_fit)
 
         # Fig: Best param history
         self.create_figure(
             plot_function=plot.history_best_param.plot,
-            data=self.hist_best_param_data,
-            n_subplot=len(self.class_model.param_labels))
+            data=self.a.hist_best_param_data,
+            n_subplot=len(self.a.class_model.param_labels))
 
         # Fig: Control history
         self.create_figure(
             plot_function=plot.history_control.plot,
-            data=self.hist_control_data,
+            data=self.a.hist_control_data,
             n_subplot=len(CONTROL_CONDITIONS))
 
         self.pdf.close()
@@ -297,69 +305,105 @@ class Analysis:
 
         print(f"Figure '{pdf_path}' created.\n")
 
-    def create_summary(self):
-        summary.create(
-            info_data=self.info_data,
-            control_data=self.control_data,
-            cpt_fit=self.cpt_fit,
-            control_sig_fit=self.control_sig_fit,
-            risk_sig_fit=self.risk_sig_fit,
-            class_model=self.class_model
-        )
-
     def create_best_param_distrib_and_lls_distrib(self):
 
         # Define the path
         fig_path = os.path.join(
             FIG_FOLDER,
-            f"best_param_distrib_{self.class_model.__name__}.pdf")
+            f"best_param_distrib_{self.a.class_model.__name__}.pdf")
 
         print(f"Creating the figure '{fig_path}'...")
 
-        plot.best_param_distrib.plot(self.cpt_fit, fig_path=fig_path,
-                                     param_labels=self.class_model.param_labels)
+        plot.best_param_distrib.plot(
+            self.a.cpt_fit, fig_path=fig_path,
+            param_labels=self.a.class_model.param_labels)
 
         fig_path_lls = os.path.join(
             FIG_FOLDER,
-            f"LLS_distrib_{self.class_model.__name__}.pdf")
+            f"LLS_distrib_{self.a.class_model.__name__}.pdf")
 
         fig_path_bic = os.path.join(
             FIG_FOLDER,
-            f"BIC_distrib_{self.class_model.__name__}.pdf")
+            f"BIC_distrib_{self.a.class_model.__name__}.pdf")
 
         print(f"Creating the figure '{fig_path_lls}'...")
         print(f"Creating the figure '{fig_path_bic}'...")
-        plot.LLS_BIC_distrib.plot(self.cpt_fit, fig_path_lls=fig_path_lls,
+        plot.LLS_BIC_distrib.plot(self.a.cpt_fit, fig_path_lls=fig_path_lls,
                                   fig_path_bic=fig_path_bic)
+
+    def create_main_figure(self):
+
+        nrows, ncols = 1, 3
+        fig, axes = plt.subplots(nrows=nrows, ncols=ncols,
+                                 figsize=(6*ncols, 6*nrows))
+
+        # Fig: Utility function
+        data = {'risk_aversion': [np.mean(self.a.cpt_fit[m]['risk_aversion'])
+                for m in self.a.monkeys],
+                'class_model': self.a.class_model}
+        plot.utility.plot(ax=axes[0], data=data)
+
+        # Fig: Probability distortion
+        data = {'distortion': [np.mean(self.a.cpt_fit[m]['distortion']) for m in self.a.monkeys],
+                'class_model': self.a.class_model}
+        plot.probability_distortion.plot(ax=axes[1], data=data)
+
+        # Fig: Precision
+        data = {'precision': [np.mean(self.a.cpt_fit[m]['precision']) for m in self.a.monkeys],
+                'class_model': self.a.class_model}
+        plot.precision.plot(ax=axes[2], data=data)
+
+        fig_path = os.path.join(
+            FIG_FOLDER,
+            f"main_{self.a.class_model.__name__}.pdf")
+        plt.tight_layout()
+        plt.savefig(fig_path)
 
 
 def main():
 
-    # for class_model in (DMSciReports, DMEpsilon, DMNicolas, DMSoftmax,
-    #                     DMSoftmaxSideBias):
+    # for class_model in (AgentSideAdditive, AgentSide,
+    #                     AgentSoftmax, DMSciReports):
+    force = False
+    class_model = AgentSideAdditive
 
-    for class_model in (AgentSideAdditive, AgentSide,
-                        AgentSoftmax, DMSciReports):
+    print("*" * 150)
+    print(f"Using model '{class_model.__name__}'")
+    print("*" * 150)
+    print()
 
-        print("*" * 150)
-        print(f"Using model '{class_model.__name__}'")
-        print("*" * 150)
-        print()
+    bkp_file = os.path.join(BACKUP_FOLDER,
+                            f"analysis_{class_model.__name__}")
+
+
+
+    if not os.path.exists(bkp_file) or force:
         a = Analysis(
             monkeys=None,  # ('Havane', 'Gladys'),
             class_model=class_model,
             n_trials_per_chunk=200,
             n_trials_per_chunk_control=500,
             method='SLSQP',
-            force_fit=True,
+            force_fit=force,
             skip_exception=True)
-        a.create_summary()
-        a.create_pdf()
-        for m in a.monkeys:
-            a.create_pdf(monkey=m)
+        pickle.dump(a, open(bkp_file, "wb"))
+    else:
+        a = pickle.load(open(bkp_file, "rb"))
 
-        a.create_best_param_distrib_and_lls_distrib()
-        print()
+    # summary.create(
+    #     info_data=a.info_data,
+    #     control_data=a.control_data,
+    #     cpt_fit=a.cpt_fit,
+    #     control_sig_fit=a.control_sig_fit,
+    #     risk_sig_fit=a.risk_sig_fit,
+    #     class_model=a.class_model
+    # )
+    p = Plot(analysis=a)
+    # p.create_pdf()
+    # for m in a.monkeys:
+    #     p.create_pdf(monkey=m)
+    # p.create_best_param_distrib_and_lls_distrib()
+    p.create_main_figure()
 
 
 if __name__ == '__main__':

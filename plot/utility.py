@@ -16,15 +16,15 @@ def _line(risk_aversion, class_model, ax, alpha=1.0,
             linestyle=linestyle)
 
 
-def plot(ax, fit, show_average=True, alpha_chunk=0.5,
+def plot(ax, data, alpha_chunk=0.5,
          axis_label_font_size=20,
          ticks_label_font_size=12):
     """
     Produce the utility function figure
     """
 
-    pr = fit['risk_aversion']
-    class_model = fit['class_model']
+    pr = data['risk_aversion']
+    class_model = data['class_model']
 
     for j in range(len(pr)):
         _line(
@@ -33,14 +33,15 @@ def plot(ax, fit, show_average=True, alpha_chunk=0.5,
             ax=ax, linewidth=1, alpha=alpha_chunk,
         )
 
-    if show_average:
-        v = np.mean(pr)
-        _line(
-            risk_aversion=v,
-            class_model=class_model,
-            ax=ax
-        )
-        add_text(ax, r'$\omega=' + f'{v:.2f}' + '$')
+    v_mean = np.mean(pr)
+    v_std = np.std(pr)
+    _line(
+        risk_aversion=v_mean,
+        class_model=class_model,
+        ax=ax
+    )
+
+    add_text(ax, r'$\omega=' + f'{v_mean:.2f}\pm{v_std:.2f}' + '$')
 
     ax.spines['left'].set_position(('data', 0))
     ax.spines['right'].set_color('none')
