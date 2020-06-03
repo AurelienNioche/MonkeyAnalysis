@@ -48,13 +48,14 @@ def stats_regression_best_values(fit, class_model):
     labels = [f"{param}"
               for param in class_model.param_labels]
 
-    for label, f, p, p_c, n, alpha, beta \
-            in zip(labels, fs, ps, p_corr, ns, alphas, betas):
+    for i in range(len(labels)):
+    # for label, f, p, p_c, n, alpha, beta \
+    #         in zip(labels, fs, ps, p_corr, ns, alphas, betas):
 
-        str_p_c = f"{p_c:.3f}" if p_c is not None else 'None'
-        print(f'{label}: '
-              f'F = {f:.3f}, p = {p:.3f}, p_c = {str_p_c}, n={n}'
-              f', alpha = {alpha:.2f}, beta = {beta:.2f}')
+        str_p_c = f"{p_corr[i]:.3f}" if p_corr is not None else 'None'
+        print(f'{labels[i]}: '
+              f'F = {fs[i]:.3f}, p = {ps[i]:.3f}, p_c = {str_p_c}, n={ns[i]}'
+              f', alpha = {alphas[i]:.2f}, beta = {betas[i]:.2f}')
     print()
     return rgr_line_param
 
