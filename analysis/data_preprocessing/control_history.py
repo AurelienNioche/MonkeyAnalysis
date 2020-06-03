@@ -4,12 +4,12 @@ from parameters.parameters import CONTROL_CONDITIONS, SAME_P, SAME_X
 from data_interface.models import Data
 
 
-def _get_chunks(monkey, n_chunk=None, n_trials_per_chunk=None,
+def _get_chunks(entries, n_chunk=None, n_trials_per_chunk=None,
                 randomize=False):
 
-    idx = np.array(
-        Data.objects.filter(monkey=monkey, is_control=True)
-            .order_by("id").values_list("id", flat=True))
+    entries = entries.filter(is_control=True).order_by("id")
+
+    idx = np.array(entries.values_list("id", flat=True))
     n = len(idx)
 
     if n_chunk is None:
