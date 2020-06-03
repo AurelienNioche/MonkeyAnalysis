@@ -29,15 +29,19 @@ def stats_regression_best_values(fit, class_model):
         alphas.append(alpha)
         betas.append(beta)
 
-    valid, p_corr, alpha_c_sidak, alpha_c_bonf = \
-        statsmodels.stats.multitest.multipletests(pvals=ps, alpha=0.01,
-                                                  method="b")
+    try:
+        valid, p_corr, alpha_c_sidak, alpha_c_bonf = \
+            statsmodels.stats.multitest.multipletests(pvals=ps, alpha=0.01,
+                                                      method="b")
+    except FloatingPointError:
+        valid, p_corr, alpha_c_sidak, alpha_c_bonf = None, None, None, None
 
     rgr_line_param = {}
 
     for i, param in enumerate(class_model.param_labels):
+        p = p_corr[i] < 0.01 if p_corr is not None else None
         rgr_line_param[param] = \
-            alphas[i], betas[i], p_corr[i] < 0.01
+            alphas[i], betas[i], p
 
     print(f'Linear regression for best-fit parameter value over time: ')
 
@@ -46,8 +50,10 @@ def stats_regression_best_values(fit, class_model):
 
     for label, f, p, p_c, n, alpha, beta \
             in zip(labels, fs, ps, p_corr, ns, alphas, betas):
+
+        str_p_c = f"{p_c:.3f}" if p_c is not None else 'None'
         print(f'{label}: '
-              f'F = {f:.3f}, p = {p:.3f}, p_c = {p_c:.3f}, n={n}'
+              f'F = {f:.3f}, p = {p:.3f}, p_c = {str_p_c}, n={n}'
               f', alpha = {alpha:.2f}, beta = {beta:.2f}')
     print()
     return rgr_line_param
