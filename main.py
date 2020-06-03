@@ -399,20 +399,20 @@ def main():
         else:
             a = pickle.load(open(bkp_file, "rb"))
 
-    # summary.create(
-    #     info_data=a.info_data,
-    #     control_data=a.control_data,
-    #     cpt_fit=a.cpt_fit,
-    #     control_sig_fit=a.control_sig_fit,
-    #     risk_sig_fit=a.risk_sig_fit,
-    #     class_model=a.class_model
-    # )
-    p = Plot(analysis=a)
-    # p.create_pdf()
-    # for m in a.monkeys:
-    #     p.create_pdf(monkey=m)
-    # p.create_best_param_distrib_and_lls_distrib()
-    p.create_main_figure()
+        # summary.create(
+        #     info_data=a.info_data,
+        #     control_data=a.control_data,
+        #     cpt_fit=a.cpt_fit,
+        #     control_sig_fit=a.control_sig_fit,
+        #     risk_sig_fit=a.risk_sig_fit,
+        #     class_model=a.class_model
+        # )
+        p = Plot(analysis=a)
+        # p.create_pdf()
+        # for m in a.monkeys:
+        #     p.create_pdf(monkey=m)
+        # p.create_best_param_distrib_and_lls_distrib()
+        p.create_main_figure()
 
 
 if __name__ == '__main__':
