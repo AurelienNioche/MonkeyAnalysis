@@ -348,17 +348,20 @@ class Plot:
         # Fig: Utility function
         data = {'risk_aversion': [np.mean(self.a.cpt_fit[m]['risk_aversion'])
                 for m in self.a.monkeys],
-                'class_model': self.a.class_model}
+                'class_model': self.a.class_model,
+                'cond': self.a.cond}
         plot.utility.plot(ax=axes[0], data=data)
 
         # Fig: Probability distortion
         data = {'distortion': [np.mean(self.a.cpt_fit[m]['distortion']) for m in self.a.monkeys],
-                'class_model': self.a.class_model}
+                'class_model': self.a.class_model,
+                'cond': self.a.cond}
         plot.probability_distortion.plot(ax=axes[1], data=data)
 
         # Fig: Precision
         data = {'precision': [np.mean(self.a.cpt_fit[m]['precision']) for m in self.a.monkeys],
-                'class_model': self.a.class_model}
+                'class_model': self.a.class_model,
+                'cond': self.a.cond}
         plot.precision.plot(ax=axes[2], data=data)
 
         fig_path = os.path.join(
