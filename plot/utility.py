@@ -1,15 +1,12 @@
 import numpy as np
 
 from plot.tools.tools import add_text
+from parameters.parameters import GAIN, LOSS
 
 
-def _line(risk_aversion, class_model, ax, alpha=1.0,
-          linewidth=3, color="C0", linestyle="-",
-          reward_max=1,
-          reward_min=0,
-          n_points=1000):
+def _line(x, risk_aversion, class_model, ax, alpha=1.0,
+          linewidth=3, color="C0", linestyle="-"):
 
-    x = np.linspace(reward_min, reward_max, n_points)
     y = [class_model.u(x=i, risk_aversion=risk_aversion) for i in x]
 
     ax.plot(x, y, color=color, linewidth=linewidth, alpha=alpha,
@@ -25,9 +22,18 @@ def plot(ax, data, alpha_chunk=0.5,
 
     pr = data['risk_aversion']
     class_model = data['class_model']
+    cond = data['cond']
+
+    if cond == GAIN:
+        x = np.linspace(0, 1, 1000)
+    elif cond == LOSS:
+        x = np.linspace(-1, 0, 1000)
+    else:
+        raise ValueError
 
     for j in range(len(pr)):
         _line(
+            x=x,
             class_model=class_model,
             risk_aversion=pr[j],
             ax=ax, linewidth=1, alpha=alpha_chunk,
@@ -36,6 +42,7 @@ def plot(ax, data, alpha_chunk=0.5,
     v_mean = np.mean(pr)
     v_std = np.std(pr)
     _line(
+        x=x,
         risk_aversion=v_mean,
         class_model=class_model,
         ax=ax

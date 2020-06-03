@@ -5,19 +5,18 @@ import scipy.stats
 import scipy.optimize
 
 from parameters.parameters import BACKUP_FOLDER
-from data_interface.models import Data
 
 
-def _get_chunk(monkey, randomize=False, n_chunk=None, n_trials_per_chunk=None):
+def _get_chunk(entries, randomize, n_chunk, n_trials_per_chunk):
 
-    entries = Data.objects.filter(monkey=monkey, is_risky=True)
+    entries = entries.filter(is_risky=True)
 
     data = np.array(entries.values('p0', 'x0', 'p1', 'x1', 'c').order_by("id"))
     n = len(data)
 
     # Normalize amounts
-    max_x = max(max(entries.values_list('x0', flat=True)),
-                max(entries.values_list('x1', flat=True)))
+    max_x = max(max(np.abs(entries.values_list('x0', flat=True))),
+                max(np.abs(entries.values_list('x1', flat=True))))
     assert max_x == 3
 
     for i in range(n):
@@ -52,10 +51,10 @@ def _get_chunk(monkey, randomize=False, n_chunk=None, n_trials_per_chunk=None):
     return data, parts, n-remainder
 
 
-def _get_cross_validation(monkey, randomize, n_chunk, class_model,
+def _get_cross_validation(entries, randomize, n_chunk, class_model, cond,
                           n_trials_per_chunk, method):
 
-    print(f'Getting the fit for {monkey}...')
+    print(f'Getting the fit...')
     fit = {
         k: [] for k in class_model.param_labels
     }
@@ -64,7 +63,7 @@ def _get_cross_validation(monkey, randomize, n_chunk, class_model,
     fit["BIC"] = []
 
     data, parts, n_trial = _get_chunk(
-        monkey=monkey,
+        entries=entries,
         n_chunk=n_chunk,
         n_trials_per_chunk=n_trials_per_chunk,
         randomize=randomize)
@@ -98,21 +97,24 @@ def _get_cross_validation(monkey, randomize, n_chunk, class_model,
 
     fit['n_trial'] = n_trial
     fit['class_model'] = class_model
+    fit['cond'] = cond
     return fit
 
 
-def _pickle_load(monkey, force, randomize, n_chunk, n_trials_per_chunk,
+def _pickle_load(entries, cond, force, randomize, n_chunk, n_trials_per_chunk,
                  class_model, method):
 
     randomize_str = "random_order" if randomize else "chronological_order"
+    monkey = entries[0].monkey
     fit_path = os.path.join(BACKUP_FOLDER,
-                            f'fit_{monkey}_{randomize_str}_method_{method}_'
+                            f'fit_{monkey}_{cond}_{randomize_str}'
+                            f'_method_{method}_'
                             f'n_trials_per_chunk_{n_trials_per_chunk}_'
                             f'{n_chunk}chunk_{class_model.__name__}.p')
 
     if not os.path.exists(fit_path) or force:
 
-        fit = _get_cross_validation(monkey=monkey,
+        fit = _get_cross_validation(entries=entries, cond=cond,
                                     n_trials_per_chunk=n_trials_per_chunk,
                                     randomize=randomize, n_chunk=n_chunk,
                                     class_model=class_model,
@@ -130,10 +132,11 @@ def _pickle_load(monkey, force, randomize, n_chunk, n_trials_per_chunk,
 
 
 def get_parameter_estimate(
-        monkey, randomize, class_model, method, force=False,
+        entries, cond, randomize, class_model, method, force=False,
         n_chunk=None, n_trials_per_chunk=None):
 
-    fit = _pickle_load(monkey=monkey,
+    fit = _pickle_load(entries=entries,
+                       cond=cond,
                        randomize=randomize,
                        n_chunk=n_chunk,
                        n_trials_per_chunk=n_trials_per_chunk,
@@ -141,7 +144,7 @@ def get_parameter_estimate(
                        method=method,
                        force=force)
 
-    print(f'Results fit: {monkey}')
+    print(f'Results fit DM model:')
     for label in class_model.param_labels + ['LLS', 'BIC']:
         print(f'{label} = {np.mean(fit[label]):.2f} '
               f'(+/-{np.std(fit[label]):.2f} SD)')

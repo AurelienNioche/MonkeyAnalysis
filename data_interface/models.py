@@ -13,6 +13,9 @@ class Data(models.Model):
     p1 = models.FloatField(blank=True, null=True)
     x1 = models.IntegerField(blank=True, null=True)
 
+    is_gain = models.BooleanField(default=None, null=True)
+    is_loss = models.BooleanField(default=None, null=True)
+
     is_control = models.BooleanField(default=None, null=True)
     is_same_p = models.BooleanField(default=None, null=True)
     is_same_x = models.BooleanField(default=None, null=True)

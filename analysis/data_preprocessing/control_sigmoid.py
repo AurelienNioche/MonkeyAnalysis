@@ -2,14 +2,11 @@ import numpy as np
 
 from analysis.sigmoid_fit.sigmoid_fit import sigmoid_fit
 from parameters.parameters import CONTROL_CONDITIONS, SAME_P, SAME_X
-from data_interface.models import Data
 
 
-def get_control_sigmoid_data(monkey):
+def get_control_sigmoid_data(entries):
 
     print("Getting the control sigmoid data...", end=' ', flush=True)
-
-    d_monkey = Data.objects.filter(monkey=monkey)
 
     data = {}
 
@@ -19,9 +16,9 @@ def get_control_sigmoid_data(monkey):
         y = []
 
         if cd == SAME_P:
-            d_cond = d_monkey.filter(is_same_p=True)
+            d_cond = entries.filter(is_same_p=True)
         elif cd == SAME_X:
-            d_cond = d_monkey.filter(is_same_x=True)
+            d_cond = entries.filter(is_same_x=True)
         else:
             raise ValueError(f"Control type not recognized: '{cd}'")
 

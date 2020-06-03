@@ -134,6 +134,16 @@ class AgentSoftmax(DMSciReports):
     def softmax(cls, v, precision):
         return expit(v/precision)
 
+    @staticmethod
+    def u(x, risk_aversion):
+        if isinstance(x, np.ndarray):
+            raise Exception
+        else:
+            if x >= 0:
+                return x ** (1-risk_aversion)
+            else:
+                return - np.abs(x) ** (1 + risk_aversion)
+
     def p(self, p0, x0, p1, x1):
 
         v0 = self.pi(p0, self.distortion) * self.u(x0, self.risk_aversion)

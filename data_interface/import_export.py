@@ -94,21 +94,27 @@ class Importer:
 
         e = Data(**entry_content)
 
-        is_gain_only = e.x0 > 0 and e.x1 > 0
+        e.is_gain = e.x0 > 0 and e.x1 > 0
+        e.is_loss = e.x0 < 0 and e.x1 < 0
 
-        if not is_gain_only:
+        if not (e.is_gain or e.is_loss):
             return
 
-        e.is_risky_left = e.x0 > e.x1 and e.p0 < e.p1
-        e.is_risky_right = e.x0 < e.x1 and e.p0 > e.p1
+        e.is_risky_left = \
+            np.abs(e.x0) > np.abs(e.x1) and np.abs(e.p0) < np.abs(e.p1)
+        e.is_risky_right = \
+            np.abs(e.x0) < np.abs(e.x1) and np.abs(e.p0) > np.abs(e.p1)
+
+        e.is_risky = e.is_risky_left or e.is_risky_right
+
         e.is_same_p = e.p0 == e.p1
         e.is_same_x = e.x0 == e.x1
-        e.is_best_left = (e.x0 > e.x1 and e.is_same_p) \
-            or (e.p0 > e.p1 and e.is_same_x)
-        e.is_best_right = (e.is_same_p or e.is_same_x) and not e.is_best_left
+        e.is_best_left = \
+            (e.x0 > e.x1 and e.is_same_p) or (e.p0 > e.p1 and e.is_same_x)
+        e.is_best_right = \
+            (e.is_same_p or e.is_same_x) and not e.is_best_left
 
         e.is_control = e.is_best_left or e.is_best_right
-        e.is_risky = e.is_risky_left or e.is_risky_right
 
         if not (e.is_control or e.is_risky):
             return

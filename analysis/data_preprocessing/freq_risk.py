@@ -1,19 +1,16 @@
 import numpy as np
 
 from analysis.sigmoid_fit.sigmoid_fit import sigmoid_fit
-from data_interface.models import Data
 
 
-def get_freq_risk_data(monkey):
+def get_freq_risk_data(entries):
 
     print("Getting the freq risk data...", end=' ', flush=True)
-
-    d_monkey = Data.objects.filter(monkey=monkey)
 
     x = []
     y = []
 
-    d_cd = d_monkey.filter(is_risky=True)
+    d_cd = entries.filter(is_risky=True)
     unq_pairs = np.unique(d_cd.values_list('pair_id'))
 
     for p_id in unq_pairs:

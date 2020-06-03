@@ -27,3 +27,6 @@ CONTROL_CONDITIONS = SAME_P, SAME_X
 
 SIG_STEEP = 'sig_steep'
 SIG_MID = 'sig_mid'
+
+GAIN = "gain"
+LOSS = "loss"

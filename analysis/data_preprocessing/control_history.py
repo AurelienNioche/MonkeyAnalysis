@@ -39,16 +39,16 @@ def _get_chunks(monkey, n_chunk=None, n_trials_per_chunk=None,
     return parts
 
 
-def get_control_history_data(monkey, n_chunk=None, n_trials_per_chunk=None,
+def get_control_history_data(entries, n_chunk=None, n_trials_per_chunk=None,
                              randomize=None):
 
     print("Getting the control history data...", end=' ', flush=True)
 
-    parts = _get_chunks(monkey=monkey, n_chunk=n_chunk,
+    parts = _get_chunks(entries, n_chunk=n_chunk,
                         n_trials_per_chunk=n_trials_per_chunk,
                         randomize=randomize)
 
-    d_monkey = Data.objects.filter(monkey=monkey, is_control=True)
+    d_monkey = entries.filter(is_control=True)
 
     data = {}
     for cd in CONTROL_CONDITIONS:

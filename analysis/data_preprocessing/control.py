@@ -1,15 +1,12 @@
 import numpy as np
 
 from parameters.parameters import CONTROL_CONDITIONS, SAME_P, SAME_X
-from data_interface.models import Data
 from analysis.stats.stats import iqr
 
 
-def get_control_data(monkey):
+def get_control_data(entries):
 
     print("Getting the control data...", end=' ', flush=True)
-
-    d_monkey = Data.objects.filter(monkey=monkey)
 
     data = {}
     for cd in CONTROL_CONDITIONS:
@@ -17,9 +14,9 @@ def get_control_data(monkey):
         data[cd] = []
 
         if cd == SAME_P:
-            d_cd = d_monkey.filter(is_same_p=True)
+            d_cd = entries.filter(is_same_p=True)
         elif cd == SAME_X:
-            d_cd = d_monkey.filter(is_same_x=True)
+            d_cd = entries.filter(is_same_x=True)
         else:
             raise ValueError(f"Control type not recognized: '{cd}'")
 
