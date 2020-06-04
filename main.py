@@ -375,7 +375,7 @@ def main():
 
     # for class_model in (AgentSideAdditive, AgentSide,
     #                     AgentSoftmax, DMSciReports):
-    force = True
+    force = False
     class_model = AgentSideAdditive
 
     for cond in GAIN, LOSS:
