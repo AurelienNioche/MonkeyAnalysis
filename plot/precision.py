@@ -16,6 +16,7 @@ def plot(ax, data, axis_label_font_size=20, ticks_label_size=14):
     n_chunk = len(data['precision'])
 
     class_model = data['class_model']
+    print(class_model.__name__)
     if class_model.__name__ == "DMSciReports":
 
         p0 = 0.5
@@ -51,9 +52,9 @@ def plot(ax, data, axis_label_font_size=20, ticks_label_size=14):
 
         x_label = r"$\frac{x_{risky}}{x_{safe}}$"
         y_label = "P(Choose risky option)"
+        text = r'$\lambda=' + f'{v_mean:.2f}\pm{v_std:.2f}' + '$'
 
-    elif class_model.__name__ in ("AgentSoftmax", "AgentSide",
-                                  "AgentSideAdditive"):
+    elif class_model.__name__ == "AgentSoftmax":
 
         fit_precision = data['precision']
 
@@ -71,6 +72,56 @@ def plot(ax, data, axis_label_font_size=20, ticks_label_size=14):
 
         x_label = r"$SEU(L_{1}) - SEU(L_{2})$"
         y_label = "$P(Choose L_{1})$"
+        text = r'$\lambda=' + f'{v_mean:.2f}\pm{v_std:.2f}' + '$'
+
+    elif class_model.__name__ == "AgentSideAdditive":
+
+        print("going here")
+
+        fit_precision = data['precision']
+        fit_side_bias = data['side_bias']
+
+        x = np.linspace(-1, 1, n_points)
+        y = np.zeros((n_chunk, len(x)))
+        for i_c in range(n_chunk):
+            v = fit_precision[i_c]
+            x_biased = x + fit_side_bias[i_c]
+            y[i_c] = class_model.softmax(x_biased, v)
+
+        y_mean = np.zeros(len(x))
+        mean_side_bias = np.mean(fit_side_bias)
+        std_side_bias = np.std(fit_side_bias)
+        x_biased = x + mean_side_bias
+        y_mean[:] = class_model.softmax(x_biased, v_mean)
+
+        ax.axvline(0, alpha=0.5, linewidth=1, color='black',
+                   linestyle='--', zorder=-10)
+
+        x_label = r"$SEU(L_{right}) - SEU(L_{left})$"
+        y_label = "$P(Choose\,L_{right})$"
+        text = r'$\lambda=' + f'{v_mean:.2f}\pm{v_std:.2f}' + '$\n' \
+            + r'$\gamma=' + f'{mean_side_bias:.2f}\pm{std_side_bias:.2f}' + '$\n'
+
+    elif class_model.__name__ == "AgentSide":
+
+        fit_precision = data['precision']
+        # fit_side_bias = data['side_bias']
+
+        x = np.linspace(-1, 1, n_points)
+        y = np.zeros((n_chunk, len(x)))
+        for i_c in range(n_chunk):
+            v = fit_precision[i_c]
+            y[i_c] = class_model.softmax(x, v)
+
+        y_mean = np.zeros(len(x))
+        y_mean[:] = class_model.softmax(x, v_mean)
+
+        ax.axvline(0, alpha=0.5, linewidth=1, color='black',
+                   linestyle='--', zorder=-10)
+
+        x_label = r"$SEU(L_{right}) - SEU(L_{left})$"
+        y_label = "$P(Choose L_{right})$"
+        text = r'$\lambda=' + f'{v_mean:.2f}\pm{v_std:.2f}' + '$'
 
     else:
         raise ValueError
@@ -81,7 +132,7 @@ def plot(ax, data, axis_label_font_size=20, ticks_label_size=14):
     # show_average
     ax.plot(x, y_mean, color='C0', linewidth=3, alpha=1)
 
-    add_text(ax, r'$\lambda=' + f'{v_mean:.2f}\pm{v_std:.2f}' + '$')
+    add_text(ax, text)
 
     # ax.set_xticks([0, 1, 2])
     ax.set_yticks([0, 0.5, 1])

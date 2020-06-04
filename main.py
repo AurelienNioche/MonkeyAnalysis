@@ -359,7 +359,10 @@ class Plot:
         plot.probability_distortion.plot(ax=axes[1], data=data)
 
         # Fig: Precision
-        data = {'precision': [np.mean(self.a.cpt_fit[m]['precision']) for m in self.a.monkeys],
+        data = {'precision': [np.mean(self.a.cpt_fit[m]['precision'])
+                              for m in self.a.monkeys],
+                'side_bias': [np.mean(self.a.cpt_fit[m]['side_bias'])
+                              for m in self.a.monkeys],
                 'class_model': self.a.class_model,
                 'cond': self.a.cond}
         plot.precision.plot(ax=axes[2], data=data)
@@ -369,13 +372,14 @@ class Plot:
             f"main{self.fig_suffix}")
         plt.tight_layout()
         plt.savefig(fig_path)
+        print(f"Figure {fig_path} created!")
 
 
 def main():
 
     # for class_model in (AgentSideAdditive, AgentSide,
     #                     AgentSoftmax, DMSciReports):
-    force = False
+    force = True
     class_model = AgentSideAdditive
 
     for cond in GAIN, LOSS:
@@ -386,7 +390,7 @@ def main():
         print()
 
         bkp_file = os.path.join(BACKUP_FOLDER,
-                                f"analysis_{class_model.__name__}")
+                                f"analysis_{class_model.__name__}_{cond}")
 
         if not os.path.exists(bkp_file) or force:
             a = Analysis(
