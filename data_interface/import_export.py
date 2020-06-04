@@ -101,16 +101,18 @@ class Importer:
             return
 
         e.is_risky_left = \
-            np.abs(e.x0) > np.abs(e.x1) and np.abs(e.p0) < np.abs(e.p1)
+            np.abs(e.x0) > np.abs(e.x1) and e.p0 < e.p1
         e.is_risky_right = \
-            np.abs(e.x0) < np.abs(e.x1) and np.abs(e.p0) > np.abs(e.p1)
+            np.abs(e.x0) < np.abs(e.x1) and e.p0 > e.p1
 
         e.is_risky = e.is_risky_left or e.is_risky_right
 
         e.is_same_p = e.p0 == e.p1
         e.is_same_x = e.x0 == e.x1
         e.is_best_left = \
-            (e.x0 > e.x1 and e.is_same_p) or (e.p0 > e.p1 and e.is_same_x)
+            (e.x0 > e.x1 and e.is_same_p) \
+            or (e.p0 > e.p1 and e.is_same_x and e.is_gain) \
+            or (e.p0 < e.p1 and e.is_same_x and e.is_loss)
         e.is_best_right = \
             (e.is_same_p or e.is_same_x) and not e.is_best_left
 

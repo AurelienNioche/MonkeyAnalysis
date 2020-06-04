@@ -1,4 +1,5 @@
 import numpy as np
+import warnings
 
 
 def _plot_history_best_param(
@@ -46,16 +47,30 @@ def _plot_history_best_param(
 def plot(axes, data):
 
     fit = data['fit']
+    class_model = data['fit']['class_model']
 
-    args = (
+    args = [
         ('risk_aversion', (-1, 1), 0.0, r"$\omega$"),
         ('distortion', (0, 2), 1.0, r"$\alpha$"),
-        ('precision', (0, 5), False, r"$\lambda$")
-    )
+        ('precision', (0, 3.5), False, r"$\lambda$")
+    ]
+
+    if class_model.__name__ == "AgentSideAdditive":
+        args.append(
+            ('side_bias', (-3, +10), 0.0, r"$\gamma$")
+        )
 
     for i, arg in enumerate(args):
 
         pr, y_lim, mid_line, param_name = arg
+
+        if np.min(fit[pr]) < y_lim[0] or np.max(fit[pr]) > y_lim[1]:
+
+            msg = f"Some values are outside of range " \
+                  f"for the 'history_best_param' plot " \
+                  f"for parameter {pr} " \
+                  f"(min: {np.min(fit[pr]):.2f}, max: {np.max(fit[pr]):.2f})"
+            warnings.warn(msg)
 
         _plot_history_best_param(
             ax=axes[i],

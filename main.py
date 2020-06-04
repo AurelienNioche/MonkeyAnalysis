@@ -46,7 +46,7 @@ from analysis.model.parameter_estimate import get_parameter_estimate
 
 class Analysis:
 
-    LIMIT_N_TRIAL = 1000
+    LIMIT_N_TRIAL = 2000
 
     def __init__(self, class_model, cond, **kwargs):
 
@@ -76,7 +76,7 @@ class Analysis:
         selected_monkeys = []
 
         monkeys = list(np.unique(Data.objects.values_list("monkey")))
-        print(monkeys)
+        print("All monkeys:", monkeys)
 
         for m in monkeys:
             keep = True
@@ -100,7 +100,7 @@ class Analysis:
 
                 n_right = entries.filter(c=1).count()
                 prop_right = n_right / n_trial
-                if not 0.15 <= prop_right <= 0.85:
+                if not 0.20 <= prop_right <= 0.80:
                     print(
                         f"Monkey '{m}' choose the right option {prop_right * 100:.2f}% of the time in condition '{cond}', "
                         f"it will not be included in the analysis")
@@ -110,6 +110,7 @@ class Analysis:
             if keep:
                 selected_monkeys.append(m)
 
+        print("Selected monkeys:", selected_monkeys)
         return selected_monkeys
 
     # @classmethod

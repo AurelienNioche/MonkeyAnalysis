@@ -16,7 +16,7 @@ def plot(ax, data, axis_label_font_size=20, ticks_label_size=14):
     n_chunk = len(data['precision'])
 
     class_model = data['class_model']
-    print(class_model.__name__)
+
     if class_model.__name__ == "DMSciReports":
 
         p0 = 0.5
@@ -75,8 +75,6 @@ def plot(ax, data, axis_label_font_size=20, ticks_label_size=14):
         text = r'$\lambda=' + f'{v_mean:.2f}\pm{v_std:.2f}' + '$'
 
     elif class_model.__name__ == "AgentSideAdditive":
-
-        print("going here")
 
         fit_precision = data['precision']
         fit_side_bias = data['side_bias']
