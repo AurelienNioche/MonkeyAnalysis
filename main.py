@@ -46,7 +46,7 @@ from analysis.model.parameter_estimate import get_parameter_estimate
 
 class Analysis:
 
-    LIMIT_N_TRIAL = 2000
+    LIMIT_N_TRIAL = 1000
 
     def __init__(self, class_model, cond, **kwargs):
 
@@ -73,28 +73,39 @@ class Analysis:
     @classmethod
     def get_monkeys(cls):
 
+        selected_monkeys = []
+
         monkeys = list(np.unique(Data.objects.values_list("monkey")))
         print(monkeys)
-        # black_list = []
-        selected_monkeys = []
+
         for m in monkeys:
             keep = True
-            entries = Data.objects.filter(monkey=m)
-            n_trial = entries.count()
-            if n_trial < cls.LIMIT_N_TRIAL:
-                print(f"Monkey '{m}' has only {n_trial} trials, "
-                      f"it will not be included in the analysis")
-                keep = False
-                # black_list.append(m)
+            entries_m = Data.objects.filter(monkey=m)
 
-            n_right = entries.filter(c=1).count()
-            prop_right = n_right / n_trial
-            if not 0.15 <= prop_right <= 0.85:
-                print(
-                    f"Monkey '{m}' choose the right option {prop_right * 100:.2f}% of the time, "
-                    f"it will not be included in the analysis")
-                keep = False
-                # black_list.append(m)
+            for cond in GAIN, LOSS:
+
+                if cond == GAIN:
+                    entries = entries_m.filter(is_gain=True)
+                elif cond == LOSS:
+                    entries = entries_m.filter(is_loss=True)
+                else:
+                    raise ValueError
+
+                n_trial = entries.count()
+                if n_trial < cls.LIMIT_N_TRIAL:
+                    print(f"Monkey '{m}' has only {n_trial} trials in condition '{cond}', "
+                          f"it will not be included in the analysis")
+                    keep = False
+                    # black_list.append(m)
+
+                n_right = entries.filter(c=1).count()
+                prop_right = n_right / n_trial
+                if not 0.15 <= prop_right <= 0.85:
+                    print(
+                        f"Monkey '{m}' choose the right option {prop_right * 100:.2f}% of the time in condition '{cond}', "
+                        f"it will not be included in the analysis")
+                    keep = False
+                    # black_list.append(m)
 
             if keep:
                 selected_monkeys.append(m)
@@ -415,7 +426,7 @@ def main():
         #     class_model=a.class_model
         # )
         p = Plot(analysis=a)
-        # p.create_pdf()
+        p.create_pdf()
         # for m in a.monkeys:
         #     p.create_pdf(monkey=m)
         # p.create_best_param_distrib_and_lls_distrib()
