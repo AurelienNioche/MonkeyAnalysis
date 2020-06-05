@@ -3,7 +3,8 @@ import numpy as np
 from plot.tools.tools import add_text
 
 
-def plot(ax, data, axis_label_font_size=20, ticks_label_size=14):
+def plot(ax, data, linestyles=None,
+         color='C0', axis_label_font_size=20, ticks_label_size=14):
     """
     Produce the precision figure
     """
@@ -124,11 +125,15 @@ def plot(ax, data, axis_label_font_size=20, ticks_label_size=14):
     else:
         raise ValueError
 
+    if linestyles is None:
+        linestyles = ['-' for _ in range(len(data['precision']))]
+
     for i_c in range(n_chunk):
-        ax.plot(x, y[i_c], color='C0', linewidth=1, alpha=0.5)
+        ax.plot(x, y[i_c], color=color, linewidth=1, alpha=0.5,
+                linestyle=linestyles[i_c])
 
     # show_average
-    ax.plot(x, y_mean, color='C0', linewidth=3, alpha=1)
+    ax.plot(x, y_mean, color=color, linewidth=3, alpha=1)
 
     add_text(ax, text)
 

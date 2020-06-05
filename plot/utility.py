@@ -4,7 +4,8 @@ from plot.tools.tools import add_text
 from parameters.parameters import GAIN, LOSS
 
 
-def _line(x, risk_aversion, class_model, ax, alpha=1.0,
+def _line(x, risk_aversion, class_model, ax,
+          alpha=1.0,
           linewidth=3, color="C0", linestyle="-"):
 
     y = [class_model.u(x=i, risk_aversion=risk_aversion) for i in x]
@@ -13,7 +14,7 @@ def _line(x, risk_aversion, class_model, ax, alpha=1.0,
             linestyle=linestyle)
 
 
-def plot(ax, data, alpha_chunk=0.5,
+def plot(ax, data, linestyles=None, color='C0', alpha_chunk=0.5,
          axis_label_font_size=20,
          ticks_label_font_size=12):
     """
@@ -23,6 +24,9 @@ def plot(ax, data, alpha_chunk=0.5,
     pr = data['risk_aversion']
     class_model = data['class_model']
     cond = data['cond']
+
+    if linestyles is None:
+        linestyles = ['-' for _ in range(len(pr))]
 
     if cond == GAIN:
         x = np.linspace(0, 1, 1000)
@@ -52,7 +56,9 @@ def plot(ax, data, alpha_chunk=0.5,
             x=x,
             class_model=class_model,
             risk_aversion=pr[j],
+            color=color,
             ax=ax, linewidth=1, alpha=alpha_chunk,
+            linestyle=linestyles[j]
         )
 
     v_mean = np.mean(pr)
@@ -61,7 +67,8 @@ def plot(ax, data, alpha_chunk=0.5,
         x=x,
         risk_aversion=v_mean,
         class_model=class_model,
-        ax=ax
+        ax=ax,
+        color=color
     )
 
     add_text(ax, r'$\omega=' + f'{v_mean:.2f}\pm{v_std:.2f}' + '$')

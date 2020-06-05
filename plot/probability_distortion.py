@@ -11,16 +11,16 @@ from plot.tools.tools import add_text
 
 def _line(param, ax,
           class_model,
-          linewidth=3, alpha=1, color='C0', n_points=1000):
+          linestyle='-',
+          linewidth=3, alpha=1.0, color='C0', n_points=1000):
 
     x = np.linspace(0, 1, n_points)
 
     ax.plot(x, [class_model.pi(i, param) for i in x], color=color,
-            linewidth=linewidth, alpha=alpha)
+            linewidth=linewidth, alpha=alpha, linestyle=linestyle)
 
 
-def plot(ax, data,
-         show_average=True, label_font_size=20, ticks_label_size=14):
+def plot(ax, data, linestyles=None, color='C0', label_font_size=20, ticks_label_size=14):
     """
     Produce the probability distortion figure
     """
@@ -28,15 +28,18 @@ def plot(ax, data,
     fit_distortion = data["distortion"]
     class_model = data["class_model"]
 
-    alpha_chunk = 0.5 if show_average else 1
+    if linestyles is None:
+        linestyles = ['-' for _ in range(len(fit_distortion))]
 
     for j in range(len(fit_distortion)):
 
         _line(
             class_model=class_model,
             param=fit_distortion[j],
-            alpha=alpha_chunk,
+            color=color,
+            alpha=0.5,
             linewidth=1,
+            linestyle=linestyles[j],
             ax=ax)
 
     v_mean = np.mean(fit_distortion)
@@ -45,6 +48,7 @@ def plot(ax, data,
         class_model=class_model,
         param=v_mean,
         linewidth=3,
+        color=color,
         ax=ax)
     add_text(ax, r'$\alpha=' + f'{v_mean:.2f}\pm{v_std:.2f}' + '$')
 

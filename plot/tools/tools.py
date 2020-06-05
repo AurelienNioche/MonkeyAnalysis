@@ -1,4 +1,5 @@
 import numpy as np
+from string import ascii_lowercase  #ascii_uppercase
 
 
 def scatter_and_sigmoid(ax, x, y, x_fit, y_fit, color='C0', label=None,
@@ -19,6 +20,11 @@ def add_text(ax, txt,):
             horizontalalignment='left',
             verticalalignment='top',
             transform=ax.transAxes)
+
+
+def add_letter(ax, i):
+    ax.text(-0.1, 1.1, ascii_lowercase[i],
+            transform=ax.transAxes, size=20, weight='bold')
 
 
 def scatter_boxplot(data, ax, y_label, x_tick_label, title,
